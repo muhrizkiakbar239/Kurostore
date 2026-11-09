@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Pengaturan dan informasi akun Kurostore.">
+  <title>Pengaturan &amp; Akun | Kurostore</title>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261109-2">
+  <script src="../../assets/js/style.js?v=20261109-2" defer></script>
+</head>
+<body class="account-page">
+  <header class="cart-header">
+    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <a class="cart-header-link" href="../index.html">Kembali ke beranda</a>
+  </header>
+
+  <main class="account-shell" id="account-page">
+    <section class="account-locked" id="account-locked" aria-labelledby="account-locked-title">
+      <span class="account-status-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.5"></circle>
+          <path d="M5 20c.5-3.3 3.2-5.3 7-5.3s6.5 2 7 5.3"></path>
+        </svg>
+      </span>
+      <span class="cart-eyebrow">AREA AKUN</span>
+      <h1 id="account-locked-title">Masuk untuk membuka pengaturan akun</h1>
+      <p>Pengaturan dan informasi akun hanya tersedia setelah kamu masuk ke Kurostore.</p>
+      <a class="cart-primary-button" href="login.html">Masuk ke akun</a>
+      <p class="cart-register-note">Belum punya akun? <a href="register.html">Daftar sekarang</a></p>
+    </section>
+
+    <section class="account-content" id="account-content" aria-labelledby="account-title" hidden>
+      <div class="account-heading">
+        <span class="cart-eyebrow">PUSAT AKUN</span>
+        <h1 id="account-title">Pengaturan &amp; Akun</h1>
+        <p>Kelola akun dan jelajahi fitur Kurostore.</p>
+      </div>
+
+      <section class="account-settings-section" aria-labelledby="settings-title">
+        <div class="account-section-heading">
+          <span class="cart-eyebrow">AKUN DAN PREFERENSI</span>
+          <h2 id="settings-title">Pengaturan umum</h2>
+        </div>
+
+        <div class="account-settings-layout">
+          <aside class="account-sidebar" aria-label="Navigasi akun">
+            <div class="account-sidebar-profile">
+              <span class="account-sidebar-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="8" r="3.5"></circle>
+                  <path d="M5 20c.5-3.3 3.2-5.3 7-5.3s6.5 2 7 5.3"></path>
+                </svg>
+              </span>
+              <span class="account-sidebar-identity">
+                <strong id="account-sidebar-name">Tamu</strong>
+                <small id="account-sidebar-email">Sesi tamu lokal</small>
+              </span>
+            </div>
+
+            <nav class="account-settings-nav" aria-label="Pengaturan akun">
+              <span class="account-nav-group-title">Akun saya</span>
+              <button class="account-nav-item is-active" type="button" data-account-panel="profile" aria-current="page">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.5-3.3 3.2-5.3 7-5.3s6.5 2 7 5.3"></path></svg></span> Profil
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="payment" data-panel-title="Bank &amp; Kartu" data-panel-description="Metode pembayaran tersimpan akan tersedia setelah fitur pembayaran Kurostore siap.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span> Bank &amp; Kartu
+                <span class="account-nav-badge">Segera</span>
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="kuropay" data-panel-title="KuroPay" data-panel-description="Dompet digital Kurostore untuk menyimpan saldo dan membayar pesanan dengan mudah.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19a1 1 0 0 1 1 1v15H6a3 3 0 0 1-3-3V6.5Z"></path><path d="M3 8h14a2 2 0 0 1 2 2v3h-5a2 2 0 0 1 0-4h5"></path><path d="M15 11h.01"></path></svg></span> KuroPay
+                <span class="account-nav-badge">Segera</span>
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="address">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span> Alamat
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="password" data-panel-title="Ubah Password" data-panel-description="Pengelolaan password akan tersedia setelah autentikasi akun Kurostore terhubung.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"></path></svg></span> Ubah Password
+                <span class="account-nav-badge">Segera</span>
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="notifications" data-panel-title="Pengaturan Notifikasi" data-panel-description="Atur notifikasi pesanan dan promo setelah fitur notifikasi tersedia.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12a2 2 0 0 0 4 0"></path></svg></span> Notifikasi
+                <span class="account-nav-badge">Segera</span>
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="privacy" data-panel-title="Pengaturan Privasi" data-panel-description="Kontrol privasi akun akan hadir bersama fitur akun Kurostore berikutnya.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"></path><path d="m9 12 2 2 4-4"></path></svg></span> Privasi
+                <span class="account-nav-badge">Segera</span>
+              </button>
+
+              <span class="account-nav-group-title account-nav-group-spaced">Preferensi</span>
+              <button class="account-nav-item" type="button" data-account-panel="language" data-panel-title="Pengaturan Bahasa" data-panel-description="Pilih bahasa yang digunakan di Kurostore. Pengaturan bahasa segera hadir.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"></path></svg></span> Bahasa
+                <span class="account-nav-badge">Segera</span>
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="theme" data-panel-title="Pengaturan Tema" data-panel-description="Atur tampilan terang atau gelap sesuai preferensimu. Pengaturan tema segera hadir.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"></path><path d="M16 3v4m-2-2h4"></path></svg></span> Tema
+                <span class="account-nav-badge">Segera</span>
+              </button>
+
+              <span class="account-nav-group-title account-nav-group-spaced">Aktivitas</span>
+              <div class="account-nav-admin-group" id="account-seller-menu" hidden>
+                <span class="account-nav-group-title account-nav-group-spaced">Seller</span>
+                <a class="account-nav-item" href="seller/dashboard.html">
+                  <span class="account-nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 10.5h16v9H4zm-1-2 2-4h14l2 4a2 2 0 0 1-3.5 1.3A2 2 0 0 1 14 9.8a2 2 0 0 1-4 0 2 2 0 0 1-3.5 0A2 2 0 0 1 3 8.5Z"></path><path d="M9 19.5v-5h6v5"></path></svg>
+                  </span>
+                  Seller Center
+                </a>
+              </div>
+              <div class="account-nav-admin-group" id="account-admin-menu" hidden>
+                <span class="account-nav-group-title account-nav-group-spaced">Administrasi</span>
+                <a class="account-nav-item" href="admin/dashboard.html">
+                  <span class="account-nav-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="5" rx="1.5"></rect><rect x="13" y="10" width="8" height="11" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect></svg>
+                  </span>
+                  Dashboard Admin
+                </a>
+              </div>
+              <a class="account-nav-item" href="keranjang.html">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 11.1a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L21 8H6"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg></span> Keranjang Saya
+              </a>
+              <button class="account-nav-item" type="button" data-account-panel="orders">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12l2 4v14H4V7l2-4Z"></path><path d="M4 7h16M8 11h8m-8 4h8"></path></svg></span> Pesanan Saya
+              </button>
+              <button class="account-nav-item" type="button" data-account-panel="vouchers" data-panel-title="Voucher &amp; Poin" data-panel-description="Voucher dan poin belanja akan ditampilkan di sini setelah program promo Kurostore tersedia.">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 0 0 4v2a2 2 0 0 0 0 4h16a2 2 0 0 0 0-4v-2a2 2 0 0 0 0-4H4Z"></path><path d="M12 7v2m0 3v2m0 3v1"></path></svg></span> Voucher &amp; Poin
+                <span class="account-nav-badge">Segera</span>
+              </button>
+              <button class="account-nav-item account-nav-logout" id="account-logout" type="button">
+                <span class="account-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5m5 5H3"></path><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path></svg></span>
+                <span id="account-logout-label">Keluar dari akun</span>
+              </button>
+            </nav>
+          </aside>
+
+          <div class="account-settings-panel" id="account-settings-panel" aria-live="polite">
+            <section id="account-profile-panel" aria-labelledby="profile-title">
+              <div class="account-panel-heading">
+                <h3 id="profile-title">Profil saya</h3>
+                <p>Kelola informasi profil untuk pengalaman belanja yang lebih personal.</p>
+              </div>
+              <form class="account-profile-form" id="account-profile-form">
+                <div class="account-profile-field">
+                  <label for="profile-name">Nama</label>
+                  <input id="profile-name" name="name" type="text" autocomplete="name" maxlength="80" required>
+                </div>
+                <div class="account-profile-field">
+                  <label for="profile-email">Email</label>
+                  <input id="profile-email" name="email" type="email" autocomplete="email" placeholder="nama@email.com">
+                </div>
+                <div class="account-profile-field">
+                  <label for="profile-phone">Nomor telepon</label>
+                  <input id="profile-phone" name="phone" type="tel" autocomplete="tel" placeholder="Tambahkan nomor telepon">
+                </div>
+                <div class="account-profile-actions">
+                  <button class="account-save-button" type="submit">Simpan perubahan</button>
+                  <p class="account-profile-feedback" id="account-profile-feedback" role="status" aria-live="polite"></p>
+                </div>
+                <p class="account-local-note">Perubahan disimpan di sesi browser ini.</p>
+              </form>
+            </section>
+
+            <section id="account-address-panel" aria-labelledby="address-title" hidden>
+              <div class="account-panel-heading">
+                <h3 id="address-title">Alamat pengiriman</h3>
+                <p>Simpan alamat utama agar detail penerima terisi otomatis saat checkout.</p>
+              </div>
+              <form class="account-profile-form" id="account-address-form">
+                <div class="account-profile-field">
+                  <label for="address-name">Nama penerima</label>
+                  <input id="address-name" name="name" type="text" autocomplete="name" maxlength="100" required>
+                </div>
+                <div class="account-profile-field">
+                  <label for="address-phone">Nomor telepon</label>
+                  <input id="address-phone" name="phone" type="tel" autocomplete="tel" maxlength="30" required>
+                </div>
+                <div class="account-profile-field account-profile-field-address">
+                  <label for="address-street">Alamat lengkap</label>
+                  <textarea id="address-street" name="address" autocomplete="street-address" rows="3" maxlength="300" required></textarea>
+                </div>
+                <div class="account-profile-field">
+                  <label for="address-city">Kota / Kabupaten</label>
+                  <input id="address-city" name="city" autocomplete="address-level2" maxlength="100" required>
+                </div>
+                <div class="account-profile-field">
+                  <label for="address-postal-code">Kode pos</label>
+                  <input id="address-postal-code" name="postal_code" inputmode="numeric" autocomplete="postal-code" maxlength="10" required>
+                </div>
+                <div class="account-profile-actions">
+                  <button class="account-save-button" type="submit">Simpan alamat</button>
+                  <p class="account-profile-feedback" id="account-address-feedback" role="status" aria-live="polite"></p>
+                </div>
+                <p class="account-local-note">Alamat disimpan di browser ini dan akan digunakan saat checkout.</p>
+              </form>
+            </section>
+
+            <section id="account-orders-panel" aria-labelledby="account-orders-title" hidden>
+              <div class="account-panel-heading">
+                <h3 id="account-orders-title">Pesanan Saya</h3>
+                <p>Lihat status pembayaran dan rincian pesananmu.</p>
+              </div>
+              <p class="account-orders-feedback" id="account-orders-feedback" role="status" aria-live="polite"></p>
+              <a class="account-orders-login-link" id="account-orders-login-link" href="login.html?next=pengaturan-akun.html" hidden>Masuk ke akun untuk melihat pesanan</a>
+              <div class="account-orders-list" id="account-orders-list"></div>
+              <div class="account-orders-empty" id="account-orders-empty" hidden>
+                <strong>Belum ada pesanan</strong>
+                <p>Pesanan yang dibuat akan muncul di sini.</p>
+                <a href="../index.html#all-products-page">Mulai belanja <span aria-hidden="true">→</span></a>
+              </div>
+            </section>
+
+            <section id="account-placeholder-panel" aria-labelledby="account-placeholder-title" hidden>
+              <div class="account-panel-heading">
+                <span class="cart-eyebrow">PENGATURAN AKUN</span>
+                <h3 id="account-placeholder-title"></h3>
+                <p id="account-placeholder-description"></p>
+              </div>
+              <div class="account-coming-soon">
+                <span class="account-coming-soon-icon" aria-hidden="true">✦</span>
+                <strong>Segera hadir di Kurostore</strong>
+                <span>Bagian ini sedang kami siapkan.</span>
+              </div>
+            </section>
+
+            <section class="account-cart-preview" aria-labelledby="account-cart-title">
+              <div class="account-cart-preview-heading">
+                <div>
+                  <span class="cart-eyebrow">BELANJA KAMU</span>
+                  <h3 id="account-cart-title">Isi keranjang</h3>
+                  <p id="account-cart-summary">Memeriksa keranjang belanjamu…</p>
+                </div>
+                <a class="account-cart-open" href="keranjang.html">
+                  Buka keranjang <span aria-hidden="true">→</span>
+                </a>
+              </div>
+              <p class="account-cart-feedback" id="account-cart-feedback" role="status" aria-live="polite"></p>
+              <div class="account-cart-items" id="account-cart-items" aria-live="polite"></div>
+              <div class="account-cart-empty" id="account-cart-empty" hidden>
+                <span class="account-cart-empty-icon" aria-hidden="true">◇</span>
+                <div>
+                  <strong>Keranjangmu masih kosong</strong>
+                  <p>Produk yang kamu tambahkan akan muncul di sini.</p>
+                </div>
+                <a href="../index.html#all-products-page">Cari produk <span aria-hidden="true">→</span></a>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

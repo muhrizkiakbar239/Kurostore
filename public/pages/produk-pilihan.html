@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Simpan dan lihat produk favoritmu di Wishlist Kurostore.">
+  <title>Wishlist | Kurostore</title>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261103-1">
+  <script src="../../assets/js/style.js?v=20261103-1" defer></script>
+</head>
+<body class="products-page">
+  <header class="cart-header">
+    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <a class="cart-header-link" href="../index.html">Kembali ke beranda</a>
+  </header>
+
+  <main class="products-shell" id="products-page">
+    <nav class="products-breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">Beranda</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Wishlist</span>
+    </nav>
+
+    <section class="products-hero" aria-labelledby="products-title">
+      <div class="products-hero-copy">
+        <span class="products-eyebrow"><span aria-hidden="true"></span> FAVORITMU DI KUROSTORE</span>
+        <h1 id="products-title">Simpan yang kamu suka,<br><span>temukan lagi kapan saja.</span></h1>
+        <p>Kumpulkan produk favoritmu dalam satu wishlist. Pilihanmu tersimpan di browser ini.</p>
+      </div>
+      <div class="products-hero-art" aria-hidden="true">
+        <span class="products-art-orbit products-art-orbit-one"></span>
+        <span class="products-art-orbit products-art-orbit-two"></span>
+        <span class="products-art-star products-art-star-one">✦</span>
+        <span class="products-art-star products-art-star-two">✦</span>
+        <span class="products-art-card products-art-card-back"></span>
+        <span class="products-art-card products-art-card-front">
+          <svg viewBox="0 0 64 64">
+            <path d="M13 25h38l-3 27H16l-3-27Z"></path>
+            <path d="M23 27v-6a9 9 0 0 1 18 0v6"></path>
+            <path d="m25 39 5 5 10-11"></path>
+          </svg>
+          <span>PILIHAN<br>UNTUKMU</span>
+        </span>
+        <span class="products-art-dot products-art-dot-one"></span>
+        <span class="products-art-dot products-art-dot-two"></span>
+      </div>
+    </section>
+
+    <aside class="wishlist-storage-notice" id="wishlist-storage-notice" role="alert" hidden>
+      Wishlist tidak bisa dimuat atau disimpan di browser ini. Perubahan pilihan mungkin tidak tersimpan.
+    </aside>
+
+    <section class="wishlist-section" aria-labelledby="wishlist-title">
+      <div class="products-section-heading">
+        <div>
+          <span class="products-section-kicker">KOLEKSI KAMU</span>
+          <h2 id="wishlist-title">Wishlist</h2>
+        </div>
+        <span class="products-result-count" id="wishlist-count" aria-live="polite"></span>
+      </div>
+      <div class="products-grid" id="wishlist-grid"></div>
+      <div class="products-empty" id="wishlist-empty">
+        <span aria-hidden="true">♡</span>
+        <strong>Wishlist kamu masih kosong</strong>
+        <p>Barang yang kamu simpan akan muncul di sini.</p>
+      </div>
+    </section>
+
+    <footer class="products-footer">
+      <span class="products-footer-mark" aria-hidden="true">K</span>
+      <p>Wishlist tersimpan di browser yang kamu gunakan.</p>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Masuk ke akun Kurostore untuk melanjutkan belanja.">
+  <title>Masuk | Kurostore</title>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261103-1">
+  <script src="../../assets/js/style.js?v=20261109-2" defer></script>
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <a class="auth-back-link" href="../index.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 12H5m6 6-6-6 6-6"></path>
+      </svg>
+      Kembali ke beranda
+    </a>
+
+    <section class="auth-card" aria-labelledby="login-title">
+      <a class="auth-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+        <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+      </a>
+
+      <div class="auth-heading">
+        <span class="auth-heading-kicker">SELAMAT DATANG KEMBALI</span>
+        <h1 id="login-title">Masuk ke akunmu</h1>
+        <p>Masukkan detail akun untuk melanjutkan belanja.</p>
+      </div>
+
+      <form class="auth-form" id="login-form">
+        <div class="auth-field">
+          <label for="login-email">Email</label>
+          <input
+            id="login-email"
+            name="email"
+            type="email"
+            placeholder="nama@email.com"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="auth-field">
+          <div class="auth-label-row">
+            <label for="login-password">Kata sandi</label>
+            <a class="auth-forgot-link" href="#lupa-kata-sandi">Lupa kata sandi?</a>
+          </div>
+          <div class="auth-password-wrap">
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              placeholder="Masukkan kata sandi"
+              autocomplete="current-password"
+              required
+            >
+            <button
+              class="auth-password-toggle"
+              type="button"
+              aria-label="Tampilkan kata sandi"
+              aria-pressed="false"
+              aria-controls="login-password"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"></path>
+                <circle cx="12" cy="12" r="2.7"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <label class="auth-remember">
+          <input type="checkbox" name="remember">
+          <span class="auth-checkbox" aria-hidden="true"></span>
+          <span>Ingat saya</span>
+        </label>
+
+        <button class="auth-submit" type="submit">
+          Masuk
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14m-6-6 6 6-6 6"></path>
+          </svg>
+        </button>
+        <p class="auth-feedback" id="login-feedback" role="status" aria-live="polite"></p>
+      </form>
+
+      <button class="auth-guest-button" id="guest-browse" type="button">Jelajah sebagai tamu</button>
+
+      <p class="auth-register-prompt">
+        Belum punya akun?
+        <a href="register.html">Daftar sekarang</a>
+      </p>
+
+      <p class="auth-terms">
+        Dengan masuk, kamu menyetujui ketentuan layanan dan kebijakan privasi Kurostore.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Periksa alamat, pesanan, dan pembayaran Kurostore.">
+  <title>Checkout | Kurostore</title>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261109-2">
+  <script src="../../assets/js/style.js?v=20261109-2" defer></script>
+</head>
+<body class="cart-page checkout-page">
+  <header class="cart-header checkout-header">
+    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <span class="checkout-header-title">Checkout</span>
+    <a class="cart-header-link" href="keranjang.html">Kembali ke keranjang</a>
+  </header>
+
+  <main class="cart-shell checkout-shell" id="checkout-page">
+    <div class="checkout-page-heading">
+      <div>
+        <span class="cart-eyebrow">PESANANMU</span>
+        <h1>Checkout</h1>
+      </div>
+      <span class="checkout-secure-note"><span aria-hidden="true">✓</span> Pembayaran aman dengan Midtrans</span>
+    </div>
+
+    <ol class="checkout-progress" aria-label="Tahapan pemesanan">
+      <li class="is-complete"><span>1</span><strong>Keranjang</strong></li>
+      <li class="is-current" aria-current="step"><span>2</span><strong>Checkout</strong></li>
+      <li><span>3</span><strong>Pembayaran</strong></li>
+    </ol>
+
+    <p class="cart-feedback" id="checkout-feedback" role="status" aria-live="polite"></p>
+    <a class="checkout-login-link" id="checkout-login-link" href="login.html?next=checkout.html" hidden>Masuk ke akun untuk melanjutkan checkout</a>
+
+    <section class="checkout-empty cart-empty" id="checkout-empty" hidden>
+      <h2>Tidak ada produk untuk checkout</h2>
+      <p>Pilih produk di keranjang terlebih dahulu.</p>
+      <a class="cart-primary-button" href="keranjang.html">Kembali ke keranjang</a>
+    </section>
+
+    <div class="checkout-layout" id="checkout-content" hidden>
+      <div class="checkout-main-column">
+        <form class="checkout-details-panel" id="checkout-form">
+          <section class="checkout-card checkout-form-section" aria-labelledby="checkout-contact-title">
+            <div class="checkout-card-heading">
+              <span class="checkout-card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+              </span>
+              <div>
+                <span class="cart-eyebrow">KIRIM KE</span>
+                <h2 id="checkout-contact-title">Alamat pengiriman</h2>
+              </div>
+              <span class="checkout-address-badge" id="checkout-address-badge">Alamat baru</span>
+            </div>
+
+            <div class="checkout-fields">
+              <div class="auth-field">
+                <label for="checkout-name">Nama penerima</label>
+                <input id="checkout-name" name="name" type="text" autocomplete="name" maxlength="100" required>
+              </div>
+              <div class="auth-field">
+                <label for="checkout-phone">Nomor telepon</label>
+                <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" maxlength="30" required>
+              </div>
+              <div class="auth-field checkout-field-wide">
+                <label for="checkout-address">Alamat lengkap</label>
+                <textarea id="checkout-address" name="address" autocomplete="street-address" rows="2" maxlength="300" placeholder="Nama jalan, nomor rumah, kelurahan, kecamatan" required></textarea>
+              </div>
+              <div class="auth-field">
+                <label for="checkout-city">Kota / Kabupaten</label>
+                <input id="checkout-city" name="city" autocomplete="address-level2" maxlength="100" required>
+              </div>
+              <div class="auth-field">
+                <label for="checkout-postal-code">Kode pos</label>
+                <input id="checkout-postal-code" name="postal_code" inputmode="numeric" autocomplete="postal-code" maxlength="10" required>
+              </div>
+              <div class="auth-field checkout-field-wide">
+                <label for="checkout-email">Email untuk detail pembayaran</label>
+                <input id="checkout-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+              </div>
+            </div>
+            <p class="checkout-address-note">Atur alamat utama di <a href="pengaturan-akun.html">Pengaturan &amp; Akun</a> agar terisi otomatis saat checkout.</p>
+          </section>
+
+          <section class="checkout-card checkout-items-section" aria-labelledby="checkout-items-title">
+            <div class="checkout-product-heading">
+              <h2 id="checkout-items-title">Produk dipesan</h2>
+              <span>Harga satuan</span>
+              <span>Jumlah</span>
+              <span>Subtotal</span>
+            </div>
+            <div class="checkout-store-row">
+              <span class="checkout-store-mark" aria-hidden="true">K</span>
+              <strong>Produk Kurostore</strong>
+              <span class="checkout-store-caption">Pilihan belanja untukmu</span>
+            </div>
+            <ul class="checkout-item-list" id="checkout-item-list"></ul>
+            <div class="checkout-delivery-row">
+              <span class="checkout-delivery-label">Opsi pengiriman</span>
+              <span class="checkout-delivery-unavailable">Biaya dan pilihan kurir belum tersedia untuk demo ini</span>
+            </div>
+            <div class="checkout-order-subtotal">
+              <span>Total produk</span>
+              <strong id="checkout-products-total">Rp0</strong>
+            </div>
+          </section>
+
+          <section class="checkout-card checkout-payment-section" aria-labelledby="checkout-payment-title">
+            <div class="checkout-payment-heading">
+              <div>
+                <span class="cart-eyebrow">PILIHAN PEMBAYARAN</span>
+                <h2 id="checkout-payment-title">Metode pembayaran</h2>
+              </div>
+              <span class="checkout-payment-secure">Diproses aman oleh Midtrans</span>
+            </div>
+
+            <div class="checkout-payment-options" role="radiogroup" aria-labelledby="checkout-payment-title">
+              <label class="checkout-payment-option is-selected">
+                <input type="radio" name="payment_method" value="all" checked>
+                <span class="checkout-payment-symbol checkout-payment-symbol-all" aria-hidden="true">K</span>
+                <span class="checkout-payment-copy"><strong>Semua metode</strong><small>Pilih metode di halaman pembayaran</small></span>
+                <span class="checkout-payment-check" aria-hidden="true"></span>
+              </label>
+              <label class="checkout-payment-option">
+                <input type="radio" name="payment_method" value="ewallet">
+                <span class="checkout-payment-symbol checkout-payment-symbol-wallet" aria-hidden="true">e</span>
+                <span class="checkout-payment-copy"><strong>E-wallet</strong><small>GoPay, ShopeePay, DANA, dan lainnya*</small></span>
+                <span class="checkout-payment-check" aria-hidden="true"></span>
+              </label>
+              <label class="checkout-payment-option">
+                <input type="radio" name="payment_method" value="bank_transfer">
+                <span class="checkout-payment-symbol checkout-payment-symbol-bank" aria-hidden="true">▤</span>
+                <span class="checkout-payment-copy"><strong>Virtual account</strong><small>Pilih bank yang tersedia di Midtrans</small></span>
+                <span class="checkout-payment-check" aria-hidden="true"></span>
+              </label>
+              <label class="checkout-payment-option">
+                <input type="radio" name="payment_method" value="credit_card">
+                <span class="checkout-payment-symbol checkout-payment-symbol-card" aria-hidden="true">▰</span>
+                <span class="checkout-payment-copy"><strong>Kartu debit / kredit</strong><small>Pembayaran kartu melalui Midtrans</small></span>
+                <span class="checkout-payment-check" aria-hidden="true"></span>
+              </label>
+            </div>
+            <p class="checkout-payment-note">*Metode yang tampil bergantung pada ketersediaan akun Midtrans dan dapat berbeda di halaman pembayaran.</p>
+          </section>
+        </form>
+
+        <section class="checkout-card checkout-total-card" aria-labelledby="checkout-total-title">
+          <h2 id="checkout-total-title">Rincian pembayaran</h2>
+          <div class="checkout-total-line">
+            <span>Subtotal produk <span id="checkout-quantity">(0 barang)</span></span>
+            <strong id="checkout-total">Rp0</strong>
+          </div>
+          <div class="checkout-total-line checkout-shipping-total">
+            <span>Ongkos kirim</span>
+            <span>Belum tersedia</span>
+          </div>
+          <p class="checkout-shipping-disclaimer">Total saat ini belum termasuk ongkos kirim. Pengiriman belum terintegrasi pada demo Kurostore.</p>
+          <div class="checkout-total-footer">
+            <span>Total pembayaran</span>
+            <strong id="checkout-payable-total">Rp0</strong>
+            <button class="cart-checkout-button" id="checkout-pay" type="submit" form="checkout-form">Buat pesanan</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="checkout-result" id="checkout-result" role="status" aria-live="polite" hidden>
+      <span class="checkout-result-icon" aria-hidden="true">✓</span>
+      <span class="cart-eyebrow">PEMBAYARAN KUROSTORE</span>
+      <h2 id="checkout-result-title"></h2>
+      <p id="checkout-result-message"></p>
+      <a class="cart-primary-button checkout-orders-link" href="pengaturan-akun.html">Lihat pesanan saya</a>
+      <a class="cart-primary-button" href="../index.html">Kembali ke beranda</a>
+    </section>
+  </main>
+</body>
+</html>

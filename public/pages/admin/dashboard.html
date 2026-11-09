@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Dashboard admin Kurostore untuk memantau toko, produk, stok, dan pengajuan seller.">
+  <title>Dashboard Admin | Kurostore</title>
+  <link rel="stylesheet" href="../../../assets/css/style.css?v=20261108-3">
+  <script src="../../../assets/js/style.js?v=20261103-1" defer></script>
+</head>
+<body class="admin-dashboard-page">
+  <header class="cart-header">
+    <a class="cart-brand" href="../../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <nav class="admin-header-links" aria-label="Navigasi dashboard admin">
+      <a class="cart-header-link" href="../pengaturan-akun.html">Pengaturan akun</a>
+      <a class="cart-header-link" href="../../index.html">Kembali ke beranda</a>
+    </nav>
+  </header>
+
+  <main class="admin-dashboard-shell" id="admin-dashboard-page">
+    <section class="admin-dashboard-heading" aria-labelledby="admin-dashboard-title">
+      <div class="admin-dashboard-intro">
+        <span class="admin-dashboard-kicker">PUSAT ADMIN</span>
+        <h1 id="admin-dashboard-title">Semua tentang tokomu,<br><span>dalam satu tempat.</span></h1>
+        <p>Selamat datang di pusat kendali Kurostore. Berikut kabar terbaru dari tokomu.</p>
+      </div>
+      <div class="admin-dashboard-actions">
+        <span class="admin-admin-badge"><span aria-hidden="true"></span> Admin Kurostore</span>
+        <div class="admin-refresh-wrap">
+          <span class="admin-updated-at" id="admin-updated-at">Menunggu data terbaru</span>
+          <button class="admin-refresh-button" id="admin-dashboard-refresh" type="button">
+            <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+              <path d="M16.2 8A6.5 6.5 0 0 0 4.7 5.7L3 7.5m0 0V3.9m0 3.6h3.6M3.8 12a6.5 6.5 0 0 0 11.5 2.3l1.7-1.8m0 0v3.6m0-3.6h-3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Muat ulang data
+          </button>
+        </div>
+      </div>
+      <span class="admin-hero-orb admin-hero-orb-one" aria-hidden="true"></span>
+      <span class="admin-hero-orb admin-hero-orb-two" aria-hidden="true"></span>
+    </section>
+
+    <section class="admin-access-card" id="admin-login-required" hidden>
+      <h2>Masuk sebagai admin</h2>
+      <p>Dashboard ini hanya tersedia untuk akun dengan role admin.</p>
+      <a class="cart-primary-button" href="../login.html?next=admin/dashboard.html">Masuk ke akun admin</a>
+    </section>
+
+    <section class="admin-access-card" id="admin-access-denied" hidden>
+      <h2>Akses admin diperlukan</h2>
+      <p id="admin-access-denied-message">Akunmu tidak memiliki akses ke dashboard admin.</p>
+      <a class="cart-primary-button" href="../../index.html">Kembali ke beranda</a>
+    </section>
+
+    <div id="admin-workspace" hidden>
+      <p class="admin-dashboard-feedback" id="admin-dashboard-feedback" role="status" aria-live="polite"></p>
+
+      <section class="admin-overview" aria-label="Ringkasan toko">
+        <article class="admin-metric-card admin-metric-pending">
+          <span class="admin-metric-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5v5l3 1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <p>Pengajuan menunggu</p>
+            <strong id="admin-metric-pending">—</strong>
+          </div>
+          <a href="#admin-applications-title" aria-label="Lihat pengajuan seller">Lihat pengajuan <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="admin-metric-card">
+          <span class="admin-metric-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 10.5h16v9H4zm-1-2 2-4h14l2 4a2 2 0 0 1-3.5 1.3A2 2 0 0 1 14 9.8a2 2 0 0 1-4 0 2 2 0 0 1-3.5 0A2 2 0 0 1 3 8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 19.5v-5h6v5" stroke="currentColor" stroke-width="1.5"/></svg>
+          </span>
+          <div>
+            <p>Seller aktif</p>
+            <strong id="admin-metric-sellers">—</strong>
+          </div>
+          <span class="admin-metric-note">toko terdaftar</span>
+        </article>
+        <article class="admin-metric-card">
+          <span class="admin-metric-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m12 3.5 8 4.3v8.4l-8 4.3-8-4.3V7.8l8-4.3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m4.5 7.8 7.5 4 7.5-4M12 12v8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <p>Produk aktif</p>
+            <strong id="admin-metric-products">—</strong>
+          </div>
+          <a href="../katalog.html">Lihat katalog</a>
+        </article>
+        <article class="admin-metric-card">
+          <span class="admin-metric-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m12 3.8 8 4.1-8 4.2-8-4.2 8-4.1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m4 12 8 4.2 8-4.2M4 16.2l8 4.1 8-4.1" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <p>Kategori aktif</p>
+            <strong id="admin-metric-categories">—</strong>
+          </div>
+          <span class="admin-metric-note">siap digunakan</span>
+        </article>
+        <article class="admin-metric-card admin-metric-stock">
+          <span class="admin-metric-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4.2 21 20H3l9-15.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 9v5m0 2.8v.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <p>Stok menipis</p>
+            <strong id="admin-metric-low-stock">—</strong>
+          </div>
+          <a href="#admin-low-stock-title">Cek stok</a>
+        </article>
+      </section>
+
+      <section class="admin-system-health" aria-labelledby="admin-system-health-title">
+        <div class="admin-system-health-heading">
+          <div>
+            <span class="admin-section-kicker">PANTAU LAYANAN</span>
+            <h2 id="admin-system-health-title">Kondisi sistem</h2>
+            <p>Pengecekan koneksi layanan yang digunakan Kurostore.</p>
+          </div>
+          <div class="admin-system-summary" id="admin-system-summary" data-state="loading" role="status" aria-live="polite">
+            <span class="admin-system-summary-dot" aria-hidden="true"></span>
+            <span id="admin-system-summary-text">Memeriksa layanan…</span>
+          </div>
+        </div>
+        <div class="admin-system-checks" id="admin-system-checks" aria-live="polite">
+          <article class="admin-system-check" data-service="api" data-state="loading">
+            <span class="admin-system-check-icon" aria-hidden="true">API</span>
+            <div class="admin-system-check-copy">
+              <h3>API di Vercel</h3>
+              <p data-service-detail>Memeriksa fungsi aplikasi…</p>
+            </div>
+            <span class="admin-system-check-status" data-service-status>Memeriksa</span>
+            <a class="admin-system-check-action" data-service-action hidden target="_blank" rel="noopener noreferrer"></a>
+          </article>
+          <article class="admin-system-check" data-service="database" data-state="loading">
+            <span class="admin-system-check-icon" aria-hidden="true">DB</span>
+            <div class="admin-system-check-copy">
+              <h3>Database Supabase</h3>
+              <p data-service-detail>Memeriksa koneksi database…</p>
+            </div>
+            <span class="admin-system-check-status" data-service-status>Memeriksa</span>
+            <a class="admin-system-check-action" data-service-action hidden target="_blank" rel="noopener noreferrer"></a>
+          </article>
+          <article class="admin-system-check" data-service="auth" data-state="loading">
+            <span class="admin-system-check-icon" aria-hidden="true">ID</span>
+            <div class="admin-system-check-copy">
+              <h3>Supabase Auth</h3>
+              <p data-service-detail>Memeriksa autentikasi admin…</p>
+            </div>
+            <span class="admin-system-check-status" data-service-status>Memeriksa</span>
+            <a class="admin-system-check-action" data-service-action hidden target="_blank" rel="noopener noreferrer"></a>
+          </article>
+          <article class="admin-system-check" data-service="payment" data-state="not_configured">
+            <span class="admin-system-check-icon" aria-hidden="true">Rp</span>
+            <div class="admin-system-check-copy">
+              <h3>Payment gateway</h3>
+              <p data-service-detail>Belum terintegrasi; pembayaran belum dapat diproses.</p>
+            </div>
+            <span class="admin-system-check-status" data-service-status>Belum aktif</span>
+            <a class="admin-system-check-action" data-service-action hidden target="_blank" rel="noopener noreferrer"></a>
+          </article>
+        </div>
+        <p class="admin-system-checked-at" id="admin-system-checked-at">Status layanan diperbarui otomatis setiap 10 detik.</p>
+      </section>
+
+      <div class="admin-dashboard-content">
+        <section class="admin-applications-panel" aria-labelledby="admin-applications-title">
+          <div class="admin-applications-toolbar">
+            <div>
+              <span class="admin-section-kicker">TINDAKAN ADMIN</span>
+              <h2 id="admin-applications-title">Pengajuan seller</h2>
+              <p id="admin-applications-count">Memuat pengajuan…</p>
+            </div>
+            <label class="admin-application-search">
+              <span class="visually-hidden">Cari pengajuan seller</span>
+              <input id="admin-application-search" type="search" placeholder="Cari nama atau deskripsi toko">
+            </label>
+          </div>
+          <div class="admin-application-list" id="admin-application-list"></div>
+          <div class="admin-applications-empty" id="admin-applications-empty" hidden>
+            <span aria-hidden="true">✓</span>
+            <h3 id="admin-applications-empty-title">Semua pengajuan sudah ditinjau</h3>
+            <p id="admin-applications-empty-message">Pengajuan seller baru akan muncul di halaman ini.</p>
+          </div>
+        </section>
+
+        <aside class="admin-dashboard-sidebar">
+          <article class="admin-overview-card admin-notifications-card" aria-labelledby="admin-notifications-title">
+            <span class="admin-section-kicker">PEMBERITAHUAN</span>
+            <h2 id="admin-notifications-title">Perlu perhatian</h2>
+            <p class="admin-notifications-count" id="admin-notifications-count">Memeriksa kondisi toko…</p>
+            <ul class="admin-notifications-list" id="admin-notifications-list" aria-live="polite"></ul>
+            <p class="admin-notifications-empty" id="admin-notifications-empty" hidden>Belum ada hal yang perlu ditindaklanjuti.</p>
+          </article>
+
+          <article class="admin-overview-card admin-low-stock-card" aria-labelledby="admin-low-stock-title">
+            <div class="admin-section-heading">
+              <div>
+                <span class="admin-section-kicker">INVENTARIS</span>
+                <h2 id="admin-low-stock-title">Stok menipis</h2>
+                <p>Produk aktif dengan stok 5 atau kurang.</p>
+              </div>
+              <a class="admin-text-link" href="../katalog.html">Katalog <span aria-hidden="true">↗</span></a>
+            </div>
+            <ul class="admin-low-stock-list" id="admin-low-stock-list"></ul>
+            <p class="admin-low-stock-empty" id="admin-low-stock-empty" hidden>Semua aman. Belum ada produk yang stoknya menipis.</p>
+          </article>
+
+          <article class="admin-overview-card admin-shortcuts-card">
+            <span class="admin-section-kicker">JELAJAHI</span>
+            <h2>Akses cepat</h2>
+            <a class="admin-shortcut-link" href="../katalog.html">
+              <span class="admin-shortcut-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="m12 3.5 8 4.3v8.4l-8 4.3-8-4.3V7.8l8-4.3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m4.5 7.8 7.5 4 7.5-4M12 12v8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </span>
+              <span><strong>Katalog produk</strong><small>Lihat produk yang tersedia</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+            <a class="admin-shortcut-link" href="../../index.html">
+              <span class="admin-shortcut-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3.5 10 12 3l8.5 7M5.5 9v11h13V9M9 20v-6h6v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span><strong>Etalase toko</strong><small>Lihat Kurostore sebagai pembeli</small></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </article>
+        </aside>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

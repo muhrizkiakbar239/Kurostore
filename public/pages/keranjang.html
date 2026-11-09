@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Kelola keranjang belanja dan temukan produk rekomendasi di Kurostore.">
+  <title>Keranjang | Kurostore</title>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261108-1">
+  <script src="../../assets/js/style.js?v=20261108-2" defer></script>
+</head>
+<body class="cart-page">
+  <header class="cart-header">
+    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <a class="cart-header-link" href="../index.html#produk-populer">Lanjut belanja <span aria-hidden="true">→</span></a>
+  </header>
+
+  <main
+    class="cart-shell"
+    id="cart-page"
+    data-authenticated="false"
+    aria-live="polite"
+  >
+    <section class="cart-locked" id="cart-locked" aria-labelledby="cart-locked-title">
+      <span class="cart-lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"></path>
+        </svg>
+      </span>
+      <span class="cart-eyebrow">AREA AKUN</span>
+      <h1 id="cart-locked-title">Masuk untuk melihat keranjang</h1>
+      <p>Silakan masuk ke akun Kurostore terlebih dahulu untuk mengakses keranjang belanjamu.</p>
+      <a class="cart-primary-button" href="login.html">Masuk ke akun</a>
+      <p class="cart-register-note">Belum punya akun? <a href="register.html">Daftar sekarang</a></p>
+    </section>
+
+    <section class="cart-content" id="cart-content" aria-labelledby="cart-title" hidden>
+      <div class="cart-page-heading">
+        <span class="cart-eyebrow">BELANJA KAMU</span>
+        <h1 id="cart-title">Keranjang belanja</h1>
+        <p class="cart-guest-notice" id="cart-guest-notice" hidden>Mode tamu: keranjang tersimpan di browser ini dan tidak disinkronkan ke perangkat lain.</p>
+      </div>
+
+      <p class="cart-feedback" id="cart-feedback" role="status" aria-live="polite"></p>
+
+      <div class="cart-layout" id="cart-layout" hidden>
+        <section class="cart-items-panel" aria-label="Barang di keranjang">
+          <div class="cart-items-heading">
+            <label class="cart-select-all">
+              <input id="cart-select-all" type="checkbox">
+              <span>Pilih semua <span id="cart-item-count">(0)</span></span>
+            </label>
+            <button class="cart-remove-selected" id="cart-remove-selected" type="button" disabled>Hapus pilihan</button>
+          </div>
+          <div class="cart-item-list" id="cart-item-list"></div>
+        </section>
+
+        <aside class="cart-summary" aria-labelledby="cart-summary-title">
+          <h2 id="cart-summary-title">Ringkasan belanja</h2>
+          <div class="cart-summary-row">
+            <span>Produk dipilih</span>
+            <strong id="cart-selected-count">0 barang</strong>
+          </div>
+          <div class="cart-summary-row cart-summary-total">
+            <span>Total harga</span>
+            <strong id="cart-total">Rp0</strong>
+          </div>
+          <button class="cart-checkout-button" id="cart-checkout" type="button" disabled>Checkout</button>
+          <p class="cart-checkout-note">Pembayaran menggunakan Midtrans sandbox. Silakan pilih produk yang ingin dibayar.</p>
+        </aside>
+      </div>
+
+      <div class="cart-empty" id="cart-empty">
+        <span class="cart-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 4h2l2.2 11.1a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L21 8H6"></path>
+            <circle cx="10" cy="20" r="1"></circle>
+            <circle cx="18" cy="20" r="1"></circle>
+          </svg>
+        </span>
+        <h2>Keranjangmu masih kosong</h2>
+        <p>Yuk, temukan produk atau layanan yang kamu suka.</p>
+        <a class="cart-primary-button" href="../index.html">Mulai belanja</a>
+      </div>
+    </section>
+
+    <section class="cart-recommendations" aria-labelledby="cart-recommendations-title">
+      <div class="cart-recommendations-heading">
+        <div>
+          <span class="cart-eyebrow">PILIHAN UNTUKMU</span>
+          <h2 id="cart-recommendations-title">Kamu mungkin juga suka</h2>
+        </div>
+        <a href="../index.html#produk-populer">Jelajahi toko <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="cart-recommendation-grid" id="cart-recommendation-grid" aria-live="polite">
+        <p class="cart-recommendation-message" id="cart-recommendation-message">Memuat rekomendasi produk…</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

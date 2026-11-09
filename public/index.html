@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Kurostore, belanja lebih mudah.">
+  <title>Kurostore | Belanja Lebih Mudah</title>
+  <link rel="stylesheet" href="../assets/css/style.css?v=20261103-1">
+  <script src="../assets/js/style.js?v=20261103-1" defer></script>
+</head>
+<body class="storefront-page">
+  <div class="announcement-bar">
+    <p class="announcement-message" id="announcement-message" aria-live="polite" aria-atomic="true">
+      <span class="announcement-intro">Selamat datang di Kurostore</span> —
+      <strong class="announcement-highlight">belanja lebih mudah</strong>
+    </p>
+  </div>
+
+  <header class="site-header">
+    <div class="header-main">
+      <a class="brand" href="index.html" aria-label="Kurostore, beranda">
+        <img class="brand-logo" src="../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+      </a>
+
+      <form class="search-form" role="search" action="index.html" method="get">
+        <label class="sr-only" for="site-search">Cari produk</label>
+        <input id="site-search" name="q" type="search" placeholder="Cari produk yang kamu inginkan..." autocomplete="off">
+        <button class="search-button" type="submit" aria-label="Cari">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10.8" cy="10.8" r="6.8"></circle>
+            <path d="m16 16 4.5 4.5"></path>
+          </svg>
+        </button>
+      </form>
+
+      <div class="header-actions">
+        <a class="account-link" href="pages/login.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="3.5"></circle>
+            <path d="M5 20c.5-3.3 3.2-5.3 7-5.3s6.5 2 7 5.3"></path>
+          </svg>
+          <span class="action-copy"><span class="action-hint">Selamat datang</span><strong>Masuk / Daftar</strong></span>
+        </a>
+        <a class="cart-link" href="pages/keranjang.html" aria-label="Keranjang belanja">
+          <span class="cart-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 4h2l2.2 11.1a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L21 8H6"></path>
+              <circle cx="10" cy="20" r="1"></circle>
+              <circle cx="18" cy="20" r="1"></circle>
+            </svg>
+            <span class="cart-count">0</span>
+          </span>
+          <span class="action-copy"><span class="action-hint">Belanja</span><strong>Keranjang</strong></span>
+        </a>
+        <a class="account-settings-link" href="pages/pengaturan-akun.html" aria-label="Pengaturan dan akun" hidden>
+          <img src="../images/setting.jpg" alt="" aria-hidden="true" width="360" height="360">
+        </a>
+      </div>
+
+      <button class="menu-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="primary-navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+
+    <nav class="primary-navigation" id="primary-navigation" aria-label="Navigasi utama">
+      <a class="nav-link nav-home" href="#konten-utama">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z"></path>
+        </svg>
+        Beranda
+      </a>
+      <a class="nav-link" href="#kategori">Semua Kategori</a>
+      <a class="nav-link" href="#all-products-page">Produk Terbaru</a>
+      <a class="nav-link" href="#promo">Promo</a>
+      <a class="nav-link nav-help" href="#tentang">Butuh bantuan?</a>
+    </nav>
+  </header>
+
+  <main id="konten-utama">
+    <section class="hero-carousel" aria-label="Sorotan Kurostore">
+      <div class="hero-slides" aria-live="polite">
+        <article class="hero hero-slide is-active" aria-labelledby="hero-title" aria-hidden="false">
+          <div class="hero-inner">
+            <div class="hero-copy">
+              <span class="hero-eyebrow"><span aria-hidden="true"></span> Selamat datang di Kurostore</span>
+              <h1 id="hero-title">Temukan yang kamu cari, <span>dengan cara yang mudah.</span></h1>
+              <p>Jelajahi pilihan produk menarik dan temukan pengalaman belanja yang nyaman di Kurostore.</p>
+              <a class="hero-button" href="#site-search">
+                Mulai jelajahi
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14m-6-6 6 6-6 6"></path>
+                </svg>
+              </a>
+              <div class="hero-note">
+                <span class="hero-note-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path>
+                  </svg>
+                </span>
+                <span>Pilihan produk untuk menemani harimu</span>
+              </div>
+            </div>
+
+            <div class="hero-visual">
+              <span class="hero-orbit hero-orbit-outer" aria-hidden="true"></span>
+              <span class="hero-orbit hero-orbit-inner" aria-hidden="true"></span>
+              <span class="hero-spark hero-spark-one" aria-hidden="true"></span>
+              <span class="hero-spark hero-spark-two" aria-hidden="true"></span>
+              <img
+                class="hero-image"
+                src="../images/kurostore.png"
+                alt="Logo Kurostore"
+                width="1254"
+                height="1254"
+                fetchpriority="high"
+              >
+              <span class="hero-image-caption" aria-live="polite" aria-atomic="true">
+                <span aria-hidden="true"></span>
+                <span class="hero-image-caption-text">Belanja lebih mudah</span>
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <article class="hero hero-slide collab-slide" aria-labelledby="collab-title" aria-hidden="true" hidden>
+          <div class="hero-inner collab-inner">
+            <div class="collab-visual">
+              <img
+                class="collab-art"
+                src="../images/banner-slide-2.png"
+                alt="Banner kolaborasi spesial Kurostore dan Wuthering Waves: koleksi merchandise eksklusif"
+                width="1983"
+                height="793"
+              >
+            </div>
+            <h2 class="sr-only" id="collab-title">Kolaborasi Kurostore dan Wuthering Waves</h2>
+            <span class="collab-status">
+              <span class="collab-status-dot" aria-hidden="true"></span>
+              COMING SOON <span aria-hidden="true">·</span> SEGERA HADIR
+            </span>
+          </div>
+        </article>
+      </div>
+
+      <div class="hero-carousel-controls" role="group" aria-label="Kontrol banner">
+        <button class="carousel-arrow" type="button" data-slide-prev aria-label="Tampilkan slide sebelumnya">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
+        </button>
+        <div class="carousel-pagination" role="group" aria-label="Pilih slide">
+          <button class="carousel-dot is-active" type="button" data-slide-to="0" aria-label="Tampilkan slide 1" aria-current="true"></button>
+          <button class="carousel-dot" type="button" data-slide-to="1" aria-label="Tampilkan slide 2"></button>
+        </div>
+        <button class="carousel-arrow" type="button" data-slide-next aria-label="Tampilkan slide berikutnya">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9 18 6-6-6-6"></path>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="home-shortcuts" aria-labelledby="home-shortcuts-title">
+      <h2 class="sr-only" id="home-shortcuts-title">Jelajahi Kurostore</h2>
+      <ul class="home-shortcuts-list">
+        <li>
+          <a class="home-shortcut" href="pages/produk-pilihan.html" aria-label="Buka wishlist">
+            <span class="home-shortcut-icon shortcut-icon-featured" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg>
+            </span>
+            <span>Wishlist</span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="#site-search" aria-label="Cari produk baru">
+            <span class="home-shortcut-icon shortcut-icon-new" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"></path><path d="m4.3 7.7 7.7 4.5 7.7-4.5M12 12.2V21"></path></svg>
+              <span class="home-shortcut-badge">BARU</span>
+            </span>
+            <span>Produk Baru</span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="#site-search" aria-label="Cari promo">
+            <span class="home-shortcut-icon shortcut-icon-sale" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M20 13 13 20l-9-9V4h7z"></path><circle cx="8" cy="8" r="1"></circle><path d="m10 14 4-4m-3.5.5h.01m2.99 3h.01"></path></svg>
+            </span>
+            <span>Promo Pilihan</span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="#site-search" aria-label="Kolaborasi eksklusif, segera hadir">
+            <span class="home-shortcut-icon shortcut-icon-collab" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>
+              <span class="home-shortcut-clock">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 7v5l3 2"></path></svg>
+              </span>
+              <span class="home-shortcut-badge">EKSKLUSIF</span>
+            </span>
+            <span>Kolaborasi <small>Segera hadir</small></span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="#site-search" aria-label="Jelajahi toko unggulan">
+            <span class="home-shortcut-icon shortcut-icon-stores" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 10v10h18V10M2 10l2-6h16l2 6"></path><path d="M2 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"></path></svg>
+            </span>
+            <span>Toko Unggulan</span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="pages/pengaturan-akun.html" aria-label="KuroPay, segera hadir">
+            <span class="home-shortcut-icon shortcut-icon-kuropay" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 10h18m-13 5h4"></path></svg>
+              <span class="home-shortcut-clock">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 7v5l3 2"></path></svg>
+              </span>
+            </span>
+            <span>KuroPay <small>Segera hadir</small></span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="#site-search" aria-label="Cari voucher belanja">
+            <span class="home-shortcut-icon shortcut-icon-voucher" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 5h16v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6z"></path><path d="M12 7v2m0 2v2m0 2v2"></path></svg>
+            </span>
+            <span>Voucher Belanja</span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="pages/Pulsa-tagihan.html" aria-label="Pulsa dan tagihan, segera hadir">
+            <span class="home-shortcut-icon shortcut-icon-bills" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"></rect><path d="M10 5.5h4M11 18.5h2M3.5 8a7 7 0 0 0 0 8m17-8a7 7 0 0 1 0 8M1 5a11 11 0 0 0 0 14m22-14a11 11 0 0 1 0 14"></path></svg>
+            </span>
+            <span>Pulsa &amp; Tagihan</span>
+          </a>
+        </li>
+        <li>
+          <a class="home-shortcut" href="#kategori" aria-label="Jelajahi semua kategori">
+            <span class="home-shortcut-icon shortcut-icon-categories" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+            </span>
+            <span>Semua Kategori</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="home-categories" id="kategori" aria-label="Semua kategori dan produk">
+      <div class="home-category-grid" id="home-category-grid">
+        <a class="home-category-card" href="#site-search" data-search-category="Elektronik" data-category-featured>
+          <span class="home-category-icon category-electronics" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8m-4-4v4"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Elektronik</strong><small>Gadget dan perangkat</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Baju pria" data-category-extra hidden>
+          <span class="home-category-icon category-menswear" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m8 4 4 2 4-2 5 3-2 5-3-1v9H8v-9l-3 1-2-5 5-3Z"></path><path d="m8 4 4 5 4-5"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Baju Pria</strong><small>Gaya untuk setiap kesempatan</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Baju wanita" data-category-extra hidden>
+          <span class="home-category-icon category-womenswear" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m9 3 3 2 3-2 4 3-2 4-2-1 2 12H7L9 9l-2 1-2-4 4-3Z"></path><path d="M10 5 8 9m6-4 2 4M9 15h6"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Baju Wanita</strong><small>Temukan gaya favoritmu</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Sepatu pria" data-category-extra hidden>
+          <span class="home-category-icon category-mens-shoes" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 15c3 0 5-1 7-5l2 1c1 3 3 4 6 4h2a2 2 0 0 1 2 2v2H3v-4Z"></path><path d="M8 18h.01M12 18h.01M16 18h.01"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Sepatu Pria</strong><small>Langkah nyaman dan keren</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Sepatu wanita" data-category-extra hidden>
+          <span class="home-category-icon category-womens-shoes" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 15c3 0 5-1 7-5l2 1c1 3 3 4 6 4h2a2 2 0 0 1 2 2v2H3v-4Z"></path><path d="m11 10 2-3 2 4M8 18h.01m4 0h.01m4 0h.01"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Sepatu Wanita</strong><small>Lengkapi penampilanmu</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Makanan dan minuman" data-category-featured>
+          <span class="home-category-icon category-food" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 10h16l-1 10H5L4 10Z"></path><path d="M7 10a5 5 0 0 1 10 0M8 4l1 2m6-2-1 2"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Makanan &amp; Minuman</strong><small>Camilan hingga minuman favorit</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Hobi dan koleksi" data-category-extra hidden>
+          <span class="home-category-icon category-hobbies" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3 14.5 8.5 20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3Z"></path><path d="m19 16 .8 1.7L21.5 18.5l-1.7.8L19 21l-.8-1.7-1.7-.8 1.7-.8L19 16Z"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Hobi &amp; Koleksi</strong><small>Temukan barang kesukaanmu</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Merchandise" data-category-extra hidden>
+          <span class="home-category-icon category-merchandise" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m8 4 4 2 4-2 5 3-2 5-3-1v9H8v-9l-3 1-2-5 5-3Z"></path><path d="M10 13h4m-2-2v4"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Merchandise</strong><small>Item spesial dan edisi favorit</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Voucher dan produk digital" data-category-extra hidden>
+          <span class="home-category-icon category-digital" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4V6Z"></path><path d="M13 7v2m0 3v2m0 3v1"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Voucher &amp; Produk Digital</strong><small>Voucher belanja dan hiburan</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Tas dan aksesori" data-category-featured>
+          <span class="home-category-icon category-bags" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 8h16l1 13H3L4 8Z"></path><path d="M8 8V6a4 4 0 0 1 8 0v2"></path><path d="M9 12v.01M15 12v.01"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Tas &amp; Aksesori</strong><small>Teman untuk aktivitas harian</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Kesehatan dan kecantikan" data-category-featured>
+          <span class="home-category-icon category-beauty" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 3h6m-5 0v5l-4 7a4 4 0 0 0 3.5 6h5a4 4 0 0 0 3.5-6l-4-7V3"></path><path d="M8 15h8"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Kesehatan &amp; Kecantikan</strong><small>Rawat diri dan jaga kesehatan</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+        <a class="home-category-card" href="#site-search" data-search-category="Rumah dan gaya hidup" data-category-extra hidden>
+          <span class="home-category-icon category-home" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"></path><path d="M5 10v11h14V10m-9 11v-7h4v7"></path></svg>
+          </span>
+          <span class="home-category-copy"><strong>Rumah &amp; Gaya Hidup</strong><small>Bikin ruang makin nyaman</small></span>
+          <svg class="home-category-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"></path></svg>
+        </a>
+      </div>
+      <button class="home-categories-toggle" id="home-categories-toggle" type="button" aria-expanded="false" aria-controls="home-category-grid">
+        Lihat semua kategori (8)
+      </button>
+
+      <section class="all-products-section home-all-products" id="all-products-page" aria-labelledby="all-products-list-title">
+        <div class="all-products-heading">
+          <div>
+            <span class="home-categories-kicker all-products-kicker">KATALOG KUROSTORE</span>
+            <h2 id="all-products-list-title">Semua produk</h2>
+            <p>Produk dari berbagai kategori ditampilkan bersama.</p>
+          </div>
+          <span class="products-result-count" id="all-products-count" aria-live="polite">Memuat produk…</span>
+        </div>
+
+        <div class="all-products-toolbar">
+          <label class="all-products-sort-label" for="all-products-sort">Urutkan</label>
+          <select class="products-sort" id="all-products-sort">
+            <option value="newest">Semua</option>
+            <option value="price_low">Harga terendah</option>
+            <option value="price_high">Harga tertinggi</option>
+          </select>
+        </div>
+
+        <div class="all-products-feedback" id="all-products-feedback" role="status" aria-live="polite"></div>
+        <div class="products-grid all-products-grid" id="all-products-grid" aria-live="polite"></div>
+        <div class="products-empty all-products-empty" id="all-products-empty" hidden>
+          <span aria-hidden="true">⌕</span>
+          <strong id="all-products-empty-title">Produk belum tersedia</strong>
+          <p id="all-products-empty-message">Produk aktif akan muncul di sini saat sudah tersedia.</p>
+        </div>
+        <button class="all-products-load-more" id="all-products-load-more" type="button" hidden>Muat produk lainnya</button>
+      </section>
+    </section>
+
+    <section class="flash-sale" id="promo" aria-labelledby="flash-sale-title">
+      <div class="flash-sale-heading">
+        <div class="flash-sale-title-group">
+          <span class="flash-sale-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 10-13h-7l1-7Z"></path></svg>
+          </span>
+          <div>
+            <span class="flash-sale-kicker">PROMO SPESIAL</span>
+            <h2 id="flash-sale-title">Flash Sale</h2>
+          </div>
+        </div>
+        <div class="flash-sale-timer-wrap">
+          <span class="flash-sale-timer-label">Berakhir dalam</span>
+          <div
+            class="flash-sale-countdown"
+            id="flash-sale-countdown"
+            data-countdown-deadline="2026-12-26T00:00:00+07:00"
+            role="timer"
+            aria-live="off"
+            aria-label="Waktu tersisa Flash Sale"
+          >
+            <span class="flash-sale-time-unit"><strong data-countdown-hours>--</strong><small>Jam</small></span>
+            <span class="flash-sale-time-separator" aria-hidden="true">:</span>
+            <span class="flash-sale-time-unit"><strong data-countdown-minutes>--</strong><small>Menit</small></span>
+            <span class="flash-sale-time-separator" aria-hidden="true">:</span>
+            <span class="flash-sale-time-unit"><strong data-countdown-seconds>--</strong><small>Detik</small></span>
+          </div>
+        </div>
+      </div>
+      <div class="flash-sale-empty" id="flash-sale-empty">
+        <span class="flash-sale-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"></path><path d="m4 7 8 4 8-4m-8 4v10"></path></svg>
+        </span>
+        <strong>Produk Flash Sale segera hadir</strong>
+        <p>Belum ada produk untuk ditampilkan. Nantikan promo menarik dari Kurostore!</p>
+      </div>
+    </section>
+
+    <section class="popular-products" id="produk-populer" aria-labelledby="popular-products-title">
+      <div class="popular-products-heading">
+        <div>
+          <span class="popular-products-kicker">PILIHAN PELANGGAN</span>
+          <h2 id="popular-products-title">Produk Populer</h2>
+        </div>
+        <span class="popular-products-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"></path></svg>
+          Favorit banyak orang
+        </span>
+      </div>
+      <div class="popular-products-empty">
+        <span class="popular-products-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M6 4h12l2 4v12H4V8l2-4Z"></path><path d="M4 8h16m-12 4h8"></path></svg>
+        </span>
+        <strong>Produk populer segera hadir</strong>
+        <p>Produk akan muncul di sini setelah tersedia.</p>
+      </div>
+    </section>
+
+    <section class="recommended-products" id="rekomendasi" aria-labelledby="recommended-products-title">
+      <div class="recommended-products-heading">
+        <div>
+          <span class="recommended-products-kicker">DIPILIH UNTUKMU</span>
+          <h2 id="recommended-products-title">Rekomendasi</h2>
+        </div>
+        <span class="recommended-products-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"></path><circle cx="12" cy="12" r="4"></circle></svg>
+          Rekomendasi sistem
+        </span>
+      </div>
+      <div class="recommended-products-empty">
+        <span class="recommended-products-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"></path><circle cx="12" cy="12" r="4"></circle></svg>
+        </span>
+        <strong>Rekomendasi akan hadir di sini</strong>
+        <p>Sistem akan menampilkan pilihan produk yang sesuai setelah tersedia.</p>
+      </div>
+    </section>
+
+    <aside class="seller-promo-banner" aria-labelledby="seller-promo-title">
+      <div class="seller-promo-copy">
+        <span class="seller-promo-kicker">PUNYA PRODUK UNTUK DIJUAL?</span>
+        <h2 id="seller-promo-title">Buka tokomu di Kurostore</h2>
+        <p>Jangkau lebih banyak pembeli dan kembangkan bisnismu bersama kami.</p>
+      </div>
+      <a class="seller-promo-link" href="pages/pengajuan-seller.html">
+        Mulai jadi seller
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14m-6-6 6 6-6 6"></path>
+        </svg>
+      </a>
+    </aside>
+
+    <section class="about-kurostore" id="tentang" aria-labelledby="about-kurostore-title">
+      <div class="about-kurostore-copy">
+        <span class="about-kurostore-kicker">KENALAN DENGAN KAMI</span>
+        <h2 id="about-kurostore-title">Tentang Kurostore</h2>
+        <p class="about-kurostore-intro">
+          Kurostore hadir untuk membuat pengalaman menemukan kebutuhan dan barang favorit terasa lebih mudah.
+        </p>
+        <p>
+          Jelajahi berbagai kategori, mulai dari elektronik, pakaian, makanan dan minuman, hingga hobi dan koleksi.
+          Simpan barang yang kamu inginkan ke Wishlist agar mudah ditemukan kembali.
+        </p>
+        <p>
+          Kami terus mengembangkan pilihan dan fitur di Kurostore. Informasi produk dan promo akan ditampilkan
+          seiring ketersediaannya, supaya kamu bisa mengetahui apa yang sedang tersedia.
+        </p>
+      </div>
+      <div class="about-kurostore-points" aria-label="Hal yang bisa kamu temukan di Kurostore">
+        <div class="about-kurostore-point">
+          <span class="about-kurostore-point-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+          </span>
+          <span><strong>Ragam kategori</strong><small>Jelajahi berbagai kebutuhan dan minat.</small></span>
+        </div>
+        <div class="about-kurostore-point">
+          <span class="about-kurostore-point-icon about-wishlist-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg>
+          </span>
+          <span><strong>Wishlist praktis</strong><small>Simpan barang favorit untuk dilihat lagi.</small></span>
+        </div>
+        <div class="about-kurostore-point">
+          <span class="about-kurostore-point-icon about-promo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 10-13h-7l1-7Z"></path></svg>
+          </span>
+          <span><strong>Promo dan pilihan baru</strong><small>Pantau halaman ini untuk pembaruan Kurostore.</small></span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-main">
+      <div class="site-footer-brand">
+        <a class="site-footer-logo" href="index.html" aria-label="Kurostore, kembali ke beranda">
+          <img src="../images/kurostore-logo-footer.png" alt="Kurostore" width="1787" height="354">
+        </a>
+        <p>Temukan kebutuhan dan barang favoritmu dengan lebih mudah bersama Kurostore.</p>
+      </div>
+      <nav class="site-footer-column" aria-label="Jelajahi Kurostore">
+        <h2>Jelajahi</h2>
+        <a href="#kategori">Semua Kategori</a>
+        <a href="#promo">Flash Sale</a>
+        <a href="#produk-populer">Produk Populer</a>
+        <a href="#rekomendasi">Rekomendasi</a>
+        <a href="#tentang">Tentang Kurostore</a>
+      </nav>
+      <nav class="site-footer-column" aria-label="Akun dan belanja">
+        <h2>Akun &amp; Belanja</h2>
+        <a id="site-footer-account-link" href="pages/login.html">Masuk / Daftar</a>
+        <a href="pages/keranjang.html">Keranjang</a>
+        <a href="pages/produk-pilihan.html">Wishlist</a>
+        <a href="pages/Pulsa%20dan%20tagihan.html">Pulsa &amp; Tagihan</a>
+        <a href="pages/pengajuan-seller.html">Jadi Seller</a>
+        <a id="site-footer-account-settings" href="pages/pengaturan-akun.html">Pengaturan akun</a>
+      </nav>
+    </div>
+    <section class="site-footer-payments" aria-labelledby="site-footer-payments-title">
+      <div class="site-footer-payments-inner">
+        <div class="site-footer-payments-copy">
+          <h2 id="site-footer-payments-title">Pilihan Pembayaran</h2>
+          <p>Opsi pembayaran mengikuti metode yang tersedia saat transaksi.</p>
+        </div>
+        <ul class="site-footer-payment-list" aria-label="Logo metode pembayaran">
+          <li><img src="../images/gopay-footer.png" alt="GoPay" width="564" height="149" loading="lazy"></li>
+          <li><img src="../images/dana-footer.png" alt="DANA" width="564" height="182" loading="lazy"></li>
+          <li><img src="../images/qris-footer.png" alt="QRIS" width="564" height="223" loading="lazy"></li>
+          <li><img src="../images/bri-footer.png" alt="BRI" width="564" height="226" loading="lazy"></li>
+          <li><img class="site-footer-payment-seabank" src="../images/seabank.webp" alt="SeaBank" width="750" height="750" loading="lazy"></li>
+        </ul>
+      </div>
+    </section>
+    <div class="site-footer-bottom">
+      <span>&copy; <span data-current-year>2026</span> Kurostore. Semua hak dilindungi.</span>
+      <a href="#konten-utama">Kembali ke atas <span aria-hidden="true">↑</span></a>
+    </div>
+  </footer>
+</body>
+</html>

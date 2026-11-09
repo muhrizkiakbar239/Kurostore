@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Kelola produk, pengiriman, promosi, dan kebutuhan toko melalui Seller Center Kurostore.">
+  <title>Seller Center | Kurostore</title>
+  <link rel="stylesheet" href="../../../assets/css/style.css?v=20261108-3">
+  <script src="../../../assets/js/style.js?v=20261108-3" defer></script>
+</head>
+<body class="seller-dashboard-page">
+  <header class="cart-header">
+    <a class="cart-brand" href="../../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <a class="cart-header-link" href="../pengaturan-akun.html">Kembali ke pengaturan</a>
+  </header>
+
+  <main class="seller-dashboard-shell" id="seller-dashboard-page">
+    <section class="seller-dashboard-heading" aria-labelledby="seller-dashboard-title">
+      <div>
+        <span class="seller-dashboard-kicker">SELLER CENTER</span>
+        <h1 id="seller-dashboard-title">Toko berkembang,<br><span>mulai dari sini.</span></h1>
+        <p>Kelola produk dan pantau performa tokomu di Kurostore.</p>
+      </div>
+      <div class="seller-dashboard-heading-actions">
+        <span id="seller-dashboard-updated" class="seller-dashboard-updated">Menunggu data katalog</span>
+        <button class="seller-refresh-button" id="seller-dashboard-refresh" type="button">
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+            <path d="M16.2 8A6.5 6.5 0 0 0 4.7 5.7L3 7.5m0 0V3.9m0 3.6h3.6M3.8 12a6.5 6.5 0 0 0 11.5 2.3l1.7-1.8m0 0v3.6m0-3.6h-3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Perbarui katalog
+        </button>
+      </div>
+      <span class="seller-dashboard-orb seller-dashboard-orb-one" aria-hidden="true"></span>
+      <span class="seller-dashboard-orb seller-dashboard-orb-two" aria-hidden="true"></span>
+    </section>
+
+    <section class="seller-access-card" id="seller-login-required" hidden>
+      <span class="seller-access-icon" aria-hidden="true">↗</span>
+      <h2>Masuk ke akun seller</h2>
+      <p>Masuk untuk mengelola produk dan melihat ringkasan tokomu.</p>
+      <a class="cart-primary-button" href="../login.html?next=seller/dashboard.html">Masuk ke akun</a>
+      <p class="seller-access-note">Belum punya akun? <a href="../register.html?next=seller/dashboard.html">Daftar sekarang</a></p>
+    </section>
+
+    <section class="seller-access-card" id="seller-access-denied" hidden>
+      <span class="seller-access-icon seller-access-icon-denied" aria-hidden="true">!</span>
+      <h2>Akses seller diperlukan</h2>
+      <p id="seller-access-denied-message">Akunmu belum memiliki akses ke Seller Center.</p>
+      <a class="cart-primary-button" href="../pengajuan-seller.html">Ajukan tokomu</a>
+    </section>
+
+    <div id="seller-workspace" hidden>
+      <p class="seller-dashboard-feedback" id="seller-dashboard-feedback" role="status" aria-live="polite"></p>
+
+      <div class="seller-center-layout">
+        <aside class="seller-center-sidebar" aria-label="Menu Seller Center">
+          <nav class="seller-center-nav">
+            <span class="seller-nav-group-label">TOKO SAYA</span>
+            <button class="seller-nav-item is-active" type="button" data-seller-view="dashboard" aria-current="page">
+              <span class="seller-nav-icon" aria-hidden="true">⌂</span> Ringkasan
+            </button>
+
+            <span class="seller-nav-group-label">OPERASIONAL</span>
+            <button class="seller-nav-item" type="button" data-seller-view="orders">
+              <span class="seller-nav-icon" aria-hidden="true">▤</span> Pesanan
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+            <button class="seller-nav-item" type="button" data-seller-view="shipping">
+              <span class="seller-nav-icon" aria-hidden="true">↗</span> Pengiriman
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+            <button class="seller-nav-item" type="button" data-seller-view="products">
+              <span class="seller-nav-icon" aria-hidden="true">◇</span> Produk
+              <span class="seller-nav-badge seller-nav-badge-live">Aktif</span>
+            </button>
+
+            <span class="seller-nav-group-label">KEMBANGKAN TOKO</span>
+            <button class="seller-nav-item" type="button" data-seller-view="marketing">
+              <span class="seller-nav-icon" aria-hidden="true">✦</span> Promosi
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+            <button class="seller-nav-item" type="button" data-seller-view="finance">
+              <span class="seller-nav-icon" aria-hidden="true">Rp</span> Keuangan
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+            <button class="seller-nav-item" type="button" data-seller-view="analytics">
+              <span class="seller-nav-icon" aria-hidden="true">⌁</span> Analitik
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+            <button class="seller-nav-item" type="button" data-seller-view="customers">
+              <span class="seller-nav-icon" aria-hidden="true">♡</span> Pelanggan
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+            <button class="seller-nav-item" type="button" data-seller-view="store">
+              <span class="seller-nav-icon" aria-hidden="true">⚙</span> Pengaturan toko
+              <span class="seller-nav-badge">Segera</span>
+            </button>
+          </nav>
+          <div class="seller-sidebar-note">
+            <span aria-hidden="true">✦</span>
+            <p>Fitur Seller Center dikembangkan bertahap untuk tokomu.</p>
+          </div>
+        </aside>
+
+        <div class="seller-center-content">
+          <section class="seller-module-view" data-seller-view-panel="dashboard" aria-labelledby="seller-overview-title">
+            <div class="seller-module-heading">
+              <div>
+                <span class="seller-section-kicker">TOKO SAYA</span>
+                <h2 id="seller-overview-title">Ringkasan toko</h2>
+                <p>Pantau katalog dan akses semua kebutuhan tokomu dari sini.</p>
+              </div>
+            </div>
+
+            <section class="seller-metrics" aria-label="Ringkasan produk">
+              <article class="seller-metric-card">
+                <span class="seller-metric-icon seller-metric-icon-products" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="m12 3.5 8 4.3v8.4l-8 4.3-8-4.3V7.8l8-4.3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m4.5 7.8 7.5 4 7.5-4M12 12v8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                </span>
+                <div><p>Produk dimuat</p><strong id="seller-metric-total">—</strong><small>maksimal 100 terbaru</small></div>
+              </article>
+              <article class="seller-metric-card">
+                <span class="seller-metric-icon seller-metric-icon-active" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m8 12.2 2.6 2.6 5.5-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div><p>Produk aktif</p><strong id="seller-metric-active">—</strong><small>tampil di katalog</small></div>
+              </article>
+              <article class="seller-metric-card">
+                <span class="seller-metric-icon seller-metric-icon-stock" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16v13H4zM8 5.5v13m8-13v13M4 10h16" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                </span>
+                <div><p>Stok menipis</p><strong id="seller-metric-low-stock">—</strong><small>stok 5 atau kurang</small></div>
+              </article>
+              <article class="seller-metric-card">
+                <span class="seller-metric-icon seller-metric-icon-sales" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 18.5V12m5 6.5V6m5 12.5v-9m5 9V3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </span>
+                <div><p>Total terjual</p><strong id="seller-metric-sales">—</strong><small>akumulasi produk</small></div>
+              </article>
+            </section>
+
+            <section class="seller-quick-section" aria-labelledby="seller-quick-title">
+              <div class="seller-section-heading">
+                <div><span class="seller-section-kicker">AKSES CEPAT</span><h3 id="seller-quick-title">Apa yang ingin kamu kelola?</h3></div>
+              </div>
+              <div class="seller-quick-grid">
+                <button class="seller-quick-card seller-quick-card-live" type="button" data-seller-view="products">
+                  <span class="seller-quick-icon" aria-hidden="true">◇</span>
+                  <span><strong>Produk</strong><small>Atur katalog, harga, dan stok</small></span>
+                  <span class="seller-quick-status">Bisa digunakan <b aria-hidden="true">→</b></span>
+                </button>
+                <button class="seller-quick-card" type="button" data-seller-view="orders">
+                  <span class="seller-quick-icon" aria-hidden="true">▤</span>
+                  <span><strong>Pesanan</strong><small>Pantau proses pesanan pembeli</small></span>
+                  <span class="seller-quick-status">Segera hadir <b aria-hidden="true">→</b></span>
+                </button>
+                <button class="seller-quick-card" type="button" data-seller-view="marketing">
+                  <span class="seller-quick-icon" aria-hidden="true">✦</span>
+                  <span><strong>Promosi</strong><small>Rencanakan promo dan diskon toko</small></span>
+                  <span class="seller-quick-status">Segera hadir <b aria-hidden="true">→</b></span>
+                </button>
+                <button class="seller-quick-card" type="button" data-seller-view="analytics">
+                  <span class="seller-quick-icon" aria-hidden="true">⌁</span>
+                  <span><strong>Analitik</strong><small>Kenali perkembangan tokomu</small></span>
+                  <span class="seller-quick-status">Segera hadir <b aria-hidden="true">→</b></span>
+                </button>
+              </div>
+            </section>
+
+            <aside class="seller-roadmap-note">
+              <span aria-hidden="true">i</span>
+              <p>Menu yang berlabel “Segera” belum memiliki layanan aktif. Data pesanan, saldo, dan performa tidak ditampilkan sebelum sumber datanya tersedia.</p>
+            </aside>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="orders" aria-labelledby="seller-orders-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">OPERASIONAL</span><h2 id="seller-orders-title">Pesanan</h2><p>Alur pesanan akan tersedia setelah proses checkout dan penyimpanan pesanan Kurostore aktif.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>STATUS PESANAN</span><h3>Belum dibayar</h3><p>Daftar pesanan yang menunggu pembayaran.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>STATUS PESANAN</span><h3>Perlu dikirim</h3><p>Pesanan yang perlu disiapkan dan diserahkan ke kurir.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>STATUS PESANAN</span><h3>Sedang dikirim</h3><p>Pantau pesanan yang sedang dalam perjalanan.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>STATUS PESANAN</span><h3>Selesai</h3><p>Riwayat pesanan yang telah diterima pembeli.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>STATUS PESANAN</span><h3>Dibatalkan</h3><p>Periksa pesanan yang dibatalkan dan alasan pembatalannya.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>STATUS PESANAN</span><h3>Pengembalian</h3><p>Tinjau permintaan retur dan pengembalian dana secara transparan.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>BANTUAN PESANAN</span><h3>Pengajuan pembatalan</h3><p>Tinjau permintaan pembatalan sebelum keputusan diteruskan ke pembeli.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PUSAT PENYELESAIAN</span><h3>Bukti retur &amp; sengketa</h3><p>Tinjau bukti dari pembeli dan ajukan peninjauan ke tim bantuan Kurostore bila diperlukan.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="shipping" aria-labelledby="seller-shipping-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">OPERASIONAL</span><h2 id="seller-shipping-title">Pengiriman</h2><p>Pengiriman dan pelacakan akan terhubung saat integrasi pesanan dan kurir tersedia.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>PENGIRIMAN MASSAL</span><h3>Proses dan cetak dokumen</h3><p>Kelola ratusan resi, airway bill, picking list, packing list, dan permintaan pick-up bersama.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PILIHAN KURIR</span><h3>Layanan kirim &amp; COD</h3><p>Atur layanan reguler, hemat, kargo, same-day, instan, serta opsi bayar di tempat jika didukung kurir.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PELACAKAN</span><h3>Riwayat pengiriman</h3><p>Identifikasi paket terlambat dan pantau perkembangan pengiriman.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="products" aria-labelledby="seller-products-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">KATALOG TOKO</span><h2 id="seller-products-title">Produk</h2><p>Tambah dan perbarui nama, deskripsi, kategori, harga, stok, serta status produk.</p></div><span class="seller-live-pill">Fitur aktif</span></div>
+            <div class="seller-products-panel">
+              <div class="seller-products-toolbar">
+                <div>
+                  <h3>Produk tokomu</h3>
+                  <p>Produk aktif akan tampil di katalog Kurostore.</p>
+                </div>
+                <div class="seller-products-actions">
+                  <label class="seller-product-search">
+                    <span class="sr-only">Cari produk toko</span>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    <input id="seller-product-search" type="search" placeholder="Cari produk..." autocomplete="off">
+                  </label>
+                  <button class="seller-add-product-button" id="seller-add-product" type="button">
+                    <span aria-hidden="true">+</span> Tambah produk
+                  </button>
+                </div>
+              </div>
+              <div class="seller-products-list" id="seller-products-list" aria-live="polite">
+                <div class="seller-products-loading">Memuat produk tokomu…</div>
+              </div>
+              <p class="seller-products-count" id="seller-products-count"></p>
+            </div>
+            <div class="seller-feature-grid seller-feature-grid-compact">
+              <article class="seller-feature-card"><span>PENGEMBANGAN KATALOG</span><h3>Variasi, foto, dan video</h3><p>Tambah ukuran, warna, media produk, dan panduan ukuran yang lebih lengkap.</p><small>Segera hadir</small></article>
+              <article class="seller-feature-card"><span>PENGELOLAAN MASSAL</span><h3>Impor &amp; edit massal</h3><p>Perbarui katalog dengan template Kurostore setelah format impor tersedia.</p><small>Segera hadir</small></article>
+              <article class="seller-feature-card"><span>KUALITAS KATALOG</span><h3>Status &amp; evaluasi produk</h3><p>Pantau produk aktif, stok habis, arsip, serta peninjauan hak cipta, spam kata kunci, dan barang yang dibatasi.</p><small>Segera hadir</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="marketing" aria-labelledby="seller-marketing-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">KEMBANGKAN TOKO</span><h2 id="seller-marketing-title">Pusat promosi</h2><p>Rencanakan kampanye untuk menjangkau lebih banyak pembeli Kurostore.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>PROMOSI DASAR</span><h3>Voucher &amp; diskon</h3><p>Siapkan voucher pengikut atau toko, diskon produk, dan paket hemat.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PROMOSI TOKO</span><h3>Flash Sale, kombo &amp; poin</h3><p>Buat promo berbatas waktu, produk tambahan, dan program poin atau koin loyalitas.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>KAMPANYE KUROSTORE</span><h3>Program &amp; gratis ongkir</h3><p>Ikuti kampanye pilihan dan program subsidi ongkir atau cashback saat tersedia.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>JANGKAUAN</span><h3>Iklan &amp; afiliasi</h3><p>Kelola promosi berbayar, kata kunci, dan kerja sama kreator secara transparan.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>SIARAN TOKO</span><h3>Live &amp; konten video</h3><p>Kenalkan produk melalui sesi siaran dan konten toko jika fitur media tersedia.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="finance" aria-labelledby="seller-finance-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">KEUANGAN</span><h2 id="seller-finance-title">Keuangan toko</h2><p>Ringkasan pendapatan dan pencairan akan ditampilkan setelah transaksi Kurostore tercatat.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>TRANSPARANSI</span><h3>Pendapatan &amp; biaya</h3><p>Lihat rincian transaksi, biaya layanan, serta dana yang siap dicairkan.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PENCAIRAN</span><h3>Saldo &amp; penarikan</h3><p>Pantau saldo penjual dan kelola jadwal pencairan dana.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PEMBAYARAN</span><h3>Rekening bank</h3><p>Daftarkan rekening penerima dan verifikasi data pencairan secara aman.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="analytics" aria-labelledby="seller-analytics-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">DATA &amp; ANALISIS</span><h2 id="seller-analytics-title">Analitik bisnis</h2><p>Data performa hanya akan muncul dari kunjungan dan transaksi yang benar-benar tercatat.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>PERFORMA TOKO</span><h3>Omzet &amp; konversi</h3><p>Pelajari tren penjualan, pesanan, kunjungan, dan rasio pembelian.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PERFORMA PRODUK</span><h3>Produk dilihat &amp; dibeli</h3><p>Temukan produk yang perlu diperbaiki dari data minat pembeli.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>KESEHATAN TOKO</span><h3>Kualitas layanan</h3><p>Pantau ketepatan pemrosesan, penyelesaian pesanan, dan indikator layanan lain.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>PERFORMA KONTEN</span><h3>Live &amp; video</h3><p>Evaluasi kunjungan dan penjualan yang berasal dari konten toko.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="customers" aria-labelledby="seller-customers-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">LAYANAN PELANGGAN</span><h2 id="seller-customers-title">Pelanggan &amp; ulasan</h2><p>Kelola percakapan dan tanggapan pelanggan melalui pengalaman yang aman.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>PERCAKAPAN</span><h3>Pesan &amp; jawaban cepat</h3><p>Siapkan pesan sambutan, balasan otomatis, dan pintasan jawaban.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>BANTUAN TOKO</span><h3>Asisten balasan</h3><p>Bantu menjawab pertanyaan tentang ketersediaan dan detail produk dengan informasi terverifikasi.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>REPUTASI</span><h3>Ulasan pembeli</h3><p>Tinjau dan tanggapi ulasan pembeli setelah fitur ulasan tersedia.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+
+          <section class="seller-module-view" data-seller-view-panel="store" aria-labelledby="seller-store-title" hidden>
+            <div class="seller-module-heading"><div><span class="seller-section-kicker">IDENTITAS TOKO</span><h2 id="seller-store-title">Pengaturan toko</h2><p>Atur tampilan toko dan preferensi operasional Kurostore.</p></div><span class="seller-coming-pill">Segera hadir</span></div>
+            <div class="seller-feature-grid">
+              <article class="seller-feature-card"><span>TAMPILAN TOKO</span><h3>Etalase &amp; dekorasi</h3><p>Atur banner, susunan produk, dan tampilan halaman toko.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>ORGANISASI</span><h3>Kategori khusus toko</h3><p>Buat koleksi agar pembeli lebih mudah menjelajahi katalog.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>OPERASIONAL</span><h3>Mode libur</h3><p>Atur ketersediaan tokomu saat tidak dapat memproses pesanan.</p><small>Belum tersedia</small></article>
+              <article class="seller-feature-card"><span>AKSES TOKO</span><h3>Tim &amp; akses pengguna</h3><p>Kelola akses staf secara bertahap dengan izin yang sesuai tugasnya.</p><small>Belum tersedia</small></article>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <dialog class="seller-product-dialog" id="seller-product-dialog" aria-labelledby="seller-product-dialog-title">
+    <form class="seller-product-form" id="seller-product-form">
+      <div class="seller-dialog-heading">
+        <div>
+          <span class="seller-section-kicker">INFORMASI KATALOG</span>
+          <h2 id="seller-product-dialog-title">Tambah produk</h2>
+        </div>
+        <button class="seller-dialog-close" id="seller-product-dialog-close" type="button" aria-label="Tutup">×</button>
+      </div>
+      <p class="seller-dialog-feedback" id="seller-product-dialog-feedback" role="status" aria-live="polite"></p>
+      <input id="seller-product-id" name="product_id" type="hidden">
+      <label class="seller-form-field" for="seller-product-name">
+        <span>Nama produk <b>*</b></span>
+        <input id="seller-product-name" name="name" type="text" minlength="2" maxlength="160" required>
+      </label>
+      <label class="seller-form-field" for="seller-product-description">
+        <span>Deskripsi</span>
+        <textarea id="seller-product-description" name="description" rows="4" maxlength="5000" placeholder="Jelaskan detail produkmu."></textarea>
+      </label>
+      <label class="seller-form-field" for="seller-product-category">
+        <span>Kategori</span>
+        <select id="seller-product-category" name="category_id">
+          <option value="">Tanpa kategori</option>
+        </select>
+      </label>
+      <div class="seller-form-row">
+        <label class="seller-form-field" for="seller-product-price">
+          <span>Harga (Rp) <b>*</b></span>
+          <input id="seller-product-price" name="price" type="number" min="1" step="1" required>
+        </label>
+        <label class="seller-form-field" for="seller-product-stock">
+          <span>Stok <b>*</b></span>
+          <input id="seller-product-stock" name="stock" type="number" min="0" step="1" required>
+        </label>
+      </div>
+      <label class="seller-form-field" for="seller-product-status">
+        <span>Status produk</span>
+        <select id="seller-product-status" name="status">
+          <option value="draft">Draft — belum ditampilkan</option>
+          <option value="active">Aktif — tampil di katalog</option>
+        </select>
+      </label>
+      <div class="seller-dialog-actions">
+        <button class="seller-dialog-cancel" id="seller-product-cancel" type="button">Batal</button>
+        <button class="seller-dialog-save" id="seller-product-save" type="submit">Simpan produk</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

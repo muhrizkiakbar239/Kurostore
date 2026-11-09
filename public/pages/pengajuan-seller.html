@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="description" content="Ajukan tokomu untuk bergabung sebagai seller Kurostore.">
+  <title>Pengajuan Seller | Kurostore</title>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261103-1">
+  <script src="../../assets/js/style.js?v=20261103-1" defer></script>
+</head>
+<body class="seller-application-page">
+  <header class="cart-header">
+    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+    </a>
+    <a class="cart-header-link" href="../index.html">Kembali ke beranda</a>
+  </header>
+
+  <main class="seller-application-shell" id="seller-application-page">
+    <section class="seller-application-card" aria-labelledby="seller-application-title">
+      <span class="cart-eyebrow">JADI MITRA KUROSTORE</span>
+      <h1 id="seller-application-title">Mulai tokomu di Kurostore</h1>
+      <p class="seller-application-intro">
+        Ceritakan sedikit tentang tokomu. Tim admin akan meninjau pengajuan sebelum tokomu dapat mulai berjualan.
+      </p>
+
+      <section id="seller-login-required" class="seller-login-required" hidden>
+        <h2>Masuk sebagai buyer untuk mengajukan toko</h2>
+        <p>Pengajuan seller hanya dapat dikirim dari akun Kurostore yang sudah masuk.</p>
+        <a class="cart-primary-button" href="login.html?next=pengajuan-seller.html">Masuk ke akun</a>
+        <p class="cart-register-note">Belum punya akun? <a href="register.html?next=pengajuan-seller.html">Daftar sekarang</a></p>
+      </section>
+
+      <div id="seller-application-content" hidden>
+        <p id="seller-application-feedback" class="seller-application-feedback" role="status" aria-live="polite"></p>
+
+        <form id="seller-application-form" class="seller-application-form">
+          <div class="auth-field">
+            <label for="seller-store-name">Nama toko</label>
+            <input id="seller-store-name" name="store_name" type="text" minlength="2" maxlength="80" autocomplete="organization" required>
+            <small>Gunakan nama yang akan dilihat calon pembeli.</small>
+          </div>
+
+          <div class="auth-field">
+            <label for="seller-store-description">Tentang tokomu</label>
+            <textarea id="seller-store-description" name="store_description" rows="5" maxlength="500" placeholder="Ceritakan produk atau layanan yang akan kamu jual."></textarea>
+            <small>Maksimal 500 karakter.</small>
+          </div>
+
+          <button class="auth-submit" type="submit">
+            Kirim pengajuan
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-6-6 6 6-6 6"></path>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
