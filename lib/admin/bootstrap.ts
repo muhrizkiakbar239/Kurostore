@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
-import { authenticatedUser } from '../../lib/backend/auth.js';
-import { sendJson, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
-import { createAdminClient, isSupabaseConfigured } from '../../lib/backend/supabase.js';
+import { authenticatedUser } from '../backend/auth.js';
+import { sendJson, type VercelRequest, type VercelResponse } from '../backend/http.js';
+import { createAdminClient, isSupabaseConfigured } from '../backend/supabase.js';
 
 function isValidBootstrapToken(provided: string | undefined, expected: string | undefined): boolean {
   if (!provided || !expected) return false;

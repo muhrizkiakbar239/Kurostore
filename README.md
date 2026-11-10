@@ -30,6 +30,7 @@ Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` d
 - `npx vercel dev`
 - Deploy proyek ke Vercel dengan root proyek ini; tambahkan variabel dari `.env.example` pada pengaturan Environment Variables Vercel.
 - Backend membutuhkan Node.js 22 atau lebih baru.
+- Endpoint admin memakai satu catch-all Serverless Function agar jumlah fungsi tetap sesuai batas Hobby Vercel.
 
 ## Endpoint yang tersedia
 

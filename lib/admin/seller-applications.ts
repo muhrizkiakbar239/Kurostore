@@ -1,6 +1,6 @@
-import { requireRole } from '../../lib/backend/auth.js';
-import { requestBody, sendJson, validUuid, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
-import { createAdminClient, isSupabaseConfigured } from '../../lib/backend/supabase.js';
+import { requireRole } from '../backend/auth.js';
+import { requestBody, sendJson, validUuid, type VercelRequest, type VercelResponse } from '../backend/http.js';
+import { createAdminClient, isSupabaseConfigured } from '../backend/supabase.js';
 
 export default async function handler(request: VercelRequest, response: VercelResponse): Promise<void> {
   if (request.method !== 'GET' && request.method !== 'PATCH') {
