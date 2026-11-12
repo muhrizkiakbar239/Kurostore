@@ -2459,12 +2459,12 @@ if (heroCarousel) {
     const heroCaption = heroCarousel.querySelector(".hero-image-caption-text");
     const heroArtworks = [
       {
-        src: "../images/kurostore.png",
+        src: "images/kurostore.png",
         alt: "Logo Kurostore",
         caption: "Belanja lebih mudah",
       },
       {
-        src: "../images/diskon-50.png",
+        src: "images/diskon-50.png",
         alt: "Promo diskon 50 persen",
         caption: "Promo spesial",
       },
