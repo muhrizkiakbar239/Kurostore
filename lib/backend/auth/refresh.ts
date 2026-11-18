@@ -1,5 +1,5 @@
-import { requestBody, sendJson, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
-import { createAuthClient, isSupabaseAuthConfigured } from '../../lib/backend/supabase.js';
+import { requestBody, sendJson, type VercelRequest, type VercelResponse } from '../http.js';
+import { createAuthClient, isSupabaseAuthConfigured } from '../supabase.js';
 
 export default async function handler(request: VercelRequest, response: VercelResponse): Promise<void> {
   if (request.method !== 'POST') {
