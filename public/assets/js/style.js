@@ -77,8 +77,77 @@ window.addEventListener("storage", (event) => {
   if (event.key === cartStorageKey) updateCartBadges();
 });
 
+let authRefreshPromise = null;
+
+function clearAuthSession() {
+  sessionStorage.removeItem("kurostore-authenticated");
+  sessionStorage.removeItem("kurostore-access-token");
+  sessionStorage.removeItem("kurostore-refresh-token");
+}
+
+async function refreshAuthSession() {
+  const refreshToken = sessionStorage.getItem("kurostore-refresh-token");
+  if (!refreshToken) return false;
+
+  if (!authRefreshPromise) {
+    authRefreshPromise = (async () => {
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+        cache: "no-store",
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        if (response.status === 400 || response.status === 401) clearAuthSession();
+        if (response.status >= 500) {
+          throw new Error(typeof data?.error === "string"
+            ? data.error
+            : "Sesi tidak dapat diperbarui saat ini.");
+        }
+        return false;
+      }
+
+      if (!data?.session?.access_token || !data.session.refresh_token) {
+        throw new Error("Respons pembaruan sesi tidak valid.");
+      }
+
+      sessionStorage.setItem("kurostore-authenticated", "true");
+      sessionStorage.setItem("kurostore-access-token", data.session.access_token);
+      sessionStorage.setItem("kurostore-refresh-token", data.session.refresh_token);
+      return true;
+    })().finally(() => {
+      authRefreshPromise = null;
+    });
+  }
+
+  return authRefreshPromise;
+}
+
+async function fetchWithAuth(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  const hasAuthorization = headers.has("Authorization");
+  if (!hasAuthorization) return fetch(url, options);
+
+  const accessToken = sessionStorage.getItem("kurostore-access-token");
+  if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+  const response = await fetch(url, { ...options, headers });
+  if (response.status !== 401) return response;
+
+  if (!await refreshAuthSession()) return response;
+
+  const refreshedHeaders = new Headers(options.headers || {});
+  refreshedHeaders.set("Authorization", `Bearer ${sessionStorage.getItem("kurostore-access-token")}`);
+  const retriedResponse = await fetch(url, { ...options, headers: refreshedHeaders });
+  if (retriedResponse.status === 401) clearAuthSession();
+  return retriedResponse;
+}
+
+window.KurostoreAuth = { fetch: fetchWithAuth };
+
 async function requestApi(url, options = {}) {
-  const response = await fetch(url, options);
+  const response = await fetchWithAuth(url, options);
   let data;
 
   try {
