@@ -74,7 +74,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   const { data: products, error: productsError } = await supabase
     .from('products')
-    .select('id, seller_id, name, price, stock, status')
+    .select('id, seller_id, name, price, price_is_estimate, stock, status')
     .in('id', items.map((item) => item.id));
 
   if (productsError) {
@@ -99,6 +99,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       sellerId: product.seller_id,
       name: product.name.slice(0, 50),
       price,
+      priceIsEstimate: product.price_is_estimate,
       quantity: item.quantity,
     };
   });
@@ -173,6 +174,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       seller_id: item.sellerId,
       product_name: item.name,
       unit_price: item.price,
+      price_is_estimate: item.priceIsEstimate,
       quantity: item.quantity,
     })));
 

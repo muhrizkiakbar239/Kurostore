@@ -21,6 +21,16 @@ export async function authenticatedUser(
   }
 
   const { data, error } = await supabase.auth.getUser(token);
+  if (error && error.status !== 400 && error.status !== 401 && error.status !== 403) {
+    console.error('Unable to verify account session:', error.message);
+    sendJson(response, error.status === 429 ? 429 : 503, {
+      error: error.status === 429
+        ? 'Layanan autentikasi sedang membatasi permintaan. Coba lagi nanti.'
+        : 'Layanan autentikasi sedang tidak tersedia. Coba lagi sebentar lagi.',
+    });
+    return null;
+  }
+
   if (error || !data.user) {
     sendJson(response, 401, { error: 'Sesi tidak valid atau sudah berakhir.' });
     return null;

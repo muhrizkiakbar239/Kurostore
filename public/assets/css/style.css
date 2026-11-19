@@ -1287,6 +1287,191 @@ input {
   line-height: 1.5;
 }
 
+.home-featured-products-grid {
+  margin-top: 16px;
+}
+
+.home-featured-products-grid[hidden],
+.popular-products-empty[hidden],
+.recommended-products-empty[hidden] {
+  display: none;
+}
+
+.product-skeleton-card {
+  pointer-events: none;
+}
+
+.product-skeleton-art,
+.product-skeleton-line {
+  background: linear-gradient(105deg, #f0edf3 8%, #ffffff 20%, #f0edf3 34%);
+  background-size: 220% 100%;
+  animation: product-loading-shimmer 1.35s ease-in-out infinite;
+}
+
+.product-skeleton-art {
+  min-height: 155px;
+}
+
+.product-skeleton-copy {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+}
+
+.product-skeleton-line {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+}
+
+.product-skeleton-line-category {
+  width: 42%;
+  height: 8px;
+}
+
+.product-skeleton-line-title {
+  width: 76%;
+  height: 14px;
+}
+
+.product-skeleton-line-description {
+  width: 100%;
+}
+
+.product-skeleton-line-description-short {
+  width: 86%;
+}
+
+.product-skeleton-line-price {
+  width: 46%;
+  height: 14px;
+  margin-top: 6px;
+}
+
+.product-skeleton-line-action {
+  width: 100%;
+  height: 34px;
+  margin-top: 4px;
+}
+
+@keyframes product-loading-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-skeleton-art,
+  .product-skeleton-line {
+    animation: none;
+    background-position: center;
+  }
+}
+
+.home-featured-product-card {
+  height: 100%;
+}
+
+.home-featured-product-art {
+  min-height: 150px;
+  background: linear-gradient(145deg, #e9dff0, #d6c5e1);
+}
+
+.home-featured-product-art[data-artwork-category="makanan-dan-minuman"] {
+  background: linear-gradient(145deg, #f8e9d8, #edcda9);
+}
+
+.home-featured-product-art[data-artwork-category="tas-dan-aksesori"] {
+  background: linear-gradient(145deg, #f4e3e9, #e5c4d2);
+}
+
+.home-featured-product-art[data-artwork-category="kesehatan-dan-kecantikan"] {
+  background: linear-gradient(145deg, #f5e4e6, #e9c9d1);
+}
+
+.home-featured-product-art[data-artwork-category="baju-pria"],
+.home-featured-product-art[data-artwork-category="merchandise"] {
+  background: linear-gradient(145deg, #e5e9f4, #cdd5ea);
+}
+
+.home-featured-product-art[data-artwork-category="baju-wanita"],
+.home-featured-product-art[data-artwork-category="sepatu-wanita"] {
+  background: linear-gradient(145deg, #f5e4ee, #e9c8da);
+}
+
+.home-featured-product-art[data-artwork-category="sepatu-pria"] {
+  background: linear-gradient(145deg, #e2e8ec, #c8d4dc);
+}
+
+.home-featured-product-art[data-artwork-category="hobi-dan-koleksi"] {
+  background: linear-gradient(145deg, #f3edcf, #e4d99e);
+}
+
+.home-featured-product-art[data-artwork-category="voucher-dan-produk-digital"] {
+  background: linear-gradient(145deg, #dceee7, #bfdfd1);
+}
+
+.home-featured-product-art[data-artwork-category="rumah-dan-gaya-hidup"] {
+  background: linear-gradient(145deg, #dcebf0, #bedce3);
+}
+
+.home-featured-product-art svg {
+  width: 116px;
+  height: 108px;
+}
+
+.home-featured-product-card .product-card-copy {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+
+.home-featured-product-card .product-card-copy h3 {
+  margin: 2px 0;
+}
+
+.home-featured-product-card .product-card-copy > p {
+  display: -webkit-box;
+  min-height: 32px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.home-featured-product-card .product-card-bottom {
+  margin-top: 5px;
+}
+
+.home-featured-product-card .all-product-add-button {
+  width: 100%;
+}
+
+.home-featured-product-stock {
+  white-space: nowrap;
+}
+
+.home-product-feedback {
+  margin: 0 0 12px;
+  color: #684f78;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.home-product-feedback[hidden] {
+  display: none;
+}
+
+.home-product-feedback a {
+  color: #684f78;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+.home-product-feedback a:focus-visible {
+  outline: 3px solid rgb(146 116 165 / 40%);
+  outline-offset: 3px;
+}
+
 .about-kurostore {
   display: grid;
   width: min(1120px, calc(100% - 64px));
@@ -5172,6 +5357,126 @@ input {
   font-size: 11px;
 }
 
+.account-order-items li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 7px 12px;
+}
+
+.account-order-items li > .price-estimate-badge,
+.account-product-review,
+.account-product-review-form {
+  grid-column: 1 / -1;
+}
+
+.account-product-review {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fbf8ef;
+}
+
+.account-product-review strong {
+  color: #8a6a2f;
+}
+
+.account-product-review p {
+  margin: 0;
+  color: #716b77;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.account-product-review-form {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid #ece8ef;
+  border-radius: 9px;
+  background: #fcfbfd;
+}
+
+.account-product-review-form label {
+  display: grid;
+  gap: 5px;
+  color: #514a57;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.account-product-review-form select,
+.account-product-review-form textarea {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid #e4dfe7;
+  border-radius: 6px;
+  color: #403747;
+  background: #ffffff;
+  font: inherit;
+  font-size: 11px;
+}
+
+.account-product-review-form textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+.account-product-review-form button,
+.account-order-complete-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #dcd1e2;
+  border-radius: 7px;
+  color: #604a6c;
+  background: #f8f4fa;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-product-review-form button:hover:not(:disabled),
+.account-order-complete-button:hover:not(:disabled) {
+  border-color: #725681;
+  color: #ffffff;
+  background: #725681;
+}
+
+.account-product-review-form button:disabled,
+.account-order-complete-button:disabled {
+  cursor: wait;
+}
+
+.account-order-complete-button {
+  display: block;
+  margin: 12px 0 0 auto;
+}
+
+.price-estimate-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 3px 7px;
+  border: 1px solid #eee4c9;
+  border-radius: 20px;
+  color: #806b3c;
+  background: #fbf8ef;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.price-estimate-badge[hidden] {
+  display: none;
+}
+
+.product-rating-summary {
+  color: #8a6a2f;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 .account-order-total {
   justify-content: flex-end;
   margin-top: 12px;
@@ -6540,6 +6845,13 @@ input {
   display: none;
 }
 
+.wishlist-storage-notice a {
+  margin-left: 8px;
+  color: #69477b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .wishlist-section {
   margin-bottom: 42px;
 }
@@ -6687,25 +6999,6 @@ input {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-}
-
-.all-products-grid.is-loading:empty::before {
-  min-height: 220px;
-  grid-column: 1 / -1;
-  border: 1px dashed #ded6e3;
-  border-radius: 10px;
-  background:
-    linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 75%) 45%, transparent 70%),
-    #faf8fb;
-  background-size: 220% 100%;
-  animation: catalog-loading-shimmer 1.6s ease-in-out infinite;
-  content: "";
-}
-
-@keyframes catalog-loading-shimmer {
-  to {
-    background-position-x: -220%;
-  }
 }
 
 .product-card {
@@ -12259,6 +12552,13 @@ body.admin-dashboard-page .admin-notifications-card [hidden] {
   line-height: 1.5;
 }
 
+.checkout-environment-note {
+  margin: 8px 0 0;
+  color: #795a50;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .checkout-total-card {
   margin-top: 14px;
   padding: 22px 24px 0;
@@ -12814,6 +13114,30 @@ body.admin-dashboard-page .admin-notifications-card [hidden] {
   font-size: 11px;
 }
 
+.all-products-category-clear {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #e6deea;
+  border-radius: 7px;
+  color: #69477b;
+  background: #ffffff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.all-products-category-clear:hover {
+  border-color: #69477b;
+  color: #ffffff;
+  background: #69477b;
+}
+
+.all-products-category-clear:focus-visible {
+  outline: 3px solid rgb(146 116 165 / 40%);
+  outline-offset: 2px;
+}
+
 .all-products-feedback {
   margin-bottom: 12px;
   color: #8a4852;
@@ -12877,6 +13201,27 @@ body.admin-dashboard-page .admin-notifications-card [hidden] {
 .all-product-add-button:disabled {
   color: #aaa4af;
   cursor: not-allowed;
+}
+
+.all-product-wishlist-button {
+  min-height: 32px;
+  margin-top: 5px;
+  border: 0;
+  color: #69477b;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.all-product-wishlist-button:hover {
+  text-decoration: underline;
+}
+
+.all-product-wishlist-button:focus-visible {
+  outline: 3px solid rgb(146 116 165 / 40%);
+  outline-offset: 3px;
 }
 
 .all-products-empty[hidden],

@@ -25,5 +25,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
+  response.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
   sendJson(response, 200, { categories: data });
 }

@@ -3,7 +3,7 @@ import { requireRole } from '../../lib/backend/auth.js';
 import { isRecord, requestBody, sendJson, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
 import { createAdminClient, isSupabaseConfigured } from '../../lib/backend/supabase.js';
 
-const accountNameCache = new Map<string, { accountName: string; expiresAt: number }>();
+const accountNameCache = new Map<string, string>();
 const maxAccountNameCacheEntries = 200;
 
 function enkaNickname(value: unknown): string | null {
@@ -20,9 +20,8 @@ function enkaNickname(value: unknown): string | null {
   return null;
 }
 
-function rememberAccountName(key: string, accountName: string, ttl: unknown): void {
-  if (typeof ttl !== 'number' || !Number.isFinite(ttl) || ttl <= 0) return;
-  accountNameCache.set(key, { accountName, expiresAt: Date.now() + ttl * 1000 });
+function rememberAccountName(key: string, accountName: string): void {
+  accountNameCache.set(key, accountName);
   if (accountNameCache.size > maxAccountNameCacheEntries) {
     const oldestKey = accountNameCache.keys().next().value;
     if (oldestKey) accountNameCache.delete(oldestKey);
@@ -62,7 +61,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   if (game === 'wuwa') {
     sendJson(response, 409, {
-      error: 'Pengecekan otomatis gratis belum tersedia untuk Wuthering Waves. Pastikan ID game sudah benar.',
+      error: 'Pengecekan nickname otomatis Wuthering Waves belum tersedia. Pastikan nickname langsung di dalam game.',
     });
     return;
   }
@@ -141,11 +140,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   const cacheKey = `${game}:${userId}:${game === 'ml' ? zone : ''}`;
   const cachedResult = accountNameCache.get(cacheKey);
-  if (cachedResult && cachedResult.expiresAt > Date.now()) {
-    sendJson(response, 200, { accountName: cachedResult.accountName });
+  if (cachedResult) {
+    sendJson(response, 200, { accountName: cachedResult });
     return;
   }
-  if (cachedResult) accountNameCache.delete(cacheKey);
 
   if (game === 'ml' || game === 'ff') {
     const providerUrl = `https://api.isan.eu.org/nickname/${game}`;
@@ -210,7 +208,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return;
     }
 
-    rememberAccountName(cacheKey, accountName, 60);
+    rememberAccountName(cacheKey, accountName);
     sendJson(response, 200, { accountName });
     return;
   }
@@ -267,6 +265,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
-  if (isRecord(enkaResult)) rememberAccountName(cacheKey, accountName, enkaResult.ttl);
+  rememberAccountName(cacheKey, accountName);
   sendJson(response, 200, { accountName });
 }

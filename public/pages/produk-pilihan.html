@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#f5f3f6">
   <meta name="description" content="Simpan dan lihat produk favoritmu di Wishlist Kurostore.">
   <title>Wishlist | Kurostore</title>
-  <link rel="icon" type="image/png" href="../images/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261103-1">
-  <script src="../../assets/js/style.js?v=20261118-1" defer></script>
+  <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261119-4">
+  <script src="../../assets/js/style.js?v=20261119-5" defer></script>
 </head>
 <body class="products-page">
   <header class="cart-header">
     <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
-      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+      <img src="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/kurostore-cart-logo.png" alt="Kurostore" width="650" height="217">
     </a>
     <a class="cart-header-link" href="../index.html">Kembali ke beranda</a>
   </header>
@@ -29,7 +29,7 @@
       <div class="products-hero-copy">
         <span class="products-eyebrow"><span aria-hidden="true"></span> FAVORITMU DI KUROSTORE</span>
         <h1 id="products-title">Simpan yang kamu suka,<br><span>temukan lagi kapan saja.</span></h1>
-        <p>Kumpulkan produk favoritmu dalam satu wishlist. Pilihanmu tersimpan di browser ini.</p>
+        <p>Kumpulkan produk favoritmu dalam satu wishlist yang tersimpan di akun dan bisa dibuka dari perangkat lain.</p>
       </div>
       <div class="products-hero-art" aria-hidden="true">
         <span class="products-art-orbit products-art-orbit-one"></span>
@@ -51,7 +51,8 @@
     </section>
 
     <aside class="wishlist-storage-notice" id="wishlist-storage-notice" role="alert" hidden>
-      Wishlist tidak bisa dimuat atau disimpan di browser ini. Perubahan pilihan mungkin tidak tersimpan.
+      <span id="wishlist-notice-message">Wishlist tidak bisa dimuat saat ini. Coba muat ulang halaman.</span>
+      <a id="wishlist-login-link" href="login.html">Masuk ke akun</a>
     </aside>
 
     <section class="wishlist-section" aria-labelledby="wishlist-title">
@@ -72,7 +73,7 @@
 
     <footer class="products-footer">
       <span class="products-footer-mark" aria-hidden="true">K</span>
-      <p>Wishlist tersimpan di browser yang kamu gunakan.</p>
+      <p>Wishlist tersimpan di akun Kurostore-mu.</p>
     </footer>
   </main>
 </body>

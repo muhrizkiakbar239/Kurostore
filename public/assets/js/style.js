@@ -18,26 +18,27 @@ const guestBrowseButton = document.querySelector("#guest-browse");
 const accountIsAuthenticated = sessionStorage.getItem("kurostore-authenticated") === "true";
 const isGuestSession = sessionStorage.getItem("kurostore-guest-session") === "true";
 const canAccessAccount = accountIsAuthenticated || isGuestSession;
-const cartStorageKey = "kurostore-cart";
 const checkoutSelectionStorageKey = "kurostore-checkout-selection";
-const shippingAddressStorageKey = "kurostore-shipping-address";
 
-function readSavedShippingAddress() {
-  const savedAddress = localStorage.getItem(shippingAddressStorageKey);
-  if (!savedAddress) return null;
+const createProductSkeletons = (count) => Array.from({ length: count }, () => {
+  const card = document.createElement("article");
+  card.className = "product-card product-skeleton-card";
+  card.setAttribute("aria-hidden", "true");
 
-  const address = JSON.parse(savedAddress);
-  if (!address || typeof address !== "object"
-    || typeof address.name !== "string"
-    || typeof address.phone !== "string"
-    || typeof address.address !== "string"
-    || typeof address.city !== "string"
-    || typeof address.postalCode !== "string") {
-    throw new Error("Format alamat tersimpan tidak valid.");
-  }
+  const artwork = document.createElement("div");
+  artwork.className = "product-skeleton-art";
 
-  return address;
-}
+  const copy = document.createElement("div");
+  copy.className = "product-skeleton-copy";
+  ["category", "title", "description", "description-short", "price", "action"].forEach((line) => {
+    const placeholder = document.createElement("span");
+    placeholder.className = `product-skeleton-line product-skeleton-line-${line}`;
+    copy.append(placeholder);
+  });
+
+  card.append(artwork, copy);
+  return card;
+});
 
 if ("scrollRestoration" in window.history) {
   window.history.scrollRestoration = "auto";
@@ -49,33 +50,39 @@ window.addEventListener("pageshow", (event) => {
   }
 });
 
-const updateCartBadges = () => {
-  let itemCount = 0;
-  try {
-    const savedCart = window.localStorage.getItem(cartStorageKey);
-    const cartItems = savedCart ? JSON.parse(savedCart) : [];
-    if (!Array.isArray(cartItems)) throw new Error("Format keranjang tidak valid.");
-    itemCount = cartItems.reduce((total, item) =>
-      total + (Number.isInteger(item?.quantity) && item.quantity > 0 ? item.quantity : 0), 0);
-  } catch (error) {
-    console.error("Unable to read cart item count:", error);
-    document.querySelectorAll(".cart-count").forEach((badge) => {
-      badge.textContent = "!";
-      badge.setAttribute("aria-label", "Keranjang tidak dapat dibaca");
-    });
-    return;
-  }
-
+const setCartBadges = (itemCount) => {
   document.querySelectorAll(".cart-count").forEach((badge) => {
     badge.textContent = String(itemCount);
     badge.setAttribute("aria-label", `${itemCount} barang di keranjang`);
   });
 };
 
+const updateCartBadges = async () => {
+  if (!accountIsAuthenticated) {
+    setCartBadges(0);
+    return;
+  }
+
+  try {
+    const result = await authenticatedRequestApi("/api/account-data/cart");
+    if (!Array.isArray(result.items)) throw new Error("Data keranjang tidak valid.");
+    const itemCount = result.items.reduce((total, item) =>
+      total + (Number.isInteger(item?.quantity) && item.quantity > 0 ? item.quantity : 0), 0);
+    document.querySelectorAll(".cart-count").forEach((badge) => {
+      badge.textContent = String(itemCount);
+      badge.setAttribute("aria-label", `${itemCount} barang di keranjang`);
+    });
+  } catch (error) {
+    console.error("Unable to read cart item count:", error);
+    document.querySelectorAll(".cart-count").forEach((badge) => {
+      badge.textContent = "!";
+      badge.setAttribute("aria-label", "Keranjang tidak dapat dimuat");
+    });
+  }
+};
+
 updateCartBadges();
-window.addEventListener("storage", (event) => {
-  if (event.key === cartStorageKey) updateCartBadges();
-});
+document.addEventListener("kurostore:cart-updated", () => void updateCartBadges());
 
 let authRefreshPromise = null;
 
@@ -165,6 +172,23 @@ async function requestApi(url, options = {}) {
   return data;
 }
 
+async function authenticatedRequestApi(url, options = {}) {
+  const accessToken = sessionStorage.getItem("kurostore-access-token");
+  if (!accountIsAuthenticated || !accessToken) {
+    const error = new Error("Masuk ke akun terlebih dahulu untuk menyimpan data.");
+    error.status = 401;
+    throw error;
+  }
+
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", `Bearer ${accessToken}`);
+  return requestApi(url, { ...options, headers });
+}
+
+function notifyCartUpdated() {
+  document.dispatchEvent(new Event("kurostore:cart-updated"));
+}
+
 function saveAuthSession(data) {
   if (!data?.session?.access_token || !data?.user) {
     throw new Error("Sesi akun tidak diterima. Silakan coba masuk kembali.");
@@ -221,16 +245,6 @@ if (canAccessAccount) {
     footerAccountSettings.hidden = true;
   }
 }
-
-document.querySelectorAll("[data-search-category]").forEach((categoryLink) => {
-  categoryLink.addEventListener("click", () => {
-    const searchInput = document.querySelector("#site-search");
-    if (searchInput instanceof HTMLInputElement) {
-      searchInput.value = categoryLink.dataset.searchCategory || "";
-      searchInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-  });
-});
 
 const categoryToggle = document.querySelector("#home-categories-toggle");
 const extraCategories = document.querySelectorAll("[data-category-extra]");
@@ -316,9 +330,7 @@ const loadMidtransSnap = async (clientKey, environment) => {
 };
 
 if (cartPage) {
-  let hasCartAccess = accountIsAuthenticated
-    || cartPage.dataset.authenticated === "true"
-    || sessionStorage.getItem("kurostore-guest-session") === "true";
+  const hasCartAccess = accountIsAuthenticated || cartPage.dataset.authenticated === "true";
   const lockedView = cartPage.querySelector("#cart-locked");
   const cartContent = cartPage.querySelector("#cart-content");
   const guestNotice = cartPage.querySelector("#cart-guest-notice");
@@ -342,12 +354,10 @@ if (cartPage) {
     if (cartFeedback) cartFeedback.textContent = message;
   };
 
-  const setCartAccess = (guest = false) => {
-    hasCartAccess = true;
-    if (guest) sessionStorage.setItem("kurostore-guest-session", "true");
+  const showCart = () => {
     if (lockedView) lockedView.hidden = true;
     if (cartContent) cartContent.hidden = false;
-    if (guestNotice) guestNotice.hidden = !guest;
+    if (guestNotice) guestNotice.hidden = true;
   };
 
   const parseCart = (value) => {
@@ -356,26 +366,58 @@ if (cartPage) {
       item
       && typeof item.productId === "string"
       && typeof item.name === "string"
-      && Number.isFinite(item.price)
+      && Number.isFinite(Number(item.price))
       && item.price > 0
       && Number.isInteger(item.quantity)
       && item.quantity > 0
       && Number.isInteger(item.stock)
-      && item.stock >= 0);
+      && item.stock >= 0
+      && typeof item.priceIsEstimate === "boolean"
+      && typeof item.available === "boolean");
     if (!validItems) throw new Error("Data barang di keranjang tidak valid.");
-    return value;
+    return value.map((item) => ({ ...item, price: Number(item.price) }));
   };
 
-  const saveCart = () => {
-    try {
-      window.localStorage.setItem(cartStorageKey, JSON.stringify(cartItems));
-      updateCartBadges();
-      return true;
-    } catch (error) {
-      console.error("Unable to save shopping cart:", error);
-      setCartFeedback("Perubahan keranjang tidak dapat disimpan di browser ini.");
-      return false;
-    }
+  const refreshCart = async () => {
+    const result = await authenticatedRequestApi("/api/account-data/cart");
+    cartItems = parseCart(result.items);
+    selectedProductIds = new Set(cartItems.map((item) => item.productId));
+    renderCart();
+    notifyCartUpdated();
+  };
+
+  const updateCartItem = async (productId, quantity) => {
+    await authenticatedRequestApi("/api/account-data/cart", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_id: productId, quantity }),
+    });
+    await refreshCart();
+  };
+
+  const removeCartItems = async (productIds) => {
+    if (productIds.length === 0) return;
+    await authenticatedRequestApi("/api/account-data/cart", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_ids: productIds }),
+    });
+    selectedProductIds = new Set();
+    await refreshCart();
+  };
+
+  const addCartItem = async (productId) => {
+    await authenticatedRequestApi("/api/account-data/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_id: productId }),
+    });
+    await refreshCart();
+  };
+
+  const showCartError = (error, message) => {
+    console.error(message, error);
+    setCartFeedback(error instanceof Error ? error.message : "Perubahan keranjang gagal disimpan.");
   };
 
   const formatPrice = (price) => new Intl.NumberFormat("id-ID", {
@@ -402,6 +444,7 @@ if (cartPage) {
       selection.checked = selectedProductIds.has(item.productId);
       selection.setAttribute("aria-label", `Pilih ${item.name}`);
       selection.dataset.cartSelect = item.productId;
+      selection.disabled = !item.available;
 
       const artwork = document.createElement("span");
       artwork.className = "cart-item-art";
@@ -413,15 +456,21 @@ if (cartPage) {
       const name = document.createElement("strong");
       name.textContent = item.name;
       const price = document.createElement("span");
-      price.textContent = `${formatPrice(item.price)} / item`;
+      price.textContent = `${formatPrice(item.price)} / item${item.available ? "" : " · Tidak tersedia"}`;
       product.append(name, price);
+      if (item.priceIsEstimate) {
+        const estimate = document.createElement("small");
+        estimate.className = "price-estimate-badge";
+        estimate.textContent = "Estimasi harga";
+        product.append(estimate);
+      }
 
       const quantity = document.createElement("div");
       quantity.className = "cart-quantity-control";
       const decrease = document.createElement("button");
       decrease.type = "button";
       decrease.textContent = "−";
-      decrease.disabled = item.quantity <= 1;
+      decrease.disabled = !item.available || item.quantity <= 1;
       decrease.setAttribute("aria-label", `Kurangi jumlah ${item.name}`);
       decrease.dataset.cartQuantity = "decrease";
       decrease.dataset.productId = item.productId;
@@ -430,7 +479,7 @@ if (cartPage) {
       const increase = document.createElement("button");
       increase.type = "button";
       increase.textContent = "+";
-      increase.disabled = item.quantity >= item.stock;
+      increase.disabled = !item.available || item.quantity >= item.stock;
       increase.setAttribute("aria-label", `Tambah jumlah ${item.name}`);
       increase.dataset.cartQuantity = "increase";
       increase.dataset.productId = item.productId;
@@ -451,20 +500,21 @@ if (cartPage) {
       cartItemList.append(row);
     });
 
-    const selectedItems = cartItems.filter((item) => selectedProductIds.has(item.productId));
+    const selectedItems = cartItems.filter((item) => selectedProductIds.has(item.productId) && item.available);
     const selectedQuantity = selectedItems.reduce((total, item) => total + item.quantity, 0);
     const selectedTotal = selectedItems.reduce((total, item) => total + item.price * item.quantity, 0);
     if (selectedCount) selectedCount.textContent = `${selectedQuantity} barang`;
     if (cartTotal) cartTotal.textContent = formatPrice(selectedTotal);
     if (selectAll instanceof HTMLInputElement) {
-      selectAll.checked = hasItems && selectedProductIds.size === cartItems.length;
+      const availableItems = cartItems.filter((item) => item.available);
+      selectAll.checked = availableItems.length > 0 && selectedItems.length === availableItems.length;
       selectAll.indeterminate = selectedProductIds.size > 0 && !selectAll.checked;
     }
     if (removeSelected instanceof HTMLButtonElement) {
       removeSelected.disabled = selectedProductIds.size === 0;
     }
     if (checkoutButton instanceof HTMLButtonElement) {
-      checkoutButton.disabled = selectedProductIds.size === 0;
+      checkoutButton.disabled = selectedItems.length === 0;
     }
   };
 
@@ -490,13 +540,17 @@ if (cartPage) {
       name.textContent = product.name;
       const price = document.createElement("span");
       price.textContent = formatPrice(product.price);
+      const estimate = document.createElement("small");
+      estimate.className = "price-estimate-badge";
+      estimate.textContent = "Estimasi harga pasar";
+      estimate.hidden = product.price_is_estimate !== true;
       const button = document.createElement("button");
       button.type = "button";
       button.className = "cart-add-button";
       button.textContent = product.stock > 0 ? "Tambah ke keranjang" : "Stok habis";
       button.disabled = product.stock <= 0;
       button.dataset.addCartProduct = product.id;
-      card.append(artwork, name, price, button);
+      card.append(artwork, name, price, estimate, button);
       recommendationsGrid.append(card);
     });
   };
@@ -523,20 +577,12 @@ if (cartPage) {
     }
   };
 
-  try {
-    const savedCart = window.localStorage.getItem(cartStorageKey);
-    cartItems = savedCart ? parseCart(JSON.parse(savedCart)) : [];
-  } catch (error) {
-    console.error("Unable to load shopping cart:", error);
-    setCartFeedback("Keranjang tidak dapat dibaca. Coba hapus data situs atau buka kembali halaman.");
-  }
-  selectedProductIds = new Set(cartItems.map((item) => item.productId));
-
-  if (hasCartAccess) {
-    setCartAccess(sessionStorage.getItem("kurostore-guest-session") === "true");
-  }
   renderCart();
   void loadRecommendations();
+  if (hasCartAccess) {
+    showCart();
+    void refreshCart().catch((error) => showCartError(error, "Unable to load shopping cart:"));
+  }
 
   cartItemList?.addEventListener("change", (event) => {
     const target = event.target;
@@ -548,7 +594,7 @@ if (cartPage) {
 
   selectAll?.addEventListener("change", () => {
     selectedProductIds = selectAll.checked
-      ? new Set(cartItems.map((item) => item.productId))
+      ? new Set(cartItems.filter((item) => item.available).map((item) => item.productId))
       : new Set();
     renderCart();
   });
@@ -559,28 +605,24 @@ if (cartPage) {
     const quantityButton = event.target.closest("[data-cart-quantity]");
     if (removeButton) {
       const productId = removeButton.dataset.cartRemove;
-      cartItems = cartItems.filter((item) => item.productId !== productId);
-      selectedProductIds.delete(productId);
-      saveCart();
-      renderCart();
+      void removeCartItems([productId]).then(() => setCartFeedback("Produk dihapus dari keranjang."))
+        .catch((error) => showCartError(error, "Unable to remove cart item:"));
       return;
     }
     if (quantityButton) {
       const productId = quantityButton.dataset.productId;
       const item = cartItems.find((cartItem) => cartItem.productId === productId);
       if (!item) return;
-      item.quantity += quantityButton.dataset.cartQuantity === "increase" ? 1 : -1;
-      item.quantity = Math.max(1, Math.min(item.quantity, item.stock));
-      saveCart();
-      renderCart();
+      const quantity = item.quantity + (quantityButton.dataset.cartQuantity === "increase" ? 1 : -1);
+      void updateCartItem(productId, Math.max(1, Math.min(quantity, item.stock)))
+        .catch((error) => showCartError(error, "Unable to update cart quantity:"));
     }
   });
 
   removeSelected?.addEventListener("click", () => {
-    cartItems = cartItems.filter((item) => !selectedProductIds.has(item.productId));
-    selectedProductIds.clear();
-    saveCart();
-    renderCart();
+    void removeCartItems(Array.from(selectedProductIds))
+      .then(() => setCartFeedback("Produk pilihan dihapus dari keranjang."))
+      .catch((error) => showCartError(error, "Unable to remove selected cart items:"));
   });
 
   checkoutButton?.addEventListener("click", () => {
@@ -607,45 +649,14 @@ if (cartPage) {
     const product = products.find((candidate) => candidate.id === addButton?.dataset.addCartProduct);
     if (!product || product.stock <= 0) return;
 
-    const existingItem = cartItems.find((item) => item.productId === product.id);
-    if (existingItem) {
-      if (existingItem.quantity >= product.stock) {
-        setCartFeedback("Jumlah barang di keranjang sudah mencapai batas stok.");
-        return;
-      }
-      existingItem.quantity += 1;
-      existingItem.stock = product.stock;
-    } else {
-      cartItems.push({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        stock: product.stock,
-      });
-    }
-
     if (!hasCartAccess) {
-      setCartAccess(true);
-      setCartFeedback("Produk ditambahkan. Kamu menggunakan keranjang tamu di browser ini.");
-    } else {
-      setCartFeedback(`${product.name} ditambahkan ke keranjang.`);
+      window.location.href = "login.html";
+      return;
     }
-    selectedProductIds.add(product.id);
-    saveCart();
-    renderCart();
-  });
 
-  window.addEventListener("storage", (event) => {
-    if (event.key !== cartStorageKey) return;
-    try {
-      cartItems = event.newValue ? parseCart(JSON.parse(event.newValue)) : [];
-      selectedProductIds = new Set(cartItems.map((item) => item.productId));
-      renderCart();
-    } catch (error) {
-      console.error("Unable to synchronize shopping cart:", error);
-      setCartFeedback("Perubahan keranjang dari tab lain tidak dapat dibaca.");
-    }
+    void addCartItem(product.id)
+      .then(() => setCartFeedback(`${product.name} ditambahkan ke keranjang.`))
+      .catch((error) => showCartError(error, "Unable to add product to cart:"));
   });
 }
 
@@ -662,23 +673,15 @@ if (checkoutPage) {
   const resultTitle = checkoutPage.querySelector("#checkout-result-title");
   const resultMessage = checkoutPage.querySelector("#checkout-result-message");
   const loginLink = checkoutPage.querySelector("#checkout-login-link");
+  const environmentNote = checkoutPage.querySelector("#checkout-environment-note");
   let selectedIds = new Set();
   let cartItems = [];
   let selectedItems = [];
+  let checkoutPaymentConfig = null;
 
   const setFeedback = (message) => {
     if (feedback) feedback.textContent = message;
   };
-
-  try {
-    const savedSelection = JSON.parse(sessionStorage.getItem(checkoutSelectionStorageKey) || "[]");
-    if (Array.isArray(savedSelection)) {
-      selectedIds = new Set(savedSelection.filter((id) => typeof id === "string"));
-    }
-  } catch (error) {
-    console.error("Unable to read checkout selection:", error);
-    setFeedback("Pilihan produk tidak dapat dibaca. Kembali ke keranjang dan pilih ulang.");
-  }
 
   const showResult = (title, message) => {
     if (content) content.hidden = true;
@@ -693,30 +696,65 @@ if (checkoutPage) {
     maximumFractionDigits: 0,
   }).format(price);
 
-  try {
-    const savedCart = localStorage.getItem(cartStorageKey);
-    const parsedCart = savedCart ? JSON.parse(savedCart) : [];
-    if (!Array.isArray(parsedCart)) throw new Error("Format keranjang tidak valid.");
-    cartItems = parsedCart.filter((item) =>
-      item
-      && typeof item.productId === "string"
-      && typeof item.name === "string"
-      && Number.isFinite(item.price)
-      && item.price > 0
-      && Number.isInteger(item.quantity)
-      && item.quantity > 0
-      && Number.isInteger(item.stock)
-      && item.stock >= item.quantity);
-    selectedItems = cartItems.filter((item) => selectedIds.has(item.productId));
-  } catch (error) {
-    console.error("Unable to load checkout cart:", error);
-    setFeedback("Keranjang tidak dapat dibaca. Kembali ke keranjang dan coba lagi.");
-  }
+  const loadPaymentConfig = async () => {
+    const config = await requestApi("/api/payments/config");
+    if (typeof config.clientKey !== "string" || !config.clientKey
+      || !["sandbox", "production"].includes(config.environment)) {
+      throw new Error("Konfigurasi Midtrans tidak valid.");
+    }
+    checkoutPaymentConfig = config;
+    if (environmentNote) {
+      environmentNote.textContent = config.environment === "sandbox"
+        ? "Mode sandbox: transaksi hanya untuk pengujian dan tidak menarik uang sungguhan."
+        : "Mode produksi Midtrans aktif.";
+    }
+    return config;
+  };
 
-  if (selectedItems.length === 0) {
-    if (emptyState) emptyState.hidden = false;
-    sessionStorage.removeItem(checkoutSelectionStorageKey);
-  } else {
+  const initializeCheckout = async () => {
+    if (!accountIsAuthenticated || !sessionStorage.getItem("kurostore-access-token")) {
+      setFeedback("Masuk ke akun terlebih dahulu untuk memuat keranjang dan melanjutkan checkout.");
+      if (loginLink) loginLink.hidden = false;
+      if (emptyState) emptyState.hidden = true;
+      return;
+    }
+
+    try {
+      const savedSelection = JSON.parse(sessionStorage.getItem(checkoutSelectionStorageKey) || "[]");
+      if (Array.isArray(savedSelection)) {
+        selectedIds = new Set(savedSelection.filter((id) => typeof id === "string"));
+      }
+    } catch (error) {
+      console.error("Unable to read checkout selection:", error);
+      setFeedback("Pilihan produk tidak dapat dibaca. Kembali ke keranjang dan pilih ulang.");
+    }
+
+    try {
+      const cartResult = await authenticatedRequestApi("/api/account-data/cart");
+      if (!Array.isArray(cartResult.items)) throw new Error("Data keranjang tidak valid.");
+      cartItems = cartResult.items.filter((item) =>
+        item
+        && typeof item.productId === "string"
+        && typeof item.name === "string"
+        && Number.isFinite(Number(item.price))
+        && Number(item.price) > 0
+        && Number.isInteger(item.quantity)
+        && item.quantity > 0
+        && typeof item.priceIsEstimate === "boolean"
+        && item.available === true)
+        .map((item) => ({ ...item, price: Number(item.price) }));
+      selectedItems = cartItems.filter((item) => selectedIds.has(item.productId));
+    } catch (error) {
+      console.error("Unable to load checkout cart:", error);
+      setFeedback(error instanceof Error ? error.message : "Keranjang tidak dapat dimuat. Coba lagi.");
+    }
+
+    if (selectedItems.length === 0) {
+      if (emptyState) emptyState.hidden = false;
+      sessionStorage.removeItem(checkoutSelectionStorageKey);
+      return;
+    }
+
     if (content) content.hidden = false;
     if (itemList) {
       itemList.replaceChildren();
@@ -732,6 +770,12 @@ if (checkoutPage) {
         const name = document.createElement("strong");
         name.textContent = item.name;
         copy.append(artwork, name);
+        if (item.priceIsEstimate) {
+          const estimate = document.createElement("small");
+          estimate.className = "price-estimate-badge";
+          estimate.textContent = "Estimasi harga pasar";
+          copy.append(estimate);
+        }
         const unitPrice = document.createElement("span");
         unitPrice.className = "checkout-item-unit";
         unitPrice.textContent = formatPrice(item.price);
@@ -768,23 +812,32 @@ if (checkoutPage) {
     if (emailInput instanceof HTMLInputElement) {
       emailInput.value = sessionStorage.getItem("kurostore-user-email") || "";
     }
-    try {
-      const savedAddress = readSavedShippingAddress();
-      if (savedAddress) {
-        if (nameInput instanceof HTMLInputElement) nameInput.value = savedAddress.name;
-        if (phoneInput instanceof HTMLInputElement) phoneInput.value = savedAddress.phone;
-        if (addressInput instanceof HTMLTextAreaElement) addressInput.value = savedAddress.address;
-        if (cityInput instanceof HTMLInputElement) cityInput.value = savedAddress.city;
-        if (postalCodeInput instanceof HTMLInputElement) postalCodeInput.value = savedAddress.postalCode;
-        if (addressBadge) addressBadge.textContent = "Alamat tersimpan";
-      } else if (phoneInput instanceof HTMLInputElement) {
-        phoneInput.value = sessionStorage.getItem("kurostore-user-phone") || "";
-      }
-    } catch (error) {
-      console.error("Unable to read saved shipping address:", error);
-      setFeedback("Alamat tersimpan tidak dapat dibaca. Periksa kembali alamat di Pengaturan & Akun.");
+
+    const savedAddressResult = await authenticatedRequestApi("/api/account-data/address");
+    const savedAddress = savedAddressResult.address;
+    if (savedAddress) {
+      if (nameInput instanceof HTMLInputElement) nameInput.value = savedAddress.name;
+      if (phoneInput instanceof HTMLInputElement) phoneInput.value = savedAddress.phone;
+      if (addressInput instanceof HTMLTextAreaElement) addressInput.value = savedAddress.address;
+      if (cityInput instanceof HTMLInputElement) cityInput.value = savedAddress.city;
+      if (postalCodeInput instanceof HTMLInputElement) postalCodeInput.value = savedAddress.postalCode;
+      if (addressBadge) addressBadge.textContent = "Alamat tersimpan";
+    } else if (phoneInput instanceof HTMLInputElement) {
+      phoneInput.value = sessionStorage.getItem("kurostore-user-phone") || "";
     }
-  }
+
+    try {
+      await loadPaymentConfig();
+    } catch (error) {
+      console.error("Unable to load payment configuration:", error);
+      if (environmentNote) environmentNote.textContent = "Pembayaran belum tersedia sampai Midtrans dikonfigurasi.";
+    }
+  };
+
+  void initializeCheckout().catch((error) => {
+    console.error("Unable to initialize checkout:", error);
+    setFeedback(error instanceof Error ? error.message : "Checkout tidak dapat dimuat.");
+  });
 
   checkoutPage.querySelectorAll('input[name="payment_method"]').forEach((input) => {
     input.addEventListener("change", () => {
@@ -824,7 +877,7 @@ if (checkoutPage) {
     setFeedback("Menyiapkan pembayaran Midtrans…");
 
     try {
-      const paymentConfig = await requestApi("/api/payments/config");
+      const paymentConfig = checkoutPaymentConfig ?? await loadPaymentConfig();
       const payment = await requestApi("/api/payments/create", {
         method: "POST",
         headers: {
@@ -854,18 +907,17 @@ if (checkoutPage) {
       setFeedback("Selesaikan pembayaran di popup Midtrans.");
       snap.pay(payment.token, {
         onSuccess: (result) => {
-          try {
-            const latestCart = JSON.parse(localStorage.getItem(cartStorageKey) || "[]");
-            if (!Array.isArray(latestCart)) throw new Error("Format keranjang tidak valid.");
-            const remainingItems = latestCart.filter((item) => !selectedIds.has(item?.productId));
-            localStorage.setItem(cartStorageKey, JSON.stringify(remainingItems));
-            updateCartBadges();
-          } catch (error) {
-            console.error("Unable to clear paid items from cart:", error);
-            showResult("Pembayaran berhasil", "Pembayaran terkonfirmasi, tetapi keranjang tidak dapat diperbarui. Kamu bisa menghapus barang yang sudah dibayar secara manual.");
+          void authenticatedRequestApi("/api/account-data/cart", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_ids: selectedItems.map((item) => item.productId) }),
+          }).then(() => {
+            notifyCartUpdated();
+          }).catch((error) => {
+            console.error("Unable to clear paid cart items:", error);
+            showResult("Pembayaran berhasil", "Pembayaran terkonfirmasi, tetapi keranjang tidak dapat diperbarui. Hapus produk yang sudah dibayar dari keranjang secara manual.");
             sessionStorage.removeItem(checkoutSelectionStorageKey);
-            return;
-          }
+          });
           sessionStorage.removeItem(checkoutSelectionStorageKey);
           showResult("Pembayaran diterima", `Midtrans sedang mengonfirmasi pembayaran. Order ID: ${result.order_id || payment.orderId}. Status terbaru dapat dilihat di Pesanan Saya.`);
         },
@@ -897,6 +949,7 @@ if (allProductsPage) {
   const resultCount = allProductsPage.querySelector("#all-products-count");
   const searchInput = document.querySelector("#site-search");
   const sortSelect = allProductsPage.querySelector("#all-products-sort");
+  const clearCategoryButton = allProductsPage.querySelector("#all-products-category-clear");
   const feedback = allProductsPage.querySelector("#all-products-feedback");
   const emptyState = allProductsPage.querySelector("#all-products-empty");
   const emptyTitle = allProductsPage.querySelector("#all-products-empty-title");
@@ -904,6 +957,9 @@ if (allProductsPage) {
   const loadMoreButton = allProductsPage.querySelector("#all-products-load-more");
   const productsPageSize = 24;
   let categoriesById = new Map();
+  let categoriesBySlug = new Map();
+  let categoriesPromise = null;
+  let wishlistIds = new Set();
   let loadedProducts = [];
   let totalProducts = 0;
   let currentPage = 0;
@@ -911,6 +967,8 @@ if (allProductsPage) {
   let activeRequestController = null;
   let searchTimer = null;
   let isLoading = false;
+  let catalogInitialized = false;
+  let activeCategorySlug = new URLSearchParams(window.location.search).get("category") || "";
 
   if (searchInput instanceof HTMLInputElement) {
     searchInput.value = new URLSearchParams(window.location.search).get("q") || "";
@@ -929,6 +987,20 @@ if (allProductsPage) {
   const renderProducts = () => {
     if (!(productGrid instanceof HTMLElement)) return;
     productGrid.replaceChildren();
+    const selectedCategory = categoriesBySlug.get(activeCategorySlug);
+    const heading = document.querySelector("#all-products-list-title");
+    const description = heading?.parentElement?.querySelector("p");
+    if (heading) heading.textContent = selectedCategory
+      ? `Kategori: ${selectedCategory.name}`
+      : window.location.hash === "#all-products-page" ? "Produk terbaru" : "Semua produk";
+    if (description) description.textContent = selectedCategory
+      ? `Produk dalam kategori ${selectedCategory.name}.`
+      : window.location.hash === "#all-products-page"
+        ? "Produk terbaru dari berbagai kategori."
+        : "Produk dari berbagai kategori ditampilkan bersama.";
+    if (clearCategoryButton instanceof HTMLButtonElement) {
+      clearCategoryButton.hidden = !selectedCategory;
+    }
 
     loadedProducts.forEach((product) => {
       const card = document.createElement("article");
@@ -948,6 +1020,11 @@ if (allProductsPage) {
       name.textContent = product.name;
       const description = document.createElement("p");
       description.textContent = product.description || "Lihat detail produk ini dan temukan pilihan yang cocok untukmu.";
+      const rating = document.createElement("span");
+      rating.className = "product-rating-summary";
+      rating.textContent = product.rating_count > 0
+        ? `★ ${Number(product.rating_average).toFixed(1)} · ${product.rating_count} ulasan`
+        : "Belum ada rating";
       const bottom = document.createElement("div");
       bottom.className = "product-card-bottom";
       const price = document.createElement("strong");
@@ -955,6 +1032,10 @@ if (allProductsPage) {
       const stock = document.createElement("span");
       stock.textContent = product.stock > 0 ? `Stok ${product.stock}` : "Stok habis";
       bottom.append(price, stock);
+      const estimate = document.createElement("small");
+      estimate.className = "price-estimate-badge";
+      estimate.textContent = "Estimasi harga pasar";
+      estimate.hidden = product.price_is_estimate !== true;
 
       const addButton = document.createElement("button");
       addButton.type = "button";
@@ -963,7 +1044,14 @@ if (allProductsPage) {
       addButton.disabled = product.stock <= 0;
       addButton.dataset.addCartProduct = product.id;
 
-      copy.append(category, name, description, bottom, addButton);
+      const wishlistButton = document.createElement("button");
+      wishlistButton.type = "button";
+      wishlistButton.className = "all-product-wishlist-button";
+      wishlistButton.textContent = wishlistIds.has(product.id) ? "Tersimpan di wishlist" : "Simpan ke wishlist";
+      wishlistButton.setAttribute("aria-pressed", String(wishlistIds.has(product.id)));
+      wishlistButton.dataset.wishlistProduct = product.id;
+
+      copy.append(category, name, description, rating, bottom, estimate, addButton, wishlistButton);
       card.append(artwork, copy);
       productGrid.append(card);
     });
@@ -972,16 +1060,22 @@ if (allProductsPage) {
       const searchTerm = searchInput instanceof HTMLInputElement ? searchInput.value.trim() : "";
       resultCount.textContent = searchTerm
         ? `${new Intl.NumberFormat("id-ID").format(totalProducts)} produk ditemukan`
-        : `${new Intl.NumberFormat("id-ID").format(totalProducts)} produk tersedia`;
+        : selectedCategory
+          ? `${new Intl.NumberFormat("id-ID").format(totalProducts)} produk`
+          : `${new Intl.NumberFormat("id-ID").format(totalProducts)} produk tersedia`;
     }
 
     const hasProducts = loadedProducts.length > 0;
     if (emptyState) emptyState.hidden = hasProducts;
     if (emptyTitle) emptyTitle.textContent = searchInput?.value.trim()
       ? "Produk tidak ditemukan"
+      : selectedCategory
+        ? `Belum ada produk di kategori ${selectedCategory.name}`
       : "Produk belum tersedia";
     if (emptyMessage) emptyMessage.textContent = searchInput?.value.trim()
       ? "Coba kata pencarian lain."
+      : selectedCategory
+        ? "Kategori ini belum memiliki produk aktif."
       : "Produk aktif akan muncul di sini saat sudah tersedia.";
     if (loadMoreButton instanceof HTMLButtonElement) {
       loadMoreButton.hidden = !hasProducts || loadedProducts.length >= totalProducts;
@@ -1005,20 +1099,31 @@ if (allProductsPage) {
       sort,
     });
     if (searchTerm) parameters.set("q", searchTerm);
+    const categorySlug = new URLSearchParams(window.location.search).get("category") || "";
+    activeCategorySlug = categorySlug;
 
     setFeedback("");
     if (!append) {
       if (resultCount && loadedProducts.length === 0) resultCount.textContent = "Memuat produk…";
       if (emptyState && loadedProducts.length === 0) emptyState.hidden = true;
-      if (productGrid instanceof HTMLElement) {
-        productGrid.classList.add("is-loading");
-        productGrid.setAttribute("aria-busy", "true");
-      }
+    }
+    if (productGrid instanceof HTMLElement) {
+      productGrid.classList.add("is-loading");
+      productGrid.setAttribute("aria-busy", "true");
+      const skeletons = createProductSkeletons(append || loadedProducts.length > 0 ? 4 : 8);
+      if (!append && loadedProducts.length === 0) productGrid.replaceChildren(...skeletons);
+      else productGrid.append(...skeletons);
     }
     if (loadMoreButton instanceof HTMLButtonElement) loadMoreButton.disabled = true;
 
     let requestFailed = false;
     try {
+      if (categorySlug) {
+        await loadCategories();
+        const category = categoriesBySlug.get(categorySlug);
+        if (!category) throw new Error("Kategori tidak ditemukan.");
+        parameters.set("category_id", category.id);
+      }
       const result = await requestApi(`/api/products?${parameters.toString()}`, {
         signal: controller.signal,
       });
@@ -1058,70 +1163,72 @@ if (allProductsPage) {
         }
         if (loadMoreButton instanceof HTMLButtonElement) loadMoreButton.disabled = false;
         if (!requestFailed) renderProducts();
+        else productGrid?.querySelectorAll(".product-skeleton-card").forEach((card) => card.remove());
       }
     }
   };
 
-  const loadCategories = async () => {
-    try {
-      const result = await requestApi("/api/categories");
-      if (!Array.isArray(result.categories)) {
-        throw new Error("Data kategori tidak valid.");
-      }
-      categoriesById = new Map(result.categories
-        .filter((category) => typeof category.id === "string" && typeof category.name === "string")
-        .map((category) => [category.id, category.name]));
+  const loadCategories = () => {
+    if (categoriesPromise) return categoriesPromise;
+    categoriesPromise = requestApi("/api/categories").then((result) => {
+      if (!Array.isArray(result.categories)) throw new Error("Data kategori tidak valid.");
+      const categories = result.categories.filter((category) =>
+        typeof category?.id === "string"
+        && typeof category.name === "string"
+        && typeof category.slug === "string");
+      categoriesById = new Map(categories.map((category) => [category.id, category.name]));
+      categoriesBySlug = new Map(categories.map((category) => [category.slug, category]));
       productGrid?.querySelectorAll("[data-product-category-id]").forEach((categoryLabel) => {
         categoryLabel.textContent = categoriesById.get(categoryLabel.dataset.productCategoryId) || "Semua kategori";
       });
-    } catch (error) {
-      console.error("Unable to load category labels:", error);
-    }
+      return categories;
+    }).catch((error) => {
+      categoriesPromise = null;
+      console.error("Unable to load product categories:", error);
+      throw error;
+    });
+    return categoriesPromise;
   };
 
-  const addProductToCart = (product) => {
-    let cartItems = [];
-    try {
-      const savedCart = window.localStorage.getItem(cartStorageKey);
-      const parsedCart = savedCart ? JSON.parse(savedCart) : [];
-      if (!Array.isArray(parsedCart)) throw new Error("Format keranjang tidak valid.");
-      cartItems = parsedCart;
-    } catch (error) {
-      console.error("Unable to read shopping cart:", error);
-      setFeedback("Keranjang tidak dapat dibaca. Coba muat ulang halaman.");
-      return;
-    }
+  const initializeCatalog = () => {
+    if (catalogInitialized) return false;
+    catalogInitialized = true;
+    void loadCategories().catch((error) => {
+      setFeedback(error instanceof Error ? error.message : "Kategori produk tidak dapat dimuat.");
+    });
 
-    const existingItem = cartItems.find((item) => item?.productId === product.id);
-    if (existingItem) {
-      if (!Number.isInteger(existingItem.quantity) || existingItem.quantity >= product.stock) {
-        setFeedback("Jumlah barang di keranjang sudah mencapai batas stok.");
-        return;
-      }
-      existingItem.quantity += 1;
-      existingItem.stock = product.stock;
-      existingItem.name = product.name;
-      existingItem.price = product.price;
-    } else {
-      cartItems.push({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        stock: product.stock,
+    if (accountIsAuthenticated) {
+      void authenticatedRequestApi("/api/account-data/wishlist").then((result) => {
+        if (!Array.isArray(result.items)) throw new Error("Data wishlist tidak valid.");
+        wishlistIds = new Set(result.items
+          .map((item) => item?.id)
+          .filter((id) => typeof id === "string"));
+        renderProducts();
+      }).catch((error) => {
+        console.error("Unable to load saved wishlist:", error);
       });
     }
 
+    return true;
+  };
+
+  const addProductToCart = async (product) => {
+    if (!accountIsAuthenticated) {
+      setFeedback("Masuk ke akun terlebih dahulu untuk menambahkan produk ke keranjang.");
+      return;
+    }
+
     try {
-      window.localStorage.setItem(cartStorageKey, JSON.stringify(cartItems));
-      updateCartBadges();
-      if (!accountIsAuthenticated) {
-        sessionStorage.setItem("kurostore-guest-session", "true");
-      }
+      await authenticatedRequestApi("/api/account-data/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: product.id }),
+      });
+      notifyCartUpdated();
       setFeedback(`${product.name} ditambahkan ke keranjang.`);
     } catch (error) {
       console.error("Unable to save shopping cart:", error);
-      setFeedback("Produk tidak dapat ditambahkan karena keranjang gagal disimpan.");
+      setFeedback(error instanceof Error ? error.message : "Produk tidak dapat ditambahkan ke keranjang.");
     }
   };
 
@@ -1141,16 +1248,63 @@ if (allProductsPage) {
         `${searchUrl.pathname}${searchUrl.search}${searchUrl.hash}`
       );
       document.dispatchEvent(new Event("kurostore:show-categories"));
+      initializeCatalog();
     }
     searchTimer = window.setTimeout(() => {
       void loadProducts();
     }, 250);
   });
   sortSelect?.addEventListener("change", () => {
+    initializeCatalog();
     void loadProducts();
   });
   loadMoreButton?.addEventListener("click", () => {
+    initializeCatalog();
     void loadProducts({ append: true });
+  });
+  document.querySelector("#home-category-grid")?.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const categoryLink = event.target.closest("a[data-product-category]");
+    if (!(categoryLink instanceof HTMLAnchorElement)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const categorySlug = categoryLink.dataset.productCategory;
+    if (!categorySlug) return;
+
+    initializeCatalog();
+    void loadCategories().then(() => {
+      const category = categoriesBySlug.get(categorySlug);
+      if (!category) throw new Error("Kategori ini belum tersedia.");
+      if (searchInput instanceof HTMLInputElement) searchInput.value = "";
+
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.delete("q");
+      nextUrl.searchParams.set("category", categorySlug);
+      nextUrl.hash = "#all-products-page";
+      window.history.pushState(
+        { viewMode: "latest" },
+        "",
+        `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`
+      );
+      window.dispatchEvent(new PopStateEvent("popstate", { state: { viewMode: "latest" } }));
+      document.querySelector("#all-products-page")?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+      });
+    }).catch((error) => {
+      console.error("Unable to filter products by category:", error);
+      setFeedback(error instanceof Error ? error.message : "Produk kategori tidak dapat dimuat.");
+    });
+  });
+  clearCategoryButton?.addEventListener("click", () => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.delete("category");
+    nextUrl.hash = "#all-products-page";
+    window.history.pushState(
+      { viewMode: "latest" },
+      "",
+      `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`
+    );
+    window.dispatchEvent(new PopStateEvent("popstate", { state: { viewMode: "latest" } }));
   });
   document.addEventListener("kurostore:show-latest", () => {
     let filtersChanged = false;
@@ -1162,13 +1316,18 @@ if (allProductsPage) {
       sortSelect.value = "newest";
       filtersChanged = true;
     }
-    if (filtersChanged) void loadProducts();
+    if (initializeCatalog() || filtersChanged) void loadProducts();
   });
   document.addEventListener("kurostore:restore-catalog", () => {
     const urlSearch = new URLSearchParams(window.location.search).get("q") || "";
+    const urlCategory = new URLSearchParams(window.location.search).get("category") || "";
     let filtersChanged = false;
     if (searchInput instanceof HTMLInputElement && searchInput.value !== urlSearch) {
       searchInput.value = urlSearch;
+      filtersChanged = true;
+    }
+    if (activeCategorySlug !== urlCategory) {
+      activeCategorySlug = urlCategory;
       filtersChanged = true;
     }
     if (
@@ -1179,17 +1338,319 @@ if (allProductsPage) {
       sortSelect.value = "newest";
       filtersChanged = true;
     }
-    if (filtersChanged) void loadProducts();
+    const shouldLoadCatalog = window.location.hash === "#all-products-page"
+      || Boolean(urlSearch)
+      || Boolean(urlCategory);
+    const newlyInitialized = shouldLoadCatalog ? initializeCatalog() : false;
+    if (newlyInitialized || (filtersChanged && catalogInitialized)) void loadProducts();
   });
   productGrid?.addEventListener("click", (event) => {
     if (!(event.target instanceof Element)) return;
+    const wishlistButton = event.target.closest("[data-wishlist-product]");
+    if (wishlistButton) {
+      const productId = wishlistButton.dataset.wishlistProduct;
+      if (!productId) return;
+      if (!accountIsAuthenticated) {
+        setFeedback("Masuk ke akun terlebih dahulu untuk menyimpan wishlist.");
+        return;
+      }
+
+      const shouldRemove = wishlistIds.has(productId);
+      void authenticatedRequestApi("/api/account-data/wishlist", {
+        method: shouldRemove ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: productId }),
+      }).then(() => {
+        if (shouldRemove) wishlistIds.delete(productId);
+        else wishlistIds.add(productId);
+        renderProducts();
+        setFeedback(shouldRemove ? "Produk dihapus dari wishlist." : "Produk disimpan ke wishlist.");
+      }).catch((error) => {
+        console.error("Unable to update wishlist:", error);
+        setFeedback(error instanceof Error ? error.message : "Wishlist tidak dapat diperbarui.");
+      });
+      return;
+    }
+
     const button = event.target.closest("[data-add-cart-product]");
     const product = loadedProducts.find((item) => item.id === button?.dataset.addCartProduct);
-    if (product && product.stock > 0) addProductToCart(product);
+    if (product && product.stock > 0) void addProductToCart(product);
   });
 
-  void loadCategories();
-  void loadProducts();
+  if (window.location.hash === "#all-products-page"
+    || (searchInput instanceof HTMLInputElement && searchInput.value.trim())) {
+    initializeCatalog();
+    void loadProducts();
+  }
+}
+
+const homeProductGrids = [
+  {
+    grid: document.querySelector("#popular-products-grid"),
+    empty: document.querySelector("#popular-products-empty"),
+    feedback: document.querySelector("#popular-products-grid")?.parentElement?.querySelector("[data-home-product-feedback]"),
+  },
+  {
+    grid: document.querySelector("#recommended-products-grid"),
+    empty: document.querySelector("#recommended-products-empty"),
+    feedback: document.querySelector("#recommended-products-grid")?.parentElement?.querySelector("[data-home-product-feedback]"),
+  },
+];
+
+if (homeProductGrids.some(({ grid }) => grid instanceof HTMLElement)) {
+  homeProductGrids.forEach(({ grid, empty }) => {
+    if (!(grid instanceof HTMLElement)) return;
+    grid.replaceChildren(...createProductSkeletons(4));
+    grid.hidden = false;
+    grid.setAttribute("aria-busy", "true");
+    if (empty instanceof HTMLElement) empty.hidden = true;
+  });
+
+  const homeProductArtwork = {
+    elektronik: '<rect x="22" y="24" width="76" height="50" rx="5"></rect><path d="M15 82h90l-8 8H23l-8-8Zm30-8-4 8m28-8 4 8"></path>',
+    "makanan-dan-minuman": '<path d="M35 35h50l-5 48H40l-5-48Z"></path><path d="M31 35h58M43 25c-5-7 5-9 0-16m17 16c-5-7 5-9 0-16m17 16c-5-7 5-9 0-16"></path>',
+    "tas-dan-aksesori": '<path d="M25 40h70l5 48H20l5-48Z"></path><path d="M40 40V31a20 20 0 0 1 40 0v9m-29 17h.01m18 0h.01"></path>',
+    "kesehatan-dan-kecantikan": '<path d="M45 20h30v14l11 12v39H34V46l11-12V20Zm0 0h30m-30 14h30m-39 24h48"></path><path d="M57 64h6m-3-3v6"></path>',
+    "baju-pria": '<path d="m37 22 17 8h12l17-8 20 16-12 17-11-7v41H32V48l-11 7-12-17 20-16Z"></path><path d="M54 30a6 6 0 0 0 12 0"></path>',
+    "baju-wanita": '<path d="m45 21 15 7 15-7 13 13-9 12-6-4 13 46H34l13-46-6 4-9-12 13-13Z"></path><path d="M52 29a8 8 0 0 0 16 0M60 29v58"></path>',
+    "sepatu-pria": '<path d="M18 65c14 0 21-8 27-27l14 7c7 17 18 21 35 23 8 1 12 7 10 16H20c-5 0-7-4-7-9s1-10 5-10Z"></path><path d="m49 48 10 8m-17-3 10 8m-17-3 10 8M18 78h86"></path>',
+    "sepatu-wanita": '<path d="M20 68c11 1 21-1 29-8l9-29h11l4 24c8 7 17 8 27 9 8 1 11 8 8 15H22c-6 0-9-4-9-8s2-4 7-3Z"></path><path d="M24 79h84M53 51l17 4"></path>',
+    "hobi-dan-koleksi": '<circle cx="60" cy="57" r="31"></circle><circle cx="60" cy="57" r="19"></circle><path d="M76 37 94 19m-4 0h4v4M33 78l-8 10m0-4v4h4"></path>',
+    merchandise: '<path d="m37 22 17 8h12l17-8 20 16-12 17-11-7v41H32V48l-11 7-12-17 20-16Z"></path><path d="M54 30a6 6 0 0 0 12 0"></path>',
+    "voucher-dan-produk-digital": '<path d="M19 31h82v17a12 12 0 0 0 0 24v17H19V72a12 12 0 0 0 0-24V31Z"></path><path d="M69 39v9m0 7v9m0 7v9m0 7v3M52 48l-8 8 8 8m-8-8h21"></path>',
+    "rumah-dan-gaya-hidup": '<path d="m17 50 43-34 43 34M27 44v45h66V44M51 89V62h18v27"></path><path d="M41 49h.01M79 49h.01"></path>',
+  };
+  const fallbackArtwork = '<path d="m60 14 39 22v44L60 102 21 80V36l39-22Z"></path><path d="m22 37 38 22 38-22M60 59v42"></path>';
+  const formatHomeProductPrice = (price) => new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(price);
+
+  let homeCategoriesById = new Map();
+  let homeProductsById = new Map();
+  const homeWishlistIds = new Set();
+
+  const renderHomeProduct = (product, categoriesById) => {
+    const card = document.createElement("article");
+    card.className = "product-card all-product-card home-featured-product-card";
+
+    const categoryInfo = categoriesById.get(product.category_id);
+    const artwork = document.createElement("div");
+    artwork.className = "product-card-art all-product-art home-featured-product-art";
+    artwork.dataset.artworkCategory = categoryInfo?.slug || "";
+    artwork.setAttribute("aria-hidden", "true");
+    artwork.innerHTML = `<span class="product-art-orb"></span><svg viewBox="0 0 120 112">${homeProductArtwork[categoryInfo?.slug] || fallbackArtwork}</svg>`;
+
+    const wishlistButton = document.createElement("button");
+    wishlistButton.type = "button";
+    wishlistButton.className = "product-wishlist-toggle";
+    wishlistButton.dataset.homeWishlistProduct = product.id;
+    wishlistButton.classList.toggle("is-saved", homeWishlistIds.has(product.id));
+    wishlistButton.setAttribute("aria-pressed", String(homeWishlistIds.has(product.id)));
+    wishlistButton.setAttribute("aria-label", homeWishlistIds.has(product.id) ? `Hapus ${product.name} dari wishlist` : `Simpan ${product.name} ke wishlist`);
+    wishlistButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg>';
+    artwork.append(wishlistButton);
+
+    const copy = document.createElement("div");
+    copy.className = "product-card-copy";
+    const category = document.createElement("span");
+    category.className = "home-featured-product-category";
+    category.textContent = categoryInfo?.name || "Produk tersedia";
+    const name = document.createElement("h3");
+    name.textContent = product.name;
+    const description = document.createElement("p");
+    description.textContent = product.description || "Lihat produk ini di katalog Kurostore.";
+    const rating = document.createElement("span");
+    rating.className = "product-rating-summary";
+    rating.textContent = product.rating_count > 0
+      ? `★ ${Number(product.rating_average).toFixed(1)} · ${product.rating_count} ulasan`
+      : "Belum ada rating";
+    const bottom = document.createElement("div");
+    bottom.className = "product-card-bottom";
+    const price = document.createElement("strong");
+    price.textContent = formatHomeProductPrice(product.price);
+    const stock = document.createElement("span");
+    stock.className = "home-featured-product-stock";
+    stock.textContent = `Stok ${product.stock}`;
+    bottom.append(price, stock);
+    const estimate = document.createElement("small");
+    estimate.className = "price-estimate-badge";
+    estimate.textContent = "Estimasi harga pasar";
+    estimate.hidden = product.price_is_estimate !== true;
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "all-product-add-button";
+    addButton.dataset.homeAddCartProduct = product.id;
+    addButton.textContent = "Tambah ke keranjang";
+
+    copy.append(category, name, description, rating, bottom, estimate, addButton);
+    card.append(artwork, copy);
+    return card;
+  };
+
+  const renderHomeProductGroup = ({ grid, empty }, products, emptyMessage) => {
+    if (!(grid instanceof HTMLElement) || !(empty instanceof HTMLElement)) return;
+    grid.replaceChildren(...products.map((product) => renderHomeProduct(product, homeCategoriesById)));
+    const hasProducts = products.length > 0;
+    grid.hidden = !hasProducts;
+    grid.setAttribute("aria-busy", "false");
+    empty.hidden = hasProducts;
+    if (!hasProducts) {
+      const message = empty.querySelector("p");
+      if (message) message.textContent = emptyMessage;
+    }
+  };
+
+  const renderHomeProductGroups = (featuredProducts) => {
+    renderHomeProductGroup(homeProductGrids[0], featuredProducts.slice(0, 4), "Belum ada produk tersedia.");
+    renderHomeProductGroup(homeProductGrids[1], featuredProducts.slice(4, 8), "Tambahkan lebih banyak produk untuk ditampilkan di sini.");
+  };
+
+  const setHomeProductFeedback = (group, message, linkHref = "", linkText = "") => {
+    const feedback = group.feedback;
+    if (!(feedback instanceof HTMLElement)) return;
+    feedback.replaceChildren(document.createTextNode(message));
+    if (linkHref && linkText) {
+      feedback.append(document.createTextNode(" "));
+      const link = document.createElement("a");
+      link.href = linkHref;
+      link.textContent = linkText;
+      feedback.append(link);
+    }
+    feedback.hidden = false;
+  };
+
+  homeProductGrids.forEach((group) => {
+    group.grid?.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+      const wishlistButton = event.target.closest("[data-home-wishlist-product]");
+      if (wishlistButton) {
+        const productId = wishlistButton.dataset.homeWishlistProduct;
+        const product = homeProductsById.get(productId);
+        if (!productId || !product) return;
+        if (!accountIsAuthenticated) {
+          setHomeProductFeedback(group, "Masuk untuk menyimpan produk ke wishlist.", "pages/login.html", "Masuk / Daftar");
+          return;
+        }
+
+        const shouldRemove = homeWishlistIds.has(productId);
+        void authenticatedRequestApi("/api/account-data/wishlist", {
+          method: shouldRemove ? "DELETE" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: productId }),
+        }).then(() => {
+          if (shouldRemove) homeWishlistIds.delete(productId);
+          else homeWishlistIds.add(productId);
+          renderHomeProductGroups([...homeProductsById.values()]);
+          setHomeProductFeedback(group, shouldRemove ? "Produk dihapus dari wishlist." : "Produk disimpan ke wishlist.", "pages/produk-pilihan.html", "Lihat wishlist");
+        }).catch((error) => {
+          console.error("Unable to update homepage wishlist:", error);
+          setHomeProductFeedback(group, error instanceof Error ? error.message : "Wishlist tidak dapat diperbarui.");
+        });
+        return;
+      }
+
+      const addButton = event.target.closest("[data-home-add-cart-product]");
+      if (!addButton) return;
+      const productId = addButton.dataset.homeAddCartProduct;
+      const product = homeProductsById.get(productId);
+      if (!product || product.stock <= 0) return;
+      if (!accountIsAuthenticated) {
+        setHomeProductFeedback(group, "Masuk untuk menambahkan produk ke keranjang dan melanjutkan belanja.", "pages/login.html", "Masuk / Daftar");
+        return;
+      }
+
+      addButton.disabled = true;
+      addButton.textContent = "Menambahkan...";
+      void authenticatedRequestApi("/api/account-data/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: product.id }),
+      }).then(() => {
+        notifyCartUpdated();
+        setHomeProductFeedback(group, `${product.name} ditambahkan ke keranjang.`, "pages/keranjang.html", "Buka keranjang");
+      }).catch((error) => {
+        console.error("Unable to add homepage product to cart:", error);
+        setHomeProductFeedback(group, error instanceof Error ? error.message : "Produk tidak dapat ditambahkan ke keranjang.");
+      }).finally(() => {
+        addButton.disabled = false;
+        addButton.textContent = "Tambah ke keranjang";
+      });
+    });
+  });
+
+  const homeCategoriesPromise = requestApi("/api/categories")
+    .then((categoryResult) => {
+      if (Array.isArray(categoryResult.categories)) {
+        homeCategoriesById = new Map(categoryResult.categories
+          .filter((category) => typeof category?.id === "string" && typeof category.name === "string")
+          .map((category) => [category.id, { name: category.name, slug: category.slug }]));
+      }
+    })
+    .catch((error) => {
+      console.error("Unable to load home category names:", error);
+    });
+
+  void requestApi("/api/products?sort=newest&page_size=20")
+    .then(async (result) => {
+      if (!Array.isArray(result.products)) throw new Error("Data produk beranda tidak valid.");
+      await homeCategoriesPromise;
+
+      const availableProducts = result.products.filter((product) =>
+        product
+        && typeof product.id === "string"
+        && typeof product.name === "string"
+        && typeof product.category_id === "string"
+        && Number.isFinite(Number(product.price))
+        && Number(product.price) > 0
+        && Number.isInteger(product.stock)
+        && product.stock > 0)
+        .map((product) => ({ ...product, price: Number(product.price) }));
+
+      const selectedByCategory = new Map();
+      availableProducts.forEach((product) => {
+        if (!selectedByCategory.has(product.category_id)) {
+          selectedByCategory.set(product.category_id, product);
+        }
+      });
+      const selectedIds = new Set([...selectedByCategory.values()].map((product) => product.id));
+      const featuredProducts = [
+        ...selectedByCategory.values(),
+        ...availableProducts.filter((product) => !selectedIds.has(product.id)),
+      ];
+      homeProductsById = new Map(featuredProducts.map((product) => [product.id, product]));
+      renderHomeProductGroups(featuredProducts);
+    })
+    .catch((error) => {
+      console.error("Unable to load home catalog products:", error);
+      homeProductGrids.forEach(({ grid, empty }) => {
+        if (grid instanceof HTMLElement) {
+          grid.setAttribute("aria-busy", "false");
+          grid.hidden = true;
+          grid.querySelectorAll(".product-skeleton-card").forEach((card) => card.remove());
+        }
+        if (empty instanceof HTMLElement) {
+          empty.hidden = false;
+          const message = empty.querySelector("p");
+          if (message) message.textContent = "Produk tidak dapat dimuat. Coba muat ulang halaman.";
+        }
+      });
+    });
+
+  if (accountIsAuthenticated) {
+    void authenticatedRequestApi("/api/account-data/wishlist").then((result) => {
+      if (!Array.isArray(result.items)) throw new Error("Data wishlist tidak valid.");
+      result.items.forEach((item) => {
+        if (typeof item?.id === "string") homeWishlistIds.add(item.id);
+      });
+      renderHomeProductGroups([...homeProductsById.values()]);
+    }).catch((error) => {
+      console.error("Unable to load homepage wishlist:", error);
+      setHomeProductFeedback(homeProductGrids[0], error instanceof Error ? error.message : "Wishlist tidak dapat dimuat.");
+    });
+  }
 }
 
 if (billsCarousel) {
@@ -1234,114 +1695,133 @@ if (productsPage) {
   const wishlistGrid = productsPage.querySelector("#wishlist-grid");
   const wishlistCount = productsPage.querySelector("#wishlist-count");
   const wishlistEmpty = productsPage.querySelector("#wishlist-empty");
-  const wishlistStorageNotice = productsPage.querySelector("#wishlist-storage-notice");
+  const wishlistNotice = productsPage.querySelector("#wishlist-storage-notice");
+  const wishlistNoticeMessage = productsPage.querySelector("#wishlist-notice-message");
+  const wishlistLoginLink = productsPage.querySelector("#wishlist-login-link");
 
-  if (wishlistGrid && wishlistCount && wishlistEmpty && wishlistStorageNotice) {
-    const wishlistStorageKey = "kurostore-wishlist";
-    let wishlist = new Set();
-    let storageAvailable = true;
-
-    const showStorageNotice = () => {
-      wishlistStorageNotice.hidden = false;
-    };
-
-    try {
-      const savedWishlist = window.localStorage.getItem(wishlistStorageKey);
-      if (savedWishlist) {
-        const parsedWishlist = JSON.parse(savedWishlist);
-        if (Array.isArray(parsedWishlist) && parsedWishlist.every((item) => typeof item === "string")) {
-          wishlist = new Set(parsedWishlist);
-        } else {
-          showStorageNotice();
-        }
-      }
-    } catch {
-      storageAvailable = false;
-      showStorageNotice();
-    }
-
-    const saveWishlist = () => {
-      if (!storageAvailable) {
-        return;
-      }
-
-      try {
-        window.localStorage.setItem(wishlistStorageKey, JSON.stringify(Array.from(wishlist)));
-      } catch {
-        storageAvailable = false;
-        showStorageNotice();
-      }
-    };
+  if (wishlistGrid && wishlistCount && wishlistEmpty && wishlistNotice) {
+    let wishlistItems = [];
 
     const renderWishlist = () => {
       wishlistGrid.replaceChildren();
-
-      wishlist.forEach((productId) => {
-        const title = productId
-          .replace(/[-_]+/g, " ")
-          .split(/\s+/)
-          .map((word) => word.charAt(0).toLocaleUpperCase("id") + word.slice(1))
-          .join(" ");
+      wishlistItems.forEach((item) => {
         const card = document.createElement("article");
         card.className = "product-card wishlist-item";
-        card.dataset.wishlistItem = productId;
+        card.dataset.wishlistItem = item.id;
 
         const copy = document.createElement("div");
         copy.className = "product-card-copy";
-
         const label = document.createElement("span");
         label.className = "product-card-category";
         label.textContent = "Tersimpan";
-
         const name = document.createElement("h3");
-        name.textContent = title;
+        name.textContent = item.name;
+        const description = document.createElement("p");
+        description.textContent = item.description || "Produk favoritmu di Kurostore.";
+        const price = document.createElement("strong");
+        price.textContent = new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          maximumFractionDigits: 0,
+        }).format(Number(item.price));
+        const estimate = document.createElement("small");
+        estimate.className = "price-estimate-badge";
+        estimate.textContent = "Estimasi harga pasar";
+        estimate.hidden = item.price_is_estimate !== true;
 
         const removeButton = document.createElement("button");
         removeButton.className = "wishlist-remove";
         removeButton.type = "button";
         removeButton.textContent = "Hapus dari Wishlist";
-        removeButton.setAttribute("aria-label", `Hapus ${title} dari wishlist`);
+        removeButton.setAttribute("aria-label", `Hapus ${item.name} dari wishlist`);
+        removeButton.dataset.wishlistRemove = item.id;
 
-        copy.append(label, name, removeButton);
+        const addButton = document.createElement("button");
+        addButton.className = "all-product-add-button";
+        addButton.type = "button";
+        addButton.textContent = item.status === "active" && item.stock > 0 ? "Tambah ke keranjang" : "Tidak tersedia";
+        addButton.disabled = item.status !== "active" || item.stock <= 0;
+        addButton.dataset.wishlistAddCart = item.id;
+
+        copy.append(label, name, description, price, estimate, removeButton, addButton);
         card.append(copy);
         wishlistGrid.append(card);
       });
 
-      wishlistCount.textContent = `${wishlistGrid.children.length} produk tersimpan`;
-      wishlistEmpty.hidden = wishlistGrid.children.length > 0;
+      wishlistCount.textContent = `${wishlistItems.length} produk tersimpan`;
+      wishlistEmpty.hidden = wishlistItems.length > 0;
     };
 
-    productsPage.addEventListener("click", (event) => {
-      const removeButton = event.target.closest(".wishlist-remove");
-      const productId = removeButton?.closest("[data-wishlist-item]")?.dataset.wishlistItem;
-      if (!productId) {
-        return;
-      }
-
-      wishlist.delete(productId);
-      saveWishlist();
+    const loadWishlist = async () => {
+      const result = await authenticatedRequestApi("/api/account-data/wishlist");
+      if (!Array.isArray(result.items)) throw new Error("Data wishlist tidak valid.");
+      wishlistItems = result.items.filter((item) =>
+        item
+        && typeof item.id === "string"
+        && typeof item.name === "string"
+        && Number.isFinite(Number(item.price))
+        && Number.isInteger(item.stock)
+        && typeof item.price_is_estimate === "boolean");
       renderWishlist();
-    });
+    };
 
-    window.addEventListener("storage", (event) => {
-      if (event.key !== wishlistStorageKey) {
+    if (!accountIsAuthenticated) {
+      wishlistNotice.hidden = false;
+      if (wishlistNoticeMessage) wishlistNoticeMessage.textContent = "Masuk ke akun untuk melihat dan menyimpan wishlist.";
+      if (wishlistLoginLink) wishlistLoginLink.hidden = false;
+      wishlistEmpty.hidden = true;
+      wishlistCount.textContent = "Masuk untuk melihat wishlist";
+    } else {
+      wishlistNotice.hidden = true;
+      if (wishlistLoginLink) wishlistLoginLink.hidden = true;
+      void loadWishlist().catch((error) => {
+        console.error("Unable to load wishlist:", error);
+        wishlistNotice.hidden = false;
+        if (wishlistNoticeMessage) {
+          wishlistNoticeMessage.textContent = error instanceof Error ? error.message : "Wishlist tidak dapat dimuat.";
+        }
+      });
+    }
+
+    productsPage.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+      const removeButton = event.target.closest("[data-wishlist-remove]");
+      const addCartButton = event.target.closest("[data-wishlist-add-cart]");
+
+      if (removeButton) {
+        const productId = removeButton.dataset.wishlistRemove;
+        if (!productId) return;
+        void authenticatedRequestApi("/api/account-data/wishlist", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: productId }),
+        }).then(() => loadWishlist()).catch((error) => {
+          console.error("Unable to remove wishlist product:", error);
+          wishlistNotice.hidden = false;
+          if (wishlistNoticeMessage) {
+            wishlistNoticeMessage.textContent = error instanceof Error ? error.message : "Produk tidak dapat dihapus dari wishlist.";
+          }
+        });
         return;
       }
 
-      try {
-        const parsedWishlist = event.newValue ? JSON.parse(event.newValue) : [];
-        if (!Array.isArray(parsedWishlist) || !parsedWishlist.every((item) => typeof item === "string")) {
-          showStorageNotice();
-          return;
-        }
-        wishlist = new Set(parsedWishlist);
-        renderWishlist();
-      } catch {
-        showStorageNotice();
+      if (addCartButton) {
+        const productId = addCartButton.dataset.wishlistAddCart;
+        const item = wishlistItems.find((candidate) => candidate.id === productId);
+        if (!item || item.stock <= 0) return;
+        void authenticatedRequestApi("/api/account-data/cart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: item.id }),
+        }).then(() => notifyCartUpdated()).catch((error) => {
+          console.error("Unable to add wishlist product to cart:", error);
+          wishlistNotice.hidden = false;
+          if (wishlistNoticeMessage) {
+            wishlistNoticeMessage.textContent = error instanceof Error ? error.message : "Produk tidak dapat ditambahkan ke keranjang.";
+          }
+        });
       }
     });
-
-    renderWishlist();
   }
 }
 
@@ -1400,29 +1880,29 @@ if (accountPage) {
   const logoutButton = accountPage.querySelector("#account-logout");
   const logoutLabel = accountPage.querySelector("#account-logout-label");
 
-  const renderAccountCart = () => {
+  const renderAccountCart = async () => {
     if (!(accountCartItems instanceof HTMLElement)) return;
     accountCartItems.replaceChildren();
     if (accountCartFeedback) accountCartFeedback.textContent = "";
 
-    try {
-      const savedCart = localStorage.getItem(cartStorageKey);
-      const cart = savedCart ? JSON.parse(savedCart) : [];
-      if (!Array.isArray(cart)) throw new Error("Format keranjang tidak valid.");
+    if (!accountIsAuthenticated) {
+      if (accountCartSummary) accountCartSummary.textContent = "Masuk untuk menyimpan dan melihat keranjang.";
+      if (accountCartEmpty) accountCartEmpty.hidden = false;
+      return;
+    }
 
-      const validItems = cart.filter((item) =>
+    try {
+      const result = await authenticatedRequestApi("/api/account-data/cart");
+      if (!Array.isArray(result.items)) throw new Error("Data keranjang tidak valid.");
+      const validItems = result.items.filter((item) =>
         item
         && typeof item.productId === "string"
         && typeof item.name === "string"
-        && Number.isFinite(item.price)
-        && item.price > 0
+        && Number.isFinite(Number(item.price))
+        && Number(item.price) > 0
         && Number.isInteger(item.quantity)
         && item.quantity > 0
-        && Number.isInteger(item.stock)
-        && item.stock >= 0);
-      if (validItems.length !== cart.length) {
-        throw new Error("Sebagian data produk di keranjang tidak valid.");
-      }
+        && Number.isInteger(item.stock));
 
       if (accountCartEmpty) accountCartEmpty.hidden = validItems.length > 0;
       if (accountCartSummary) {
@@ -1440,6 +1920,7 @@ if (accountPage) {
       }).format(price);
 
       validItems.forEach((item, index) => {
+        const priceValue = Number(item.price);
         const row = document.createElement("article");
         row.className = "account-cart-item";
 
@@ -1453,7 +1934,7 @@ if (accountPage) {
         const name = document.createElement("strong");
         name.textContent = item.name;
         const unitPrice = document.createElement("span");
-        unitPrice.textContent = `${formatPrice(item.price)} / item`;
+        unitPrice.textContent = `${formatPrice(priceValue)} / item`;
         details.append(name, unitPrice);
 
         const quantity = document.createElement("span");
@@ -1462,7 +1943,7 @@ if (accountPage) {
 
         const subtotal = document.createElement("strong");
         subtotal.className = "account-cart-item-subtotal";
-        subtotal.textContent = formatPrice(item.price * item.quantity);
+        subtotal.textContent = formatPrice(priceValue * item.quantity);
 
         row.append(artwork, details, quantity, subtotal);
         accountCartItems.append(row);
@@ -1479,11 +1960,8 @@ if (accountPage) {
     }
   };
 
-  renderAccountCart();
-  window.addEventListener("storage", (event) => {
-    if (event.key === cartStorageKey || event.key === null) renderAccountCart();
-  });
-  window.addEventListener("pageshow", renderAccountCart);
+  void renderAccountCart();
+  document.addEventListener("kurostore:cart-updated", () => void renderAccountCart());
 
   if (accountLocked && accountContent) {
     accountLocked.hidden = canAccessAccount;
@@ -1515,26 +1993,32 @@ if (accountPage) {
       profilePhone.value = sessionStorage.getItem("kurostore-user-phone") || "";
     }
 
-    try {
-      const savedAddress = readSavedShippingAddress();
-      const addressName = accountPage.querySelector("#address-name");
-      const addressPhone = accountPage.querySelector("#address-phone");
-      const addressStreet = accountPage.querySelector("#address-street");
-      const addressCity = accountPage.querySelector("#address-city");
-      const addressPostalCode = accountPage.querySelector("#address-postal-code");
-      if (savedAddress) {
-        if (addressName instanceof HTMLInputElement) addressName.value = savedAddress.name;
-        if (addressPhone instanceof HTMLInputElement) addressPhone.value = savedAddress.phone;
-        if (addressStreet instanceof HTMLTextAreaElement) addressStreet.value = savedAddress.address;
-        if (addressCity instanceof HTMLInputElement) addressCity.value = savedAddress.city;
-        if (addressPostalCode instanceof HTMLInputElement) addressPostalCode.value = savedAddress.postalCode;
-      } else {
-        if (addressName instanceof HTMLInputElement) addressName.value = profileName?.value || "";
-        if (addressPhone instanceof HTMLInputElement) addressPhone.value = profilePhone?.value || "";
-      }
-    } catch (error) {
-      console.error("Unable to load saved shipping address:", error);
-      if (addressFeedback) addressFeedback.textContent = "Alamat tersimpan tidak dapat dibaca. Periksa penyimpanan browser.";
+    if (accountIsAuthenticated) {
+      void authenticatedRequestApi("/api/account-data/address").then((result) => {
+        const savedAddress = result.address;
+        const addressName = accountPage.querySelector("#address-name");
+        const addressPhone = accountPage.querySelector("#address-phone");
+        const addressStreet = accountPage.querySelector("#address-street");
+        const addressCity = accountPage.querySelector("#address-city");
+        const addressPostalCode = accountPage.querySelector("#address-postal-code");
+        if (savedAddress) {
+          if (addressName instanceof HTMLInputElement) addressName.value = savedAddress.name;
+          if (addressPhone instanceof HTMLInputElement) addressPhone.value = savedAddress.phone;
+          if (addressStreet instanceof HTMLTextAreaElement) addressStreet.value = savedAddress.address;
+          if (addressCity instanceof HTMLInputElement) addressCity.value = savedAddress.city;
+          if (addressPostalCode instanceof HTMLInputElement) addressPostalCode.value = savedAddress.postalCode;
+        } else {
+          if (addressName instanceof HTMLInputElement) addressName.value = profileName?.value || "";
+          if (addressPhone instanceof HTMLInputElement) addressPhone.value = profilePhone?.value || "";
+        }
+      }).catch((error) => {
+        console.error("Unable to load saved shipping address:", error);
+        if (addressFeedback) {
+          addressFeedback.textContent = error instanceof Error ? error.message : "Alamat tersimpan tidak dapat dimuat.";
+        }
+      });
+    } else if (addressFeedback) {
+      addressFeedback.textContent = "Masuk ke akun untuk menyimpan alamat pengiriman.";
     }
 
     if (!accountIsAuthenticated && logoutLabel) {
@@ -1624,13 +2108,24 @@ if (accountPage) {
       return;
     }
 
-    try {
-      localStorage.setItem(shippingAddressStorageKey, JSON.stringify(address));
-      addressFeedback.textContent = "Alamat berhasil disimpan dan akan terisi otomatis saat checkout.";
-    } catch (error) {
-      console.error("Unable to save shipping address:", error);
-      addressFeedback.textContent = "Alamat tidak dapat disimpan. Periksa ruang penyimpanan browser dan coba lagi.";
+    if (!accountIsAuthenticated) {
+      addressFeedback.textContent = "Masuk ke akun terlebih dahulu untuk menyimpan alamat.";
+      return;
     }
+
+    void authenticatedRequestApi("/api/account-data/address", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...address,
+        postal_code: address.postalCode,
+      }),
+    }).then(() => {
+      addressFeedback.textContent = "Alamat tersimpan di akunmu dan akan terisi otomatis saat checkout.";
+    }).catch((error) => {
+      console.error("Unable to save shipping address:", error);
+      addressFeedback.textContent = error instanceof Error ? error.message : "Alamat tidak dapat disimpan.";
+    });
   });
 
   const loadAccountOrders = async () => {
@@ -1677,6 +2172,14 @@ if (accountPage) {
         partial_refunded: "Dikembalikan sebagian",
         disputed: "Dalam sengketa",
       };
+      const orderStatusLabels = {
+        pending: "Menunggu pembayaran",
+        paid: "Pesanan dibayar",
+        processing: "Pesanan diproses",
+        shipped: "Pesanan dikirim",
+        completed: "Pesanan selesai",
+        cancelled: "Pesanan dibatalkan",
+      };
 
       result.orders.forEach((order) => {
         if (!order || typeof order.orderId !== "string" || !Array.isArray(order.items)) {
@@ -1696,7 +2199,7 @@ if (accountPage) {
         identity.append(orderId, createdAt);
         const status = document.createElement("span");
         status.className = `account-order-status account-order-status-${order.paymentStatus}`;
-        status.textContent = paymentLabels[order.paymentStatus] || "Status diperbarui";
+        status.textContent = orderStatusLabels[order.status] || paymentLabels[order.paymentStatus] || "Status diperbarui";
         heading.append(identity, status);
 
         const itemList = document.createElement("ul");
@@ -1708,6 +2211,69 @@ if (accountPage) {
           const subtotal = document.createElement("strong");
           subtotal.textContent = formatPrice(item.unitPrice * item.quantity);
           itemRow.append(name, subtotal);
+
+          if (item.priceIsEstimate) {
+            const estimate = document.createElement("small");
+            estimate.className = "price-estimate-badge";
+            estimate.textContent = "Harga estimasi saat pembelian";
+            itemRow.append(estimate);
+          }
+
+          if (order.status === "completed" && typeof item.productId === "string") {
+            if (item.review && Number.isInteger(item.review.rating)) {
+              const review = document.createElement("div");
+              review.className = "account-product-review";
+              const rating = document.createElement("strong");
+              rating.textContent = `${"★".repeat(item.review.rating)}${"☆".repeat(5 - item.review.rating)} · ${item.review.rating}/5`;
+              review.append(rating);
+              if (typeof item.review.comment === "string" && item.review.comment) {
+                const comment = document.createElement("p");
+                comment.textContent = item.review.comment;
+                review.append(comment);
+              }
+              itemRow.append(review);
+            } else {
+              const reviewForm = document.createElement("form");
+              reviewForm.className = "account-product-review-form";
+              reviewForm.dataset.productRatingForm = "true";
+              reviewForm.dataset.productId = item.productId;
+              reviewForm.dataset.orderId = order.id;
+
+              const ratingLabel = document.createElement("label");
+              ratingLabel.textContent = "Rating";
+              const ratingSelect = document.createElement("select");
+              ratingSelect.name = "rating";
+              ratingSelect.required = true;
+              const ratingPlaceholder = document.createElement("option");
+              ratingPlaceholder.value = "";
+              ratingPlaceholder.textContent = "Pilih bintang";
+              ratingPlaceholder.disabled = true;
+              ratingPlaceholder.selected = true;
+              ratingSelect.append(ratingPlaceholder);
+              for (let value = 5; value >= 1; value -= 1) {
+                const option = document.createElement("option");
+                option.value = String(value);
+                option.textContent = `${"★".repeat(value)}${"☆".repeat(5 - value)} · ${value}/5`;
+                ratingSelect.append(option);
+              }
+              ratingLabel.append(ratingSelect);
+
+              const commentLabel = document.createElement("label");
+              commentLabel.textContent = "Ulasan (opsional)";
+              const commentInput = document.createElement("textarea");
+              commentInput.name = "comment";
+              commentInput.maxLength = 1000;
+              commentInput.rows = 2;
+              commentInput.placeholder = "Ceritakan pengalamanmu memakai produk ini";
+              commentLabel.append(commentInput);
+
+              const submit = document.createElement("button");
+              submit.type = "submit";
+              submit.textContent = "Kirim rating";
+              reviewForm.append(ratingLabel, commentLabel, submit);
+              itemRow.append(reviewForm);
+            }
+          }
           itemList.append(itemRow);
         });
 
@@ -1719,6 +2285,15 @@ if (accountPage) {
         totalAmount.textContent = formatPrice(order.total);
         total.append(totalLabel, totalAmount);
         card.append(heading, itemList, total);
+
+        if (order.paymentStatus === "paid" && order.status !== "completed") {
+          const completeButton = document.createElement("button");
+          completeButton.type = "button";
+          completeButton.className = "account-order-complete-button";
+          completeButton.dataset.completeOrder = order.id;
+          completeButton.textContent = "Saya sudah menerima pesanan";
+          card.append(completeButton);
+        }
         ordersList.append(card);
       });
     } catch (error) {
@@ -1729,6 +2304,57 @@ if (accountPage) {
       }
     }
   };
+
+  ordersList?.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest("[data-complete-order]");
+    const orderId = button?.getAttribute("data-complete-order");
+    if (!(button instanceof HTMLButtonElement) || !orderId) return;
+
+    button.disabled = true;
+    button.textContent = "Memproses...";
+    void authenticatedRequestApi("/api/account-data/complete-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_id: orderId }),
+    }).then(() => loadAccountOrders()).catch((error) => {
+      console.error("Unable to confirm order receipt:", error);
+      ordersFeedback.textContent = error instanceof Error ? error.message : "Pesanan tidak dapat diselesaikan.";
+      button.disabled = false;
+      button.textContent = "Saya sudah menerima pesanan";
+    });
+  });
+
+  ordersList?.addEventListener("submit", (event) => {
+    if (!(event.target instanceof HTMLFormElement)
+      || event.target.dataset.productRatingForm !== "true") return;
+    event.preventDefault();
+    const form = event.target;
+    const productId = form.dataset.productId;
+    const orderId = form.dataset.orderId;
+    const submit = form.querySelector('button[type="submit"]');
+    const formData = new FormData(form);
+    const rating = Number(formData.get("rating"));
+    const comment = String(formData.get("comment") || "").trim();
+    if (!productId || !orderId || !Number.isInteger(rating) || rating < 1 || rating > 5) return;
+
+    if (submit instanceof HTMLButtonElement) {
+      submit.disabled = true;
+      submit.textContent = "Mengirim...";
+    }
+    void authenticatedRequestApi("/api/account-data/ratings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ product_id: productId, order_id: orderId, rating, comment }),
+    }).then(() => loadAccountOrders()).catch((error) => {
+      console.error("Unable to submit product rating:", error);
+      ordersFeedback.textContent = error instanceof Error ? error.message : "Rating produk tidak dapat disimpan.";
+      if (submit instanceof HTMLButtonElement) {
+        submit.disabled = false;
+        submit.textContent = "Kirim rating";
+      }
+    });
+  });
 
   panelButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -2528,12 +3154,12 @@ if (heroCarousel) {
     const heroCaption = heroCarousel.querySelector(".hero-image-caption-text");
     const heroArtworks = [
       {
-        src: "images/kurostore.png",
+        src: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/kurostore.png",
         alt: "Logo Kurostore",
         caption: "Belanja lebih mudah",
       },
       {
-        src: "images/diskon-50.png",
+        src: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/diskon-50.png",
         alt: "Promo diskon 50 persen",
         caption: "Promo spesial",
       },
@@ -2777,6 +3403,7 @@ if (menuToggle && primaryNavigation) {
     const nextUrl = new URL(window.location.href);
     nextUrl.hash = link.hash;
     if (nextView !== "categories") nextUrl.searchParams.delete("q");
+    if (nextView === "categories") nextUrl.searchParams.delete("category");
     if (window.location.href !== nextUrl.href || window.history.state?.viewMode !== nextView) {
       window.history.pushState(
         { viewMode: nextView },
@@ -2789,6 +3416,8 @@ if (menuToggle && primaryNavigation) {
     if (matchingNavigationLink) setActiveNavigationLink(matchingNavigationLink);
     if (nextView === "latest") {
       document.dispatchEvent(new Event("kurostore:show-latest"));
+    } else if (nextView === "categories") {
+      document.dispatchEvent(new Event("kurostore:restore-catalog"));
     }
     const isViewTransition = nextView !== "home" || link.hash === "#konten-utama";
     if (isViewTransition) {

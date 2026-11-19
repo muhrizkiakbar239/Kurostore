@@ -36,7 +36,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   const { data: items, error: itemsError } = await supabase
     .from('order_items')
-    .select('order_id, product_name, unit_price, quantity')
+    .select('order_id, product_id, product_name, unit_price, price_is_estimate, quantity')
     .in('order_id', orders.map((order) => order.id))
     .order('created_at', { ascending: true });
 
@@ -46,17 +46,46 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
+  const productIds = [...new Set((items ?? [])
+    .map((item) => item.product_id)
+    .filter((productId): productId is string => typeof productId === 'string'))];
+  const { data: reviews, error: reviewsError } = productIds.length > 0
+    ? await supabase
+      .from('product_reviews')
+      .select('product_id, rating, comment, created_at, updated_at')
+      .eq('user_id', account.user.id)
+      .in('product_id', productIds)
+    : { data: [], error: null };
+
+  if (reviewsError) {
+    console.error('Unable to load buyer product ratings:', reviewsError.message);
+    sendJson(response, 500, { error: 'Rating produk tidak dapat dimuat.' });
+    return;
+  }
+
+  const reviewsByProductId = new Map((reviews ?? []).map((review) => [review.product_id, {
+    rating: review.rating,
+    comment: review.comment,
+    createdAt: review.created_at,
+    updatedAt: review.updated_at,
+  }]));
   const itemsByOrder = new Map<string, Array<{
+    productId: string | null;
     name: string;
     unitPrice: number;
+    priceIsEstimate: boolean;
     quantity: number;
+    review: { rating: number; comment: string; createdAt: string; updatedAt: string } | null;
   }>>();
   for (const item of items ?? []) {
     const orderItems = itemsByOrder.get(item.order_id) ?? [];
     orderItems.push({
+      productId: item.product_id,
       name: item.product_name,
       unitPrice: Number(item.unit_price),
+      priceIsEstimate: item.price_is_estimate,
       quantity: item.quantity,
+      review: item.product_id ? reviewsByProductId.get(item.product_id) ?? null : null,
     });
     itemsByOrder.set(item.order_id, orderItems);
   }

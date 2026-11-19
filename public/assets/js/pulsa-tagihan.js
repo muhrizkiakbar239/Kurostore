@@ -211,7 +211,7 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
     ml: {
       title: "Mobile Legends",
       lookupKey: "ml",
-      image: "../images/game-mobile-legends.webp",
+      image: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/game-mobile-legends.webp",
       currency: "Diamond",
       targetLabel: "User ID",
       placeholder: "Masukkan User ID",
@@ -230,7 +230,7 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
     ff: {
       title: "Free Fire",
       lookupKey: "ff",
-      image: "../images/game-free-fire.jpg",
+      image: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/game-free-fire.jpg",
       currency: "Diamond",
       targetLabel: "Player ID",
       placeholder: "Masukkan Player ID",
@@ -246,7 +246,7 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
     roblox: {
       title: "Roblox",
       lookupKey: "roblox",
-      image: "../images/game-roblox.jpg",
+      image: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/game-roblox.jpg",
       currency: "Robux",
       targetLabel: "Username Roblox",
       placeholder: "Masukkan username Roblox",
@@ -262,7 +262,7 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
     genshin: {
       title: "Genshin Impact",
       lookupKey: "genshin",
-      image: "../images/game-genshin-impact.jpg",
+      image: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/game-genshin-impact.jpg",
       currency: "Genesis Crystal",
       targetLabel: "UID Genshin Impact",
       placeholder: "Masukkan UID Genshin Impact",
@@ -277,7 +277,7 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
     hsr: {
       title: "Honkai: Star Rail",
       lookupKey: "hsr",
-      image: "../images/game-honkai-star-rail.webp",
+      image: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/game-honkai-star-rail.webp",
       currency: "Oneiric Shard",
       targetLabel: "UID Honkai: Star Rail",
       placeholder: "Masukkan UID Honkai: Star Rail",
@@ -291,11 +291,15 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
     },
     wuwa: {
       title: "Wuthering Waves",
-      image: "../images/game-wuthering-waves.webp",
+      lookupMinLength: 9,
+      lookupUnavailableMessage: "Belum ada API publik yang bisa memeriksa nickname Wuthering Waves dari UID. Pastikan nickname langsung di dalam game.",
+      image: "https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/game-wuthering-waves.webp",
       currency: "Lunite",
       targetLabel: "UID Wuthering Waves",
       placeholder: "Masukkan UID Wuthering Waves",
       inputMode: "numeric",
+      minLength: 9,
+      pattern: "[0-9]{9,10}",
       products: [
         { name: "60 Lunite", detail: "Paket Lunite" },
         { name: "300 + 30 Lunite", detail: "Paket Lunite" },
@@ -477,14 +481,15 @@ if (billsWorkspace instanceof HTMLElement && billsShell instanceof HTMLElement) 
 
     const userId = billsTarget.value.trim();
     const zone = billsSecondaryTarget?.value.trim() || "";
-    if (userId.length < 3 || (selectedGame.secondaryLabel && !zone)) {
+    if (userId.length < (selectedGame.lookupMinLength || 3) || (selectedGame.secondaryLabel && !zone)) {
       setGameLookupStatus("");
       return;
     }
 
     if (!selectedGame.lookupKey) {
       setGameLookupStatus(
-        `Pengecekan otomatis gratis belum tersedia untuk ${selectedGame.title}. Pastikan ID game sudah benar.`,
+        selectedGame.lookupUnavailableMessage
+          || `Pengecekan otomatis gratis belum tersedia untuk ${selectedGame.title}. Pastikan ID game sudah benar.`,
         "info",
       );
       return;

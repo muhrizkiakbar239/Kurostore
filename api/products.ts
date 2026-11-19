@@ -1,6 +1,20 @@
 import { queryString, sendJson, validUuid, type VercelRequest, type VercelResponse } from '../lib/backend/http.js';
 import { createAdminClient, isSupabaseConfigured } from '../lib/backend/supabase.js';
 
+type ProductRatingSummary = {
+  product_id: string;
+  average_rating: number | string;
+  rating_count: number | string;
+};
+
+function isProductRatingSummary(value: unknown): value is ProductRatingSummary {
+  if (!value || typeof value !== 'object') return false;
+  const summary = value as Record<string, unknown>;
+  return typeof summary.product_id === 'string'
+    && (typeof summary.average_rating === 'number' || typeof summary.average_rating === 'string')
+    && (typeof summary.rating_count === 'number' || typeof summary.rating_count === 'string');
+}
+
 export default async function handler(request: VercelRequest, response: VercelResponse): Promise<void> {
   if (request.method !== 'GET') {
     response.setHeader('Allow', 'GET');
@@ -55,7 +69,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const supabase = createAdminClient();
   let query = supabase
     .from('products')
-    .select('id, seller_id, category_id, name, description, price, stock, sales_count, created_at', { count: 'exact' })
+    .select('id, seller_id, category_id, name, description, price, price_is_estimate, stock, sales_count, created_at', { count: 'exact' })
     .eq('status', 'active')
     .range(offset, offset + pageSize - 1);
 
@@ -75,8 +89,41 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
+  const productIds = (data ?? []).map((product) => product.id);
+  const { data: ratingSummaries, error: ratingsError } = productIds.length > 0
+    ? await supabase.rpc('get_product_rating_summary', { target_product_ids: productIds })
+    : { data: [], error: null };
+  if (ratingsError) {
+    console.error('Unable to fetch product rating summaries:', ratingsError.message);
+    sendJson(response, 500, { error: 'Rating produk tidak dapat dimuat saat ini.' });
+    return;
+  }
+
+  const ratingsByProductId = new Map<string, { average: number; count: number }>();
+  const ratingRows: unknown = ratingSummaries ?? [];
+  if (!Array.isArray(ratingRows) || !ratingRows.every(isProductRatingSummary)) {
+    console.error('Unable to parse product rating summaries.');
+    sendJson(response, 500, { error: 'Rating produk tidak dapat dimuat saat ini.' });
+    return;
+  }
+  for (const summary of ratingRows) {
+    const average = Number(summary.average_rating);
+    const count = Number(summary.rating_count);
+    if (!Number.isFinite(average) || !Number.isSafeInteger(count) || count < 0) {
+      console.error('Invalid product rating summary returned from database.');
+      sendJson(response, 500, { error: 'Rating produk tidak dapat dimuat saat ini.' });
+      return;
+    }
+    ratingsByProductId.set(summary.product_id, { average, count });
+  }
+
+  response.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
   sendJson(response, 200, {
-    products: data,
+    products: (data ?? []).map((product) => ({
+      ...product,
+      rating_average: ratingsByProductId.get(product.id)?.average ?? 0,
+      rating_count: ratingsByProductId.get(product.id)?.count ?? 0,
+    })),
     pagination: {
       page,
       pageSize,

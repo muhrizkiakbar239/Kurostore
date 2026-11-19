@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#f5f3f6">
   <meta name="description" content="Periksa alamat, pesanan, dan pembayaran Kurostore.">
   <title>Checkout | Kurostore</title>
-  <link rel="icon" type="image/png" href="../images/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261109-2">
-  <script src="../../assets/js/style.js?v=20261118-1" defer></script>
+  <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261119-4">
+  <script src="../../assets/js/style.js?v=20261119-5" defer></script>
 </head>
 <body class="cart-page checkout-page">
   <header class="cart-header checkout-header">
     <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
-      <img src="../../images/kurostore-cart-logo.png" alt="Kurostore" width="2172" height="724">
+      <img src="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/kurostore-cart-logo.png" alt="Kurostore" width="650" height="217">
     </a>
     <span class="checkout-header-title">Checkout</span>
     <a class="cart-header-link" href="keranjang.html">Kembali ke keranjang</a>
@@ -102,7 +102,7 @@
             <ul class="checkout-item-list" id="checkout-item-list"></ul>
             <div class="checkout-delivery-row">
               <span class="checkout-delivery-label">Opsi pengiriman</span>
-              <span class="checkout-delivery-unavailable">Biaya dan pilihan kurir belum tersedia untuk demo ini</span>
+              <span class="checkout-delivery-unavailable">Ongkos kirim belum tersedia; total ini hanya mencakup harga produk.</span>
             </div>
             <div class="checkout-order-subtotal">
               <span>Total produk</span>
@@ -146,6 +146,7 @@
               </label>
             </div>
             <p class="checkout-payment-note">*Metode yang tampil bergantung pada ketersediaan akun Midtrans dan dapat berbeda di halaman pembayaran.</p>
+            <p class="checkout-environment-note" id="checkout-environment-note" role="status" aria-live="polite">Memeriksa mode pembayaran...</p>
           </section>
         </form>
 
@@ -159,7 +160,7 @@
             <span>Ongkos kirim</span>
             <span>Belum tersedia</span>
           </div>
-          <p class="checkout-shipping-disclaimer">Total saat ini belum termasuk ongkos kirim. Pengiriman belum terintegrasi pada demo Kurostore.</p>
+          <p class="checkout-shipping-disclaimer">Total saat ini belum termasuk ongkos kirim. Pilihan kurir dan perhitungannya belum tersedia.</p>
           <div class="checkout-total-footer">
             <span>Total pembayaran</span>
             <strong id="checkout-payable-total">Rp0</strong>

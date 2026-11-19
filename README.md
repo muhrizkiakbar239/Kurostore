@@ -22,6 +22,24 @@ Backend untuk Supabase dan Vercel. Form masuk, daftar, dan pengajuan seller terh
 
 Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` di berkas frontend atau repositori.
 
+## Katalog seed dan harga
+
+Setelah migrasi selesai dan toko `kurostore-demo` tersedia, isi katalog dengan 20 produk untuk setiap kategori yang memiliki produk demo. Kategori Voucher dan Produk Digital sengaja dibiarkan tanpa produk sampai layanan digital tersedia:
+
+1. Pastikan `.env.local` berisi `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`.
+2. Jalankan `node supabase\seeds\seed_demo_catalog.mjs`.
+
+Seed dapat dijalankan ulang tanpa menggandakan produk. Gunakan `node supabase\seeds\seed_demo_catalog.mjs --descriptions-only` untuk memperbarui hanya keterangan produk tanpa mengubah harga atau stok. Harga katalog ditandai sebagai estimasi pasar, bukan harga resmi yang telah diverifikasi.
+
+Terapkan semua file SQL di `supabase/migrations` secara berurutan berdasarkan timestamp. Untuk alamat checkout, penanda harga estimasi, dan rating, pastikan migrasi `20261119000000_account_saved_data.sql` dan `20261119140000_catalog_estimates_and_ratings.sql` sudah dijalankan.
+
+Untuk memindahkan aset [public/images](public/images) ke Supabase Storage:
+
+1. Jalankan `20261119160000_asset_storage.sql` di Supabase SQL Editor.
+2. Jalankan `node supabase/seeds/migrate_static_assets.mjs`.
+
+Script membuat atau memperbarui bucket publik `kurostore-assets`, mengunggah gambar, mencatat metadata di tabel `asset_files`, dan mengganti referensi frontend dengan URL Supabase. Berkas lokal tetap disimpan sebagai cadangan sampai hasil URL diverifikasi.
+
 ## Menjalankan lokal dan deploy
 
 - `npm install`
@@ -30,7 +48,7 @@ Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` d
 - `npx vercel dev`
 - Deploy proyek ke Vercel dengan root proyek ini; tambahkan variabel dari `.env.example` pada pengaturan Environment Variables Vercel.
 - Backend membutuhkan Node.js 22 atau lebih baru.
-- Endpoint admin memakai satu catch-all Serverless Function agar jumlah fungsi tetap sesuai batas Hobby Vercel.
+- Endpoint admin dan data akun memakai catch-all Serverless Function agar jumlah fungsi tetap sesuai batas Hobby Vercel.
 
 ## Endpoint yang tersedia
 
@@ -40,9 +58,14 @@ Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` d
 | POST | `/api/auth/register` | Publik |
 | POST | `/api/auth/refresh` | Pengguna masuk; memperbarui sesi dengan refresh token |
 | GET | `/api/auth/me` | Pengguna masuk |
-| GET | `/api/categories` | Publik |
-| GET | `/api/products` | Publik; `q`, `category_id`, `sort=newest\|popular\|price_low\|price_high`, `page`, `page_size` |
+| GET | `/api/categories` | Publik; cache CDN 5 menit |
+| GET | `/api/products` | Publik; `q`, `category_id`, `sort=newest\|popular\|price_low\|price_high`, `page`, `page_size`; cache CDN 30 detik |
 | GET, POST | `/api/seller/applications` | Pengguna masuk; POST khusus buyer |
+| GET, POST, PATCH, DELETE | `/api/account-data/cart` | Pengguna masuk; keranjang tersimpan per akun |
+| GET, POST, DELETE | `/api/account-data/wishlist` | Pengguna masuk; wishlist tersimpan per akun |
+| GET, PUT | `/api/account-data/address` | Pengguna masuk; alamat pengiriman tersimpan per akun |
+| POST | `/api/account-data/complete-order` | Pembeli; mengonfirmasi pesanan sudah diterima setelah pembayaran |
+| POST | `/api/account-data/ratings` | Pengguna masuk; rating 1–5 hanya untuk produk dari pesanan lunas yang sudah diselesaikan |
 | GET, PATCH | `/api/admin/seller-applications` | Admin |
 | GET | `/api/admin/overview` | Admin |
 | GET | `/api/admin/system-health` | Admin; memeriksa API, database/auth Supabase, dan status integrasi pembayaran |
@@ -56,7 +79,7 @@ Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` d
 
 Endpoint menerima `Authorization: Bearer <supabase access token>`. Frontend memperbarui access token yang kedaluwarsa menggunakan refresh token dan mengulang permintaan satu kali; jika refresh token juga tidak berlaku, pengguna perlu masuk kembali. Body JSON seller application memakai `store_name` dan `store_description`. Keputusan admin memakai `application_id`, `decision` (`approved` atau `rejected`), dan `rejection_reason` bila ditolak. Operasi produk memakai `product_id` untuk PATCH/DELETE.
 
-Halaman checkout mengumpulkan alamat penerima dan menyimpan pesanan untuk pengguna yang masuk sebelum membuat transaksi Midtrans Snap. Pilihan checkout menyediakan semua metode Midtrans, e-wallet, virtual account, atau kartu; QRIS tetap dapat dipilih langsung dari Midtrans melalui pilihan semua metode. Status pembayaran diperbarui oleh notifikasi Midtrans di `/api/payments/notification` dan riwayat tampil di menu Pesanan Saya. Jalankan migrasi `20261103000000_midtrans_order_tracking.sql` dan atur URL notifikasi Midtrans ke `https://<domain>/api/payments/notification` sebelum mengaktifkan alur ini di deployment. Alamat utama dapat disimpan dari Pengaturan & Akun di penyimpanan lokal browser dan terisi otomatis saat checkout. Untuk keamanan, nama dan harga produk diambil ulang dari database server, bukan dipercaya dari browser. Biaya pengiriman belum terintegrasi. Halaman Pulsa & Tagihan memakai Roblox, Enka.Network (Genshin/HSR), dan Isan API (Mobile Legends/Free Fire) untuk pengecekan nama akun; profil game harus tersedia di provider. Isan API tidak resmi dan berlisensi CC BY-NC-SA 4.0 (non-komersial); layanan dapat berubah, membatasi permintaan, atau tidak tersedia sewaktu-waktu. Wuthering Waves masih memerlukan verifikasi manual. Pilihan nominal belum memiliki harga provider dan pemesanan atau pembayaran pulsa/tagihan/game belum diproses. Form masuk, daftar, dan pengajuan seller menggunakan API autentikasi Supabase.
+Halaman checkout mengumpulkan alamat penerima dan menyimpan pesanan untuk pengguna yang masuk sebelum membuat transaksi Midtrans Snap. Pilihan checkout menyediakan semua metode Midtrans, e-wallet, virtual account, atau kartu; QRIS tetap dapat dipilih langsung dari Midtrans melalui pilihan semua metode. Status pembayaran diperbarui oleh notifikasi Midtrans di `/api/payments/notification` dan riwayat tampil di menu Pesanan Saya. Pembeli dapat mengonfirmasi penerimaan pesanan lunas lalu memberi satu rating 1–5 per produk; ulasan opsional. Jalankan migrasi `20261103000000_midtrans_order_tracking.sql`, `20261119000000_account_saved_data.sql`, dan `20261119140000_catalog_estimates_and_ratings.sql`, lalu atur URL notifikasi Midtrans ke `https://<domain>/api/payments/notification` sebelum mengaktifkan alur ini di deployment. Keranjang, wishlist, dan alamat tersimpan di Supabase per akun; pengguna harus masuk untuk memakai fitur simpan tersebut. Pilihan produk checkout sementara tetap berada di sessionStorage selama proses checkout. Untuk keamanan, nama dan harga produk diambil ulang dari database server, bukan dipercaya dari browser. Harga seed diberi label estimasi. Biaya pengiriman belum terintegrasi. Midtrans sandbox hanya untuk pengujian, bukan pembayaran uang sungguhan. Halaman Pulsa & Tagihan memakai Roblox, Enka.Network (Genshin/HSR), dan Isan API (Mobile Legends/Free Fire) untuk pengecekan nama akun; profil game harus tersedia di provider. Nama akun yang berhasil diperiksa disimpan tanpa TTL di memori instance API (maksimal 200 entri); cache hilang saat instance dimulai ulang dan nama yang tersimpan mungkin tidak ikut berubah ketika nama akun berganti. Isan API tidak resmi dan berlisensi CC BY-NC-SA 4.0 (non-komersial); layanan dapat berubah, membatasi permintaan, atau tidak tersedia sewaktu-waktu. Semua provider pihak ketiga dapat berubah, membatasi permintaan, atau tidak tersedia sewaktu-waktu. Wuthering Waves belum memiliki API publik yang bisa memeriksa nickname umum dari UID, sehingga perlu diverifikasi langsung di dalam game. Pilihan nominal belum memiliki harga provider dan pemesanan atau pembayaran pulsa/tagihan/game belum diproses. Form masuk, daftar, dan pengajuan seller menggunakan API autentikasi Supabase.
 
 Dashboard admin memeriksa apakah fungsi API merespons, mengukur waktu respons dari browser, menguji koneksi database Supabase, dan menampilkan bahwa autentikasi admin berhasil diverifikasi. Status serta latensi diperbarui otomatis setiap 10 detik selama halaman terbuka. Payment gateway ditandai belum aktif sampai integrasi pembayaran benar-benar tersedia; indikator ini bukan pemantauan uptime eksternal Vercel atau provider pembayaran.
 
@@ -64,7 +87,7 @@ Dashboard admin menampilkan pemberitahuan untuk pengajuan seller yang menunggu, 
 
 ## Halaman placeholder
 
-Bagian Semua Kategori di beranda menampilkan seluruh produk aktif tanpa filter kategori, dengan pencarian, pengurutan umum, dan pagination. Endpoint produk menerima `page` (mulai dari 1) dan `page_size` (1–50), serta mengembalikan total data dan halaman. Halaman keranjang menyimpan pilihan barang secara lokal di browser, menampilkan rekomendasi produk aktif, dan menyediakan kontrol jumlah serta hapus. Checkout menampilkan ringkasan pilihan serta form penerima, lalu membuka pembayaran Midtrans; alamat utama tersimpan di browser dan otomatis dipakai ulang. Ikon Produk Baru, Promo Pilihan, Toko Unggulan, Kolaborasi, KuroPay, dan Voucher Belanja membuka halaman informasi dengan label “Segera Hadir”; transaksi untuk layanan-layanan tersebut belum aktif. Halaman Pulsa & Tagihan menyediakan panel pilihan operator, nominal pulsa/tagihan, serta katalog game bergambar. Pemeriksaan otomatis tersedia untuk Roblox, profil publik Genshin/HSR, Mobile Legends, dan Free Fire melalui API komunitas; Wuthering Waves masih perlu verifikasi manual. Harga produk dan transaksi pulsa/tagihan/game belum tersedia. Wishlist tetap memakai penyimpanan browser. Halaman pengajuan seller dan pengaturan akun juga sudah menyediakan alur yang tersedia.
+Bagian Semua Kategori di beranda menampilkan seluruh produk aktif tanpa filter kategori, dengan pencarian, pengurutan umum, dan pagination. Endpoint produk menerima `page` (mulai dari 1) dan `page_size` (1–50), serta mengembalikan total data dan halaman. Keranjang akun tersimpan di database, menampilkan rekomendasi produk aktif, dan menyediakan kontrol jumlah serta hapus; masuk diperlukan untuk menyimpan barang. Checkout menampilkan ringkasan pilihan serta form penerima, lalu membuka pembayaran Midtrans; alamat utama tersimpan di database dan otomatis dipakai ulang. Wishlist juga tersimpan di database akun dan dapat ditambahkan dari katalog. Ikon Produk Baru, Promo Pilihan, Toko Unggulan, Kolaborasi, KuroPay, dan Voucher Belanja membuka halaman informasi dengan label “Segera Hadir”; transaksi untuk layanan-layanan tersebut belum aktif. Halaman Pulsa & Tagihan menyediakan panel pilihan operator, nominal pulsa/tagihan, serta katalog game bergambar. Pemeriksaan otomatis tersedia untuk Roblox, profil publik Genshin/HSR, Mobile Legends, dan Free Fire; Wuthering Waves belum memiliki provider UID-to-nickname yang dapat dipakai umum dan perlu diverifikasi manual di dalam game. Harga produk dan transaksi pulsa/tagihan/game belum tersedia. Halaman pengajuan seller dan pengaturan akun juga sudah menyediakan alur yang tersedia.
 
 Dashboard dipisah berdasarkan peran:
 
