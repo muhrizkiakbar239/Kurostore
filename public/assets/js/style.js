@@ -1623,6 +1623,7 @@ if (allProductsPage) {
       filtersChanged = true;
     }
     const shouldLoadCatalog = window.location.hash === "#all-products-page"
+      || window.location.hash === "#kategori"
       || Boolean(urlSearch)
       || Boolean(urlCategory);
     const newlyInitialized = shouldLoadCatalog ? initializeCatalog() : false;
