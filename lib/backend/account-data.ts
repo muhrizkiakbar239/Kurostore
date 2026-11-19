@@ -1,3 +1,4 @@
+import midtransClient from 'midtrans-client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { requireRole } from './auth.js';
 import { requestBody, sendJson, validUuid, type VercelRequest, type VercelResponse } from './http.js';
@@ -18,6 +19,24 @@ type CartProduct = {
   stock: number;
   status: string;
 };
+
+type PageResponse<T> = {
+  data: T[] | null;
+  error: { message: string } | null;
+};
+
+async function fetchAllPages<T>(
+  fetchPage: (from: number, to: number) => PromiseLike<PageResponse<T>>,
+): Promise<PageResponse<T>> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await fetchPage(from, from + 999);
+    if (error) return { data: null, error };
+    const page = data ?? [];
+    rows.push(...page);
+    if (page.length < 1000) return { data: rows, error: null };
+  }
+}
 
 function cartItem(product: CartProduct, quantity: number) {
   return {
@@ -462,10 +481,379 @@ async function handleRating(
   sendJson(response, 200, { review: savedReview });
 }
 
+async function handleProfile(
+  request: VercelRequest,
+  response: VercelResponse,
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  if (request.method === 'GET') {
+    const [{ data: profile, error: profileError }, { data: authData, error: authError }] = await Promise.all([
+      supabase.from('profiles').select('full_name, phone').eq('id', userId).maybeSingle(),
+      supabase.auth.admin.getUserById(userId),
+    ]);
+
+    if (profileError || authError || !profile) {
+      console.error('Unable to load account profile:', profileError?.message ?? authError?.message ?? 'Profile not found.');
+      sendJson(response, 500, { error: 'Profil akun tidak dapat dimuat.' });
+      return;
+    }
+
+    sendJson(response, 200, {
+      profile: {
+        name: profile.full_name,
+        phone: profile.phone,
+        email: authData.user.email ?? '',
+      },
+    });
+    return;
+  }
+
+  const body = requestBody(request);
+  const name = typeof body?.name === 'string' ? body.name.trim() : '';
+  const phone = typeof body?.phone === 'string' ? body.phone.trim() : '';
+  if (name.length < 1 || name.length > 80 || phone.length > 30) {
+    sendJson(response, 400, { error: 'Nama atau nomor telepon tidak valid.' });
+    return;
+  }
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .update({ full_name: name, phone })
+    .eq('id', userId)
+    .select('full_name, phone')
+    .maybeSingle();
+
+  if (error || !profile) {
+    console.error('Unable to save account profile:', error?.message ?? 'Profile not found.');
+    sendJson(response, 500, { error: 'Profil akun tidak dapat disimpan.' });
+    return;
+  }
+
+  sendJson(response, 200, { profile: { name: profile.full_name, phone: profile.phone } });
+}
+
+async function handlePreferences(
+  request: VercelRequest,
+  response: VercelResponse,
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  if (request.method === 'GET') {
+    const { data, error } = await supabase
+      .from('account_preferences')
+      .select('preferred_payment_method, email_order_updates, language, theme')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Unable to load account preferences:', error.message);
+      sendJson(response, 500, { error: 'Preferensi akun tidak dapat dimuat.' });
+      return;
+    }
+
+    sendJson(response, 200, {
+      preferences: data ?? {
+        preferred_payment_method: 'all',
+        email_order_updates: false,
+        language: 'id',
+        theme: 'light',
+      },
+      emailNotificationsConfigured: Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL),
+    });
+    return;
+  }
+
+  const body = requestBody(request);
+  const paymentMethod = typeof body?.preferred_payment_method === 'string' ? body.preferred_payment_method : '';
+  const language = typeof body?.language === 'string' ? body.language : '';
+  const theme = typeof body?.theme === 'string' ? body.theme : '';
+  const emailOrderUpdates = body?.email_order_updates;
+
+  if (!['all', 'qris', 'ewallet', 'bank_transfer', 'credit_card', 'kuropay_demo'].includes(paymentMethod)
+    || !['id', 'en', 'ja'].includes(language)
+    || !['light', 'dark'].includes(theme)
+    || typeof emailOrderUpdates !== 'boolean') {
+    sendJson(response, 400, { error: 'Preferensi akun tidak valid.' });
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('account_preferences')
+    .upsert({
+      user_id: userId,
+      preferred_payment_method: paymentMethod,
+      email_order_updates: emailOrderUpdates,
+      language,
+      theme,
+    }, { onConflict: 'user_id' })
+    .select('preferred_payment_method, email_order_updates, language, theme')
+    .single();
+
+  if (error || !data) {
+    console.error('Unable to save account preferences:', error?.message ?? 'No preferences returned.');
+    sendJson(response, 500, { error: 'Preferensi akun tidak dapat disimpan.' });
+    return;
+  }
+
+  sendJson(response, 200, {
+    preferences: data,
+    emailNotificationsConfigured: Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL),
+  });
+}
+
+async function handleDemoWallet(
+  request: VercelRequest,
+  response: VercelResponse,
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  const [{ data: wallet, error: walletError }, { data: walletLedger, error: ledgerError },
+    { data: points, error: pointsError }, { data: pointsLedger, error: pointsLedgerError }] = await Promise.all([
+    supabase.from('kuropay_demo_wallets').select('balance').eq('user_id', userId).maybeSingle(),
+    supabase.from('kuropay_demo_ledger')
+      .select('entry_type, amount, description, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(30),
+    supabase.from('account_reward_points').select('balance').eq('user_id', userId).maybeSingle(),
+    supabase.from('account_reward_ledger')
+      .select('points_delta, description, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(30),
+  ]);
+
+  if (walletError || ledgerError || pointsError || pointsLedgerError) {
+    const message = walletError?.message ?? ledgerError?.message ?? pointsError?.message ?? pointsLedgerError?.message;
+    console.error('Unable to load KuroPay demo data:', message);
+    sendJson(response, 500, { error: 'Saldo atau poin demo tidak dapat dimuat.' });
+    return;
+  }
+
+  const productionMode = process.env.MIDTRANS_IS_PRODUCTION === 'true';
+  sendJson(response, 200, {
+    enabled: !productionMode,
+    environment: productionMode ? 'production' : 'sandbox',
+    wallet: {
+      balance: Number(wallet?.balance ?? 0),
+      ledger: walletLedger ?? [],
+    },
+    rewards: {
+      balance: Number(points?.balance ?? 0),
+      ledger: pointsLedger ?? [],
+      earningRule: '100 poin untuk pesanan demo yang dibayar minimal Rp5.000.',
+      redemptionRule: '100 poin = diskon Rp1.000; poin tidak kedaluwarsa.',
+    },
+  });
+}
+
+async function handleDemoWalletTopup(
+  request: VercelRequest,
+  response: VercelResponse,
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  if (process.env.MIDTRANS_IS_PRODUCTION === 'true') {
+    sendJson(response, 403, { error: 'Saldo demo KuroPay hanya tersedia saat Midtrans sandbox aktif.' });
+    return;
+  }
+
+  const serverKey = process.env.MIDTRANS_SERVER_KEY ?? '';
+  const clientKey = process.env.MIDTRANS_CLIENT_KEY ?? '';
+  if (!serverKey || !clientKey) {
+    sendJson(response, 503, { error: 'Midtrans sandbox belum dikonfigurasi.' });
+    return;
+  }
+
+  const body = requestBody(request);
+  const amount = body?.amount;
+  if (typeof amount !== 'number' || !Number.isInteger(amount) || amount < 5000 || amount > 1000000) {
+    sendJson(response, 400, { error: 'Nominal top up harus antara Rp5.000 dan Rp1.000.000.' });
+    return;
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userId);
+  if (authError || !authData.user.email) {
+    console.error('Unable to load KuroPay demo top up email:', authError?.message ?? 'Email is missing.');
+    sendJson(response, 500, { error: 'Email akun tidak dapat diverifikasi untuk top up.' });
+    return;
+  }
+
+  const orderId = `KPY-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const { data: topup, error: topupError } = await supabase
+    .from('kuropay_demo_topups')
+    .insert({ user_id: userId, midtrans_order_id: orderId, amount })
+    .select('id')
+    .single();
+
+  if (topupError || !topup) {
+    console.error('Unable to create KuroPay demo top up:', topupError?.message ?? 'Top up ID not returned.');
+    sendJson(response, 500, { error: 'Permintaan top up saldo demo tidak dapat disimpan.' });
+    return;
+  }
+
+  try {
+    const snap = new midtransClient.Snap({ isProduction: false, serverKey, clientKey });
+    const transaction = await snap.createTransaction({
+      transaction_details: { order_id: orderId, gross_amount: amount },
+      item_details: [{ id: 'kuropay-demo-topup', price: amount, quantity: 1, name: 'Top up saldo demo KuroPay' }],
+      customer_details: {
+        email: authData.user.email,
+        first_name: typeof authData.user.user_metadata.full_name === 'string'
+          ? authData.user.user_metadata.full_name.slice(0, 100)
+          : 'Pengguna Kurostore',
+      },
+    });
+
+    if (!transaction.token || !transaction.redirect_url) {
+      throw new Error('Midtrans tidak mengembalikan token top up.');
+    }
+
+    sendJson(response, 200, {
+      orderId,
+      amount,
+      token: transaction.token,
+      redirectUrl: transaction.redirect_url,
+      environment: 'sandbox',
+    });
+  } catch (error) {
+    console.error('Unable to create KuroPay sandbox transaction:', error instanceof Error ? error.message : 'Unknown Midtrans error.');
+    const { error: updateError } = await supabase
+      .from('kuropay_demo_topups')
+      .update({ status: 'failed', transaction_status: 'creation_failed' })
+      .eq('id', topup.id)
+      .eq('status', 'pending');
+    if (updateError) {
+      console.error('Unable to mark KuroPay demo top up as failed:', updateError.message);
+    }
+    sendJson(response, 502, { error: 'Top up demo gagal dibuat. Periksa konfigurasi Midtrans sandbox.' });
+  }
+}
+
+async function handleAccountDataExport(
+  request: VercelRequest,
+  response: VercelResponse,
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  const [
+    { data: authData, error: authError },
+    { data: profile, error: profileError },
+    { data: address, error: addressError },
+    { data: preferences, error: preferencesError },
+    { data: orders, error: ordersError },
+    { data: cart, error: cartError },
+    { data: wishlist, error: wishlistError },
+    { data: applications, error: applicationsError },
+    { data: reviews, error: reviewsError },
+    { data: wallet, error: walletError },
+    { data: walletLedger, error: walletLedgerError },
+    { data: rewardPoints, error: rewardPointsError },
+    { data: rewardLedger, error: rewardLedgerError },
+  ] = await Promise.all([
+    supabase.auth.admin.getUserById(userId),
+    supabase.from('profiles').select('full_name, phone, role, created_at, updated_at').eq('id', userId).maybeSingle(),
+    supabase.from('account_addresses').select('name, phone, address, city, postal_code, created_at, updated_at').eq('user_id', userId).maybeSingle(),
+    supabase.from('account_preferences').select('preferred_payment_method, email_order_updates, language, theme').eq('user_id', userId).maybeSingle(),
+    fetchAllPages((from, to) => supabase.from('orders')
+      .select('id, midtrans_order_id, status, payment_status, payment_type, subtotal, points_redeemed, points_discount, created_at')
+      .eq('buyer_id', userId).order('created_at', { ascending: false }).order('id').range(from, to)),
+    fetchAllPages((from, to) => supabase.from('cart_items')
+      .select('product_id, quantity, created_at, updated_at').eq('user_id', userId).order('product_id').range(from, to)),
+    fetchAllPages((from, to) => supabase.from('wishlist_items')
+      .select('product_id, created_at').eq('user_id', userId).order('product_id').range(from, to)),
+    fetchAllPages((from, to) => supabase.from('seller_applications')
+      .select('store_name, store_description, status, submitted_at, reviewed_at, rejection_reason')
+      .eq('user_id', userId).order('submitted_at', { ascending: false }).order('id').range(from, to)),
+    fetchAllPages((from, to) => supabase.from('product_reviews')
+      .select('product_id, order_id, rating, comment, created_at, updated_at').eq('user_id', userId).order('product_id').range(from, to)),
+    supabase.from('kuropay_demo_wallets').select('balance').eq('user_id', userId).maybeSingle(),
+    fetchAllPages((from, to) => supabase.from('kuropay_demo_ledger')
+      .select('entry_type, amount, source_type, description, created_at')
+      .eq('user_id', userId).order('created_at', { ascending: false }).order('id', { ascending: false }).range(from, to)),
+    supabase.from('account_reward_points').select('balance').eq('user_id', userId).maybeSingle(),
+    fetchAllPages((from, to) => supabase.from('account_reward_ledger')
+      .select('points_delta, source_type, description, created_at')
+      .eq('user_id', userId).order('created_at', { ascending: false }).order('id', { ascending: false }).range(from, to)),
+  ]);
+
+  const errors = [
+    authError?.message,
+    profileError?.message,
+    addressError?.message,
+    preferencesError?.message,
+    ordersError?.message,
+    cartError?.message,
+    wishlistError?.message,
+    applicationsError?.message,
+    reviewsError?.message,
+    walletError?.message,
+    walletLedgerError?.message,
+    rewardPointsError?.message,
+    rewardLedgerError?.message,
+  ].filter((message): message is string => Boolean(message));
+
+  if (errors.length > 0 || !authData.user) {
+    console.error('Unable to export account data:', errors.join('; ') || 'Account user not found.');
+    sendJson(response, 500, { error: 'Data akun tidak dapat diekspor saat ini.' });
+    return;
+  }
+
+  const orderItems: unknown[] = [];
+  if (orders && orders.length > 0) {
+    for (let index = 0; index < orders.length; index += 500) {
+      const orderIds = orders.slice(index, index + 500).map((order) => order.id);
+      const { data, error } = await fetchAllPages((from, to) => supabase
+        .from('order_items')
+        .select('order_id, product_id, product_name, unit_price, quantity, price_is_estimate')
+        .in('order_id', orderIds)
+        .order('order_id')
+        .order('id')
+        .range(from, to));
+      if (error) {
+        console.error('Unable to export account order items:', error.message);
+        sendJson(response, 500, { error: 'Detail pesanan tidak dapat diekspor saat ini.' });
+        return;
+      }
+      orderItems.push(...(data ?? []));
+    }
+  }
+
+  sendJson(response, 200, {
+    exportedAt: new Date().toISOString(),
+    account: {
+      email: authData.user.email ?? '',
+      profile,
+      address,
+      preferences,
+      sellerApplications: applications ?? [],
+      reviews: reviews ?? [],
+    },
+    orders: orders ?? [],
+    orderItems,
+    cart: cart ?? [],
+    wishlist: wishlist ?? [],
+    kuropayDemo: {
+      balance: Number(wallet?.balance ?? 0),
+      ledger: walletLedger ?? [],
+    },
+    rewardPoints: {
+      balance: Number(rewardPoints?.balance ?? 0),
+      ledger: rewardLedger ?? [],
+    },
+  });
+}
+
 const routeHandlers: Record<string, { methods: string[]; handle: AccountDataHandler }> = {
   cart: { methods: ['GET', 'POST', 'PATCH', 'DELETE'], handle: handleCart },
   wishlist: { methods: ['GET', 'POST', 'DELETE'], handle: handleWishlist },
   address: { methods: ['GET', 'PUT'], handle: handleAddress },
+  profile: { methods: ['GET', 'PUT'], handle: handleProfile },
+  preferences: { methods: ['GET', 'PUT'], handle: handlePreferences },
+  wallet: { methods: ['GET'], handle: handleDemoWallet },
+  'wallet-topup': { methods: ['POST'], handle: handleDemoWalletTopup },
+  export: { methods: ['GET'], handle: handleAccountDataExport },
   'complete-order': { methods: ['POST'], handle: handleCompleteOrder },
   ratings: { methods: ['POST'], handle: handleRating },
 };

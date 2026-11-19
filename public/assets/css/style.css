@@ -14982,3 +14982,295 @@ body.admin-dashboard-page .admin-notifications-card [hidden] {
   .launch-popular-banner > div > p { font-size: 11px; }
   .launch-popular-empty a { width: 100%; text-align: center; }
 }
+
+.account-profile-field select,
+.checkout-rewards-line input {
+  min-height: 45px;
+  padding: 0 13px;
+  border: 1px solid #e4dfe8;
+  border-radius: 9px;
+  color: #39343f;
+  background: #fdfcfd;
+  font: inherit;
+  font-size: 12px;
+}
+
+.account-profile-field select:focus-visible,
+.checkout-rewards-line input:focus-visible {
+  outline: 3px solid rgb(146 116 165 / 28%);
+  outline-offset: 2px;
+}
+
+.account-setting-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  grid-column: 1 / -1;
+  padding: 16px;
+  border: 1px solid #ece8ef;
+  border-radius: 10px;
+  background: #fcfbfd;
+  cursor: pointer;
+}
+
+.account-setting-toggle input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+  accent-color: #725585;
+}
+
+.account-setting-toggle span {
+  display: grid;
+  gap: 4px;
+}
+
+.account-setting-toggle strong,
+.account-ledger-section h4 {
+  color: #302a35;
+  font-size: 12px;
+}
+
+.account-setting-toggle small {
+  color: #817a87;
+  font-size: 11px;
+}
+
+.account-wallet-card {
+  display: grid;
+  gap: 7px;
+  margin: 21px 0 4px;
+  padding: 21px;
+  border: 1px solid #e8dfed;
+  border-radius: 13px;
+  color: #5f466d;
+  background: linear-gradient(135deg, #f8f3fa, #f0e9f4);
+}
+
+.account-wallet-card > span {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.account-wallet-card > strong {
+  color: #302a35;
+  font-size: 27px;
+  letter-spacing: -0.035em;
+}
+
+.account-wallet-card > small {
+  color: #77717d;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.account-points-card {
+  margin-top: 21px;
+  color: #6a6240;
+  border-color: #eee5c8;
+  background: linear-gradient(135deg, #fcf8e9, #f8f1d7);
+}
+
+.account-wallet-topup-form {
+  padding-bottom: 15px;
+}
+
+.account-ledger-section {
+  margin-top: 20px;
+}
+
+.account-ledger-section h4 {
+  margin: 0 0 10px;
+}
+
+.account-ledger-list {
+  display: grid;
+  gap: 8px;
+}
+
+.account-ledger-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #eeebf0;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.account-ledger-entry > div {
+  display: grid;
+  gap: 4px;
+}
+
+.account-ledger-entry strong {
+  color: #39343f;
+  font-size: 11px;
+}
+
+.account-ledger-entry small,
+.account-ledger-empty {
+  color: #817a87;
+  font-size: 10px;
+}
+
+.account-ledger-entry > strong {
+  flex: 0 0 auto;
+  color: #35704b;
+  text-align: right;
+}
+
+.account-ledger-entry > strong.is-negative {
+  color: #984b50;
+}
+
+.account-ledger-empty {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed #e2dce7;
+  border-radius: 9px;
+}
+
+.account-voucher-empty {
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px dashed #e2dce7;
+  border-radius: 10px;
+  background: #fcfafc;
+}
+
+.account-voucher-empty strong {
+  color: #39343f;
+  font-size: 11px;
+}
+
+.account-voucher-empty p {
+  margin: 5px 0 0;
+  color: #817a87;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.checkout-rewards-line {
+  align-items: center;
+}
+
+.checkout-rewards-line input {
+  width: 112px;
+  min-height: 38px;
+  text-align: right;
+}
+
+.checkout-points-discount strong {
+  color: #35704b;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ink: #f2edf5;
+  --color-muted: #b6aebb;
+  --color-line: #39323f;
+  --color-soft: #25212a;
+  --color-accent: #d7c2e3;
+}
+
+html[data-theme="dark"] body {
+  color: #eee9f1;
+  background: #17141b;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] strong,
+html[data-theme="dark"] label {
+  color: #f4eff7;
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] small,
+html[data-theme="dark"] .cart-eyebrow,
+html[data-theme="dark"] .account-panel-heading p,
+html[data-theme="dark"] .account-heading > p {
+  color: #b9b1c0;
+}
+
+html[data-theme="dark"] .site-header,
+html[data-theme="dark"] .cart-header,
+html[data-theme="dark"] .account-settings-layout,
+html[data-theme="dark"] .account-settings-panel,
+html[data-theme="dark"] .account-card,
+html[data-theme="dark"] .checkout-card,
+html[data-theme="dark"] .checkout-total-card,
+html[data-theme="dark"] .cart-panel,
+html[data-theme="dark"] .cart-empty,
+html[data-theme="dark"] .account-order-card,
+html[data-theme="dark"] .account-cart-item,
+html[data-theme="dark"] .account-ledger-entry,
+html[data-theme="dark"] .account-voucher-empty,
+html[data-theme="dark"] .products-shell,
+html[data-theme="dark"] .bills-shell {
+  color: #eee9f1;
+  border-color: #39323f;
+  background-color: #211d27;
+}
+
+html[data-theme="dark"] .account-sidebar,
+html[data-theme="dark"] .account-profile-field input,
+html[data-theme="dark"] .account-profile-field textarea,
+html[data-theme="dark"] .account-profile-field select,
+html[data-theme="dark"] .checkout-rewards-line input,
+html[data-theme="dark"] .account-setting-toggle,
+html[data-theme="dark"] .account-cart-empty {
+  color: #eee9f1;
+  border-color: #453b4c;
+  background-color: #29242f;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #a79eae;
+}
+
+html[data-theme="dark"] .account-nav-item {
+  color: #d1c7d8;
+}
+
+html[data-theme="dark"] .account-nav-item:hover,
+html[data-theme="dark"] .account-nav-item.is-active {
+  color: #f1e4f8;
+  background: #3a3042;
+}
+
+html[data-theme="dark"] .account-profile-field label,
+html[data-theme="dark"] .account-sidebar-identity strong,
+html[data-theme="dark"] .account-cart-item-details strong,
+html[data-theme="dark"] .account-cart-item-subtotal,
+html[data-theme="dark"] .account-order-heading strong,
+html[data-theme="dark"] .account-order-items strong,
+html[data-theme="dark"] .account-order-total strong,
+html[data-theme="dark"] .account-wallet-card > strong,
+html[data-theme="dark"] .account-ledger-entry strong,
+html[data-theme="dark"] .account-voucher-empty strong {
+  color: #eee9f1;
+}
+
+html[data-theme="dark"] .account-panel-heading,
+html[data-theme="dark"] .account-sidebar-profile,
+html[data-theme="dark"] .account-cart-preview,
+html[data-theme="dark"] .account-order-items {
+  border-color: #39323f;
+}
+
+html[data-theme="dark"] .account-wallet-card {
+  border-color: #51425c;
+  background: linear-gradient(135deg, #34283d, #29232f);
+}
+
+html[data-theme="dark"] .account-points-card {
+  border-color: #62573b;
+  background: linear-gradient(135deg, #393326, #2f2a22);
+}

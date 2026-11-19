@@ -3,6 +3,7 @@ import midtransClient from 'midtrans-client';
 import { requireRole } from '../../lib/backend/auth.js';
 import { requestBody, sendJson, validUuid, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
 import { createAdminClient, isSupabaseConfigured } from '../../lib/backend/supabase.js';
+import { sendPaymentStatusEmailIfEnabled } from '../../lib/backend/email.js';
 
 export default async function handler(request: VercelRequest, response: VercelResponse): Promise<void> {
   if (request.method !== 'POST') {
@@ -13,10 +14,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   const serverKey = process.env.MIDTRANS_SERVER_KEY ?? '';
   const clientKey = process.env.MIDTRANS_CLIENT_KEY ?? '';
-  if (!serverKey || !clientKey) {
-    sendJson(response, 503, { error: 'Midtrans belum dikonfigurasi. Isi MIDTRANS_SERVER_KEY dan MIDTRANS_CLIENT_KEY.' });
-    return;
-  }
 
   if (!isSupabaseConfigured()) {
     sendJson(response, 503, { error: 'Database produk belum dikonfigurasi.' });
@@ -26,18 +23,32 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const body = requestBody(request);
   const rawItems = Array.isArray(body?.items) ? body.items : [];
   const paymentMethod = typeof body?.paymentMethod === 'string' ? body.paymentMethod : 'all';
+  const redeemPoints = body?.redeemPoints === undefined ? 0 : body.redeemPoints;
   const customer = body && typeof body.customer === 'object' && body.customer !== null
     ? body.customer as Record<string, unknown>
     : {};
 
+  const isProduction = process.env.MIDTRANS_IS_PRODUCTION === 'true';
   const enabledPaymentMethods: Record<string, string[]> = {
     qris: ['qris'],
     ewallet: ['gopay', 'shopeepay', 'dana', 'linkaja'],
     bank_transfer: ['bank_transfer', 'echannel'],
     credit_card: ['credit_card'],
   };
-  if (paymentMethod !== 'all' && !enabledPaymentMethods[paymentMethod]) {
+  if (paymentMethod !== 'all' && paymentMethod !== 'kuropay_demo' && !enabledPaymentMethods[paymentMethod]) {
     sendJson(response, 400, { error: 'Metode pembayaran tidak valid.' });
+    return;
+  }
+  if (paymentMethod === 'kuropay_demo' && isProduction) {
+    sendJson(response, 403, { error: 'Saldo KuroPay demo hanya tersedia saat Midtrans sandbox aktif.' });
+    return;
+  }
+  if (typeof redeemPoints !== 'number' || !Number.isInteger(redeemPoints) || redeemPoints < 0 || redeemPoints % 100 !== 0) {
+    sendJson(response, 400, { error: 'Penukaran poin harus dalam kelipatan 100.' });
+    return;
+  }
+  if (redeemPoints > 0 && isProduction) {
+    sendJson(response, 403, { error: 'Penukaran poin demo hanya tersedia saat Midtrans sandbox aktif.' });
     return;
   }
 
@@ -131,13 +142,22 @@ export default async function handler(request: VercelRequest, response: VercelRe
     sendJson(response, 400, { error: 'Total pembayaran tidak valid.' });
     return;
   }
+  const pointsDiscount = (redeemPoints / 100) * 1000;
+  if (pointsDiscount > grossAmount) {
+    sendJson(response, 400, { error: 'Poin yang ditukar melebihi total pesanan.' });
+    return;
+  }
+  if (redeemPoints > Math.floor(grossAmount / 1000) * 100) {
+    sendJson(response, 400, { error: 'Jumlah poin melebihi batas diskon untuk pesanan ini.' });
+    return;
+  }
+  const payableAmount = grossAmount - pointsDiscount;
+  if (paymentMethod !== 'kuropay_demo' && payableAmount > 0 && (!serverKey || !clientKey)) {
+    sendJson(response, 503, { error: 'Midtrans belum dikonfigurasi. Isi MIDTRANS_SERVER_KEY dan MIDTRANS_CLIENT_KEY.' });
+    return;
+  }
 
   const orderId = `KUR-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const snap = new midtransClient.Snap({
-    isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
-    serverKey,
-    clientKey,
-  });
 
   const { data: order, error: orderError } = await supabase
     .from('orders')
@@ -146,6 +166,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
       status: 'pending',
       payment_status: 'pending',
       subtotal: grossAmount,
+      points_redeemed: redeemPoints,
+      points_discount: pointsDiscount,
       midtrans_order_id: orderId,
       shipping_address: {
         first_name: firstName,
@@ -188,18 +210,77 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
+  if (paymentMethod === 'kuropay_demo' || payableAmount === 0) {
+    const { error: walletPaymentError } = await supabase.rpc('pay_demo_wallet_order', {
+      target_user_id: account.user.id,
+      target_order_id: order.id,
+    });
+    if (walletPaymentError) {
+      console.error('Unable to pay order with KuroPay demo:', walletPaymentError.message);
+      const { error: cleanupError } = await supabase.from('orders').delete().eq('id', order.id);
+      if (cleanupError) {
+        console.error('Unable to remove unpaid KuroPay demo order:', cleanupError.message);
+      }
+      const insufficientBalance = walletPaymentError.message.includes('INSUFFICIENT_DEMO_BALANCE');
+      const insufficientPoints = walletPaymentError.message.includes('INSUFFICIENT_REWARD_POINTS');
+      sendJson(response, insufficientBalance || insufficientPoints ? 409 : 500, {
+        error: insufficientBalance
+          ? 'Saldo KuroPay demo tidak cukup untuk membayar pesanan.'
+          : insufficientPoints
+            ? 'Poin tidak cukup untuk ditukar.'
+            : 'Pesanan tidak dapat dibayar dengan saldo demo.',
+      });
+      return;
+    }
+
+    await sendPaymentStatusEmailIfEnabled(supabase, {
+      userId: account.user.id,
+      orderId,
+      status: 'paid',
+      amount: payableAmount,
+    });
+    sendJson(response, 200, {
+      orderId,
+      paid: true,
+      paymentMethod: payableAmount === 0 ? 'reward_points_demo' : 'kuropay_demo',
+      grossAmount,
+      pointsDiscount,
+      payableAmount,
+      environment: 'sandbox',
+    });
+    return;
+  }
+
+  if (redeemPoints > 0) {
+    const { error: reserveError } = await supabase.rpc('reserve_demo_order_points', {
+      target_order_id: order.id,
+      target_points: redeemPoints,
+    });
+    if (reserveError) {
+      console.error('Unable to reserve reward points for checkout:', reserveError.message);
+      const { error: cleanupError } = await supabase.from('orders').delete().eq('id', order.id);
+      if (cleanupError) {
+        console.error('Unable to remove invalid rewards order:', cleanupError.message);
+      }
+      const insufficientPoints = reserveError.message.includes('INSUFFICIENT_REWARD_POINTS');
+      sendJson(response, insufficientPoints ? 409 : 500, {
+        error: insufficientPoints ? 'Poin tidak cukup untuk ditukar.' : 'Poin tidak dapat digunakan pada pesanan ini.',
+      });
+      return;
+    }
+  }
+
   try {
+    const snap = new midtransClient.Snap({
+      isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
+      serverKey,
+      clientKey,
+    });
     const transactionRequest: Record<string, unknown> = {
       transaction_details: {
         order_id: orderId,
-        gross_amount: grossAmount,
+        gross_amount: payableAmount,
       },
-      item_details: validItems.map((item) => ({
-        id: item.id,
-        price: item.price,
-        quantity: item.quantity,
-        name: item.name,
-      })),
       customer_details: {
         first_name: firstName,
         last_name: lastName,
@@ -216,6 +297,14 @@ export default async function handler(request: VercelRequest, response: VercelRe
         },
       },
     };
+    if (redeemPoints === 0) {
+      transactionRequest.item_details = validItems.map((item) => ({
+        id: item.id,
+        price: item.price,
+        quantity: item.quantity,
+        name: item.name,
+      }));
+    }
     if (paymentMethod !== 'all') {
       transactionRequest.enabled_payments = enabledPaymentMethods[paymentMethod];
     }
@@ -228,9 +317,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
     sendJson(response, 200, {
       orderId,
       grossAmount,
+      pointsDiscount,
+      payableAmount,
       token: transaction.token,
       redirectUrl: transaction.redirect_url,
-      environment: process.env.MIDTRANS_IS_PRODUCTION === 'true' ? 'production' : 'sandbox',
+      environment: isProduction ? 'production' : 'sandbox',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Pembayaran tidak dapat dibuat.';
@@ -246,6 +337,14 @@ export default async function handler(request: VercelRequest, response: VercelRe
       .eq('id', order.id);
     if (updateError) {
       console.error('Unable to mark failed checkout order:', updateError.message);
+    }
+    if (redeemPoints > 0) {
+      const { error: releaseError } = await supabase.rpc('release_demo_order_points', {
+        target_order_id: order.id,
+      });
+      if (releaseError) {
+        console.error('Unable to release points for failed checkout:', releaseError.message);
+      }
     }
     sendJson(response, 502, { error: 'Pembayaran gagal dibuat. Cek konfigurasi Midtrans sandbox Anda.' });
   }

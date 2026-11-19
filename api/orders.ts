@@ -19,7 +19,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   const { data: orders, error: ordersError } = await supabase
     .from('orders')
-    .select('id, midtrans_order_id, status, payment_status, payment_type, subtotal, created_at')
+    .select('id, midtrans_order_id, status, payment_status, payment_type, subtotal, points_redeemed, points_discount, created_at')
     .eq('buyer_id', account.user.id)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -97,7 +97,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
       status: order.status,
       paymentStatus: order.payment_status,
       paymentType: order.payment_type,
-      total: Number(order.subtotal),
+      subtotal: Number(order.subtotal),
+      pointsRedeemed: Number(order.points_redeemed),
+      pointsDiscount: Number(order.points_discount),
+      total: Number(order.subtotal) - Number(order.points_discount),
       createdAt: order.created_at,
       items: itemsByOrder.get(order.id) ?? [],
     })),

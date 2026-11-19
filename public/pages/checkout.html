@@ -7,8 +7,8 @@
   <meta name="description" content="Periksa alamat, pesanan, dan pembayaran Kurostore.">
   <title>Checkout | Kurostore</title>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261119-4">
-  <script src="../../assets/js/style.js?v=20261119-5" defer></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261120-1">
+  <script src="../../assets/js/style.js?v=20261120-1" defer></script>
 </head>
 <body class="cart-page checkout-page">
   <header class="cart-header checkout-header">
@@ -144,8 +144,14 @@
                 <span class="checkout-payment-copy"><strong>Kartu debit / kredit</strong><small>Pembayaran kartu melalui Midtrans</small></span>
                 <span class="checkout-payment-check" aria-hidden="true"></span>
               </label>
+              <label class="checkout-payment-option" id="checkout-kuropay-option">
+                <input type="radio" name="payment_method" value="kuropay_demo">
+                <span class="checkout-payment-symbol checkout-payment-symbol-wallet" aria-hidden="true">K</span>
+                <span class="checkout-payment-copy"><strong>KuroPay demo</strong><small>Gunakan saldo simulasi sandbox</small></span>
+                <span class="checkout-payment-check" aria-hidden="true"></span>
+              </label>
             </div>
-            <p class="checkout-payment-note">*Metode yang tampil bergantung pada ketersediaan akun Midtrans dan dapat berbeda di halaman pembayaran.</p>
+            <p class="checkout-payment-note">*Metode yang tampil bergantung pada akun Midtrans. KuroPay demo hanya aktif di sandbox dan bukan uang sungguhan.</p>
             <p class="checkout-environment-note" id="checkout-environment-note" role="status" aria-live="polite">Memeriksa mode pembayaran...</p>
           </section>
         </form>
@@ -155,6 +161,14 @@
           <div class="checkout-total-line">
             <span>Subtotal produk <span id="checkout-quantity">(0 barang)</span></span>
             <strong id="checkout-total">Rp0</strong>
+          </div>
+          <div class="checkout-total-line checkout-rewards-line">
+            <label for="checkout-redeem-points">Tukar poin (<span id="checkout-reward-balance">0</span> tersedia)</label>
+            <input id="checkout-redeem-points" name="redeem_points" type="number" min="0" step="100" value="0" inputmode="numeric">
+          </div>
+          <div class="checkout-total-line checkout-points-discount" id="checkout-points-discount-row" hidden>
+            <span>Diskon poin</span>
+            <strong id="checkout-points-discount">−Rp0</strong>
           </div>
           <div class="checkout-total-line checkout-shipping-total">
             <span>Ongkos kirim</span>

@@ -3,12 +3,14 @@ import login from '../../lib/backend/auth/login.js';
 import me from '../../lib/backend/auth/me.js';
 import refresh from '../../lib/backend/auth/refresh.js';
 import register from '../../lib/backend/auth/register.js';
+import changePassword from '../../lib/backend/auth/change-password.js';
 
 const handlers: Record<string, (request: VercelRequest, response: VercelResponse) => Promise<void>> = {
   login,
   me,
   refresh,
   register,
+  'change-password': changePassword,
 };
 
 export default function handler(request: VercelRequest, response: VercelResponse): Promise<void> {

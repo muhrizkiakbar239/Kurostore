@@ -185,6 +185,196 @@ async function authenticatedRequestApi(url, options = {}) {
   return requestApi(url, { ...options, headers });
 }
 
+window.applyAccountSettingsLanguage = (language) => {
+  if (!accountPage) return;
+  const translations = {
+    en: {
+      "#account-title": "Settings & Account",
+      "#settings-title": "General settings",
+      "#profile-title": "My profile",
+      "#account-address-panel h3": "Shipping address",
+      "#account-payment-title": "Bank & Cards",
+      "#account-kuropay-title": "KuroPay demo",
+      "#account-password-title": "Change password",
+      "#account-notifications-title": "Notification settings",
+      "#account-privacy-title": "Privacy & account data",
+      "#account-language-title": "Language",
+      "#account-theme-title": "Theme",
+      "#account-vouchers-title": "Vouchers & Points",
+      "#account-orders-title": "My orders",
+      "#profile-name": "Name",
+      "#profile-email": "Email",
+      "#profile-phone": "Phone number",
+      "#address-name": "Recipient name",
+      "#address-phone": "Phone number",
+      "#address-street": "Full address",
+      "#address-city": "City / region",
+      "#address-postal-code": "Postal code",
+      "#account-payment-method": "Preferred payment method",
+      "#account-current-password": "Current password",
+      "#account-new-password": "New password",
+      "#account-confirm-password": "Confirm new password",
+      "#account-email-order-updates": "Order status emails",
+      "#account-language": "Language",
+      "#account-theme": "Appearance",
+      "#account-export-data": "Download my data",
+      "#account-wallet-topup-amount": "Demo top-up amount",
+      "#account-wallet-topup-button": "Top up with sandbox",
+      "#account-wallet-balance-label": "Demo balance",
+      "#account-points-balance-label": "Available points",
+    },
+    ja: {
+      "#account-title": "アカウント設定",
+      "#settings-title": "一般設定",
+      "#profile-title": "プロフィール",
+      "#account-address-panel h3": "配送先住所",
+      "#account-payment-title": "銀行・カード",
+      "#account-kuropay-title": "KuroPay デモ",
+      "#account-password-title": "パスワード変更",
+      "#account-notifications-title": "通知設定",
+      "#account-privacy-title": "プライバシーとアカウントデータ",
+      "#account-language-title": "言語",
+      "#account-theme-title": "テーマ",
+      "#account-vouchers-title": "クーポンとポイント",
+      "#account-orders-title": "注文履歴",
+      "#profile-name": "氏名",
+      "#profile-email": "メールアドレス",
+      "#profile-phone": "電話番号",
+      "#address-name": "受取人名",
+      "#address-phone": "電話番号",
+      "#address-street": "住所",
+      "#address-city": "市区町村",
+      "#address-postal-code": "郵便番号",
+      "#account-payment-method": "優先する支払い方法",
+      "#account-current-password": "現在のパスワード",
+      "#account-new-password": "新しいパスワード",
+      "#account-confirm-password": "新しいパスワード（確認）",
+      "#account-email-order-updates": "注文状況メール",
+      "#account-language": "言語",
+      "#account-theme": "表示",
+      "#account-export-data": "データをダウンロード",
+      "#account-wallet-topup-amount": "デモチャージ金額",
+      "#account-wallet-topup-button": "サンドボックスでチャージ",
+      "#account-wallet-balance-label": "デモ残高",
+      "#account-points-balance-label": "利用可能ポイント",
+    },
+  };
+  const navLabels = {
+    en: {
+      profile: "Profile", payment: "Bank & Cards", kuropay: "KuroPay", address: "Address",
+      password: "Change password", notifications: "Notifications", privacy: "Privacy",
+      language: "Language", theme: "Theme", orders: "My orders", vouchers: "Vouchers & Points",
+    },
+    ja: {
+      profile: "プロフィール", payment: "銀行・カード", kuropay: "KuroPay", address: "住所",
+      password: "パスワード変更", notifications: "通知", privacy: "プライバシー",
+      language: "言語", theme: "テーマ", orders: "注文履歴", vouchers: "クーポンとポイント",
+    },
+  };
+  const selectedTranslations = translations[language];
+  if (!selectedTranslations) return;
+
+  Object.entries(selectedTranslations).forEach(([selector, text]) => {
+    const element = accountPage.querySelector(selector);
+    if (element instanceof HTMLSelectElement) {
+      const label = accountPage.querySelector(`label[for="${element.id}"]`);
+      if (label) label.textContent = text;
+    } else if (element instanceof HTMLLabelElement) {
+      const label = accountPage.querySelector(`label[for="${element.id}"]`);
+      if (label) label.childNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) node.textContent = text;
+      });
+    } else if (element instanceof HTMLInputElement && element.type === "checkbox") {
+      const label = accountPage.querySelector(`label[for="${element.id}"] span strong`);
+      if (label) label.textContent = text;
+    } else if (element instanceof HTMLInputElement) {
+      const label = accountPage.querySelector(`label[for="${element.id}"]`);
+      if (label) label.textContent = text;
+    } else if (element instanceof HTMLElement) {
+      element.textContent = text;
+    }
+  });
+
+  accountPage.querySelectorAll("[data-account-panel]").forEach((button) => {
+    const label = navLabels[language][button.dataset.accountPanel];
+    if (!label) return;
+    const textNode = Array.from(button.childNodes).find((node) =>
+      node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+    if (textNode) textNode.textContent = ` ${label}`;
+  });
+
+  const optionLabels = {
+    en: {
+      "#account-payment-method": ["All Midtrans methods", "QRIS", "E-wallet", "Virtual account / bank transfer", "Debit / credit card", "KuroPay demo balance (sandbox)"],
+      "#account-language": ["Bahasa Indonesia", "English", "日本語"],
+      "#account-theme": ["Light", "Dark"],
+    },
+    ja: {
+      "#account-payment-method": ["Midtrans の全決済方法", "QRIS", "電子ウォレット", "銀行振込 / バーチャルアカウント", "デビット / クレジットカード", "KuroPay デモ残高（サンドボックス）"],
+      "#account-language": ["インドネシア語", "英語", "日本語"],
+      "#account-theme": ["ライト", "ダーク"],
+    },
+  };
+  Object.entries(optionLabels[language] || {}).forEach(([selector, labels]) => {
+    const select = accountPage.querySelector(selector);
+    if (!(select instanceof HTMLSelectElement)) return;
+    Array.from(select.options).forEach((option, index) => {
+      if (labels[index]) option.textContent = labels[index];
+    });
+  });
+};
+
+const accountPreferenceStorageKey = "kurostore-account-preferences";
+let currentAccountPreferences = {
+  preferred_payment_method: "all",
+  email_order_updates: false,
+  language: "id",
+  theme: "light",
+};
+
+const applyAccountPreferences = (preferences) => {
+  const next = {
+    ...currentAccountPreferences,
+    ...preferences,
+  };
+  if (!["all", "qris", "ewallet", "bank_transfer", "credit_card", "kuropay_demo"].includes(next.preferred_payment_method)) {
+    next.preferred_payment_method = "all";
+  }
+  if (!["id", "en", "ja"].includes(next.language)) next.language = "id";
+  if (!["light", "dark"].includes(next.theme)) next.theme = "light";
+  if (typeof next.email_order_updates !== "boolean") next.email_order_updates = false;
+
+  currentAccountPreferences = next;
+  document.documentElement.lang = accountPage ? next.language : "id";
+  document.documentElement.dataset.theme = next.theme;
+  localStorage.setItem(accountPreferenceStorageKey, JSON.stringify(next));
+  if (typeof window.applyAccountSettingsLanguage === "function") {
+    window.applyAccountSettingsLanguage(next.language);
+  }
+};
+
+try {
+  const savedPreferences = JSON.parse(localStorage.getItem(accountPreferenceStorageKey) || "null");
+  if (savedPreferences && typeof savedPreferences === "object" && !Array.isArray(savedPreferences)) {
+    applyAccountPreferences(savedPreferences);
+  } else {
+    applyAccountPreferences({});
+  }
+} catch (error) {
+  console.error("Unable to read saved account preferences:", error);
+  applyAccountPreferences({});
+}
+
+if (accountIsAuthenticated) {
+  void authenticatedRequestApi("/api/account-data/preferences")
+    .then((result) => {
+      if (result.preferences && typeof result.preferences === "object") {
+        applyAccountPreferences(result.preferences);
+      }
+    })
+    .catch((error) => console.error("Unable to synchronize account preferences:", error));
+}
+
 function notifyCartUpdated() {
   document.dispatchEvent(new Event("kurostore:cart-updated"));
 }
@@ -668,6 +858,12 @@ if (checkoutPage) {
   const itemList = checkoutPage.querySelector("#checkout-item-list");
   const quantityElement = checkoutPage.querySelector("#checkout-quantity");
   const totalElement = checkoutPage.querySelector("#checkout-total");
+  const payableTotalElement = checkoutPage.querySelector("#checkout-payable-total");
+  const redeemPointsInput = checkoutPage.querySelector("#checkout-redeem-points");
+  const rewardBalanceElement = checkoutPage.querySelector("#checkout-reward-balance");
+  const pointsDiscountRow = checkoutPage.querySelector("#checkout-points-discount-row");
+  const pointsDiscountElement = checkoutPage.querySelector("#checkout-points-discount");
+  const kuropayOption = checkoutPage.querySelector("#checkout-kuropay-option");
   const payButton = checkoutPage.querySelector("#checkout-pay");
   const resultPanel = checkoutPage.querySelector("#checkout-result");
   const resultTitle = checkoutPage.querySelector("#checkout-result-title");
@@ -678,6 +874,10 @@ if (checkoutPage) {
   let cartItems = [];
   let selectedItems = [];
   let checkoutPaymentConfig = null;
+  let rewardBalance = 0;
+  let demoWalletBalance = 0;
+  let demoWalletEnabled = false;
+  let checkoutSubtotal = 0;
 
   const setFeedback = (message) => {
     if (feedback) feedback.textContent = message;
@@ -695,6 +895,19 @@ if (checkoutPage) {
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(price);
+
+  const selectedPoints = () => {
+    const points = Number(redeemPointsInput instanceof HTMLInputElement ? redeemPointsInput.value : 0);
+    return Number.isInteger(points) && points >= 0 ? points : -1;
+  };
+
+  const updateCheckoutTotals = () => {
+    const points = selectedPoints();
+    const discount = points >= 0 && points % 100 === 0 ? (points / 100) * 1000 : 0;
+    if (pointsDiscountRow instanceof HTMLElement) pointsDiscountRow.hidden = discount === 0;
+    if (pointsDiscountElement) pointsDiscountElement.textContent = `−${formatPrice(discount)}`;
+    if (payableTotalElement) payableTotalElement.textContent = formatPrice(Math.max(0, checkoutSubtotal - discount));
+  };
 
   const loadPaymentConfig = async () => {
     const config = await requestApi("/api/payments/config");
@@ -792,12 +1005,12 @@ if (checkoutPage) {
 
     const itemQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
     const total = selectedItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    checkoutSubtotal = total;
     if (quantityElement) quantityElement.textContent = `${itemQuantity} barang`;
     if (totalElement) totalElement.textContent = formatPrice(total);
     const productsTotalElement = checkoutPage.querySelector("#checkout-products-total");
-    const payableTotalElement = checkoutPage.querySelector("#checkout-payable-total");
     if (productsTotalElement) productsTotalElement.textContent = formatPrice(total);
-    if (payableTotalElement) payableTotalElement.textContent = formatPrice(total);
+    updateCheckoutTotals();
 
     const nameInput = form?.querySelector("#checkout-name");
     const emailInput = form?.querySelector("#checkout-email");
@@ -832,7 +1045,47 @@ if (checkoutPage) {
       console.error("Unable to load payment configuration:", error);
       if (environmentNote) environmentNote.textContent = "Pembayaran belum tersedia sampai Midtrans dikonfigurasi.";
     }
+
+    try {
+      const [walletResult, preferenceResult] = await Promise.all([
+        authenticatedRequestApi("/api/account-data/wallet"),
+        authenticatedRequestApi("/api/account-data/preferences"),
+      ]);
+      if (Number.isFinite(Number(walletResult.rewards?.balance))) {
+        rewardBalance = Number(walletResult.rewards.balance);
+      }
+      if (rewardBalanceElement) rewardBalanceElement.textContent = new Intl.NumberFormat("id-ID").format(rewardBalance);
+      if (redeemPointsInput instanceof HTMLInputElement) {
+        redeemPointsInput.max = String(Math.min(rewardBalance, Math.floor(checkoutSubtotal / 1000) * 100));
+        redeemPointsInput.disabled = walletResult.enabled !== true;
+      }
+      demoWalletBalance = Number.isFinite(Number(walletResult.wallet?.balance))
+        ? Number(walletResult.wallet.balance)
+        : 0;
+      demoWalletEnabled = walletResult.enabled === true && checkoutPaymentConfig?.environment === "sandbox";
+      if (kuropayOption instanceof HTMLLabelElement) {
+        kuropayOption.hidden = !demoWalletEnabled;
+        const walletDescription = kuropayOption.querySelector("small");
+        if (walletDescription) walletDescription.textContent = `Saldo demo: ${formatPrice(demoWalletBalance)}`;
+      }
+
+      const preferredMethod = preferenceResult.preferences?.preferred_payment_method;
+      if (typeof preferredMethod === "string" && (preferredMethod !== "kuropay_demo" || demoWalletEnabled)) {
+        const preferredOption = checkoutPage.querySelector(`input[name="payment_method"][value="${preferredMethod}"]`);
+        if (preferredOption instanceof HTMLInputElement && !preferredOption.disabled) {
+          preferredOption.checked = true;
+          checkoutPage.querySelectorAll(".checkout-payment-option").forEach((option) => {
+            option.classList.toggle("is-selected", option.querySelector('input[name="payment_method"]')?.checked === true);
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Unable to load account wallet or checkout preferences:", error);
+      if (kuropayOption instanceof HTMLLabelElement) kuropayOption.hidden = true;
+    }
   };
+
+  redeemPointsInput?.addEventListener("input", updateCheckoutTotals);
 
   void initializeCheckout().catch((error) => {
     console.error("Unable to initialize checkout:", error);
@@ -860,6 +1113,7 @@ if (checkoutPage) {
     const postalCode = String(formData.get("postal_code") || "").trim();
     const phone = String(formData.get("phone") || "").trim();
     const paymentMethod = String(formData.get("payment_method") || "all");
+    const redeemPoints = selectedPoints();
     const accessToken = sessionStorage.getItem("kurostore-access-token");
 
     if (!accountIsAuthenticated || !accessToken) {
@@ -872,9 +1126,18 @@ if (checkoutPage) {
       setFeedback("Pastikan produk dan semua detail penerima sudah lengkap.");
       return;
     }
+    if (redeemPoints < 0
+      || redeemPoints % 100 !== 0
+      || redeemPoints > rewardBalance
+      || (redeemPoints / 100) * 1000 > checkoutSubtotal) {
+      setFeedback("Jumlah poin tidak valid, tidak cukup, atau melebihi total pesanan.");
+      return;
+    }
 
     payButton.disabled = true;
-    setFeedback("Menyiapkan pembayaran Midtrans…");
+    setFeedback(paymentMethod === "kuropay_demo"
+      ? "Memproses pembayaran saldo KuroPay demo…"
+      : "Menyiapkan pembayaran Midtrans…");
 
     try {
       const paymentConfig = checkoutPaymentConfig ?? await loadPaymentConfig();
@@ -896,8 +1159,29 @@ if (checkoutPage) {
             postalCode,
           },
           paymentMethod,
+          redeemPoints,
         }),
       });
+
+      if (payment.paid === true) {
+        try {
+          await authenticatedRequestApi("/api/account-data/cart", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_ids: selectedItems.map((item) => item.productId) }),
+          });
+          notifyCartUpdated();
+        } catch (error) {
+          console.error("Unable to clear KuroPay-paid cart items:", error);
+          setFeedback("Pembayaran berhasil, tetapi keranjang belum dapat diperbarui.");
+        }
+        sessionStorage.removeItem(checkoutSelectionStorageKey);
+        showResult(
+          "Pembayaran demo berhasil",
+          `Pesanan ${payment.orderId} telah dibayar dengan saldo demo atau poin. Tidak ada uang sungguhan yang diproses.`,
+        );
+        return;
+      }
 
       if (!payment.token || !payment.redirectUrl) {
         throw new Error("Token pembayaran tidak diterima dari server.");
@@ -1868,17 +2152,188 @@ if (accountPage) {
   const addressForm = accountPage.querySelector("#account-address-form");
   const addressPanel = accountPage.querySelector("#account-address-panel");
   const addressFeedback = accountPage.querySelector("#account-address-feedback");
-  const placeholderPanel = accountPage.querySelector("#account-placeholder-panel");
-  const placeholderTitle = accountPage.querySelector("#account-placeholder-title");
-  const placeholderDescription = accountPage.querySelector("#account-placeholder-description");
+  const paymentPanel = accountPage.querySelector("#account-payment-panel");
+  const walletPanel = accountPage.querySelector("#account-kuropay-panel");
+  const passwordPanel = accountPage.querySelector("#account-password-panel");
+  const notificationsPanel = accountPage.querySelector("#account-notifications-panel");
+  const privacyPanel = accountPage.querySelector("#account-privacy-panel");
+  const languagePanel = accountPage.querySelector("#account-language-panel");
+  const themePanel = accountPage.querySelector("#account-theme-panel");
+  const vouchersPanel = accountPage.querySelector("#account-vouchers-panel");
   const ordersPanel = accountPage.querySelector("#account-orders-panel");
   const ordersList = accountPage.querySelector("#account-orders-list");
   const ordersFeedback = accountPage.querySelector("#account-orders-feedback");
   const ordersEmpty = accountPage.querySelector("#account-orders-empty");
   const ordersLoginLink = accountPage.querySelector("#account-orders-login-link");
   const panelButtons = Array.from(accountPage.querySelectorAll("[data-account-panel]"));
+  const allAccountPanels = [
+    profilePanel,
+    addressPanel,
+    paymentPanel,
+    walletPanel,
+    passwordPanel,
+    notificationsPanel,
+    privacyPanel,
+    languagePanel,
+    themePanel,
+    ordersPanel,
+    vouchersPanel,
+  ].filter((panel) => panel instanceof HTMLElement);
+  const paymentForm = accountPage.querySelector("#account-payment-form");
+  const paymentFeedback = accountPage.querySelector("#account-payment-feedback");
+  const passwordForm = accountPage.querySelector("#account-password-form");
+  const passwordFeedback = accountPage.querySelector("#account-password-feedback");
+  const notificationForm = accountPage.querySelector("#account-notification-form");
+  const notificationFeedback = accountPage.querySelector("#account-notification-feedback");
+  const notificationAvailability = accountPage.querySelector("#account-notification-availability");
+  const emailOrderUpdates = accountPage.querySelector("#account-email-order-updates");
+  const languageForm = accountPage.querySelector("#account-language-form");
+  const languageSelect = accountPage.querySelector("#account-language");
+  const languageFeedback = accountPage.querySelector("#account-language-feedback");
+  const themeForm = accountPage.querySelector("#account-theme-form");
+  const themeSelect = accountPage.querySelector("#account-theme");
+  const themeFeedback = accountPage.querySelector("#account-theme-feedback");
+  const privacyFeedback = accountPage.querySelector("#account-privacy-feedback");
+  const walletBalance = accountPage.querySelector("#account-wallet-balance");
+  const walletEnvironment = accountPage.querySelector("#account-wallet-environment");
+  const walletLedger = accountPage.querySelector("#account-wallet-ledger");
+  const walletFeedback = accountPage.querySelector("#account-wallet-feedback");
+  const walletTopupForm = accountPage.querySelector("#account-wallet-topup-form");
+  const walletTopupButton = accountPage.querySelector("#account-wallet-topup-button");
+  const pointsBalance = accountPage.querySelector("#account-points-balance");
+  const pointsLedger = accountPage.querySelector("#account-points-ledger");
+  let emailNotificationsConfigured = false;
   const logoutButton = accountPage.querySelector("#account-logout");
   const logoutLabel = accountPage.querySelector("#account-logout-label");
+
+  const formatAccountPrice = (amount) => new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(Number(amount) || 0);
+
+  const saveAccountPreferences = async (updates) => {
+    const next = { ...currentAccountPreferences, ...updates };
+    if (accountIsAuthenticated) {
+      const result = await authenticatedRequestApi("/api/account-data/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+      if (!result.preferences) throw new Error("Preferensi akun tidak dikembalikan server.");
+      emailNotificationsConfigured = result.emailNotificationsConfigured === true;
+      applyAccountPreferences(result.preferences);
+      return result.preferences;
+    }
+
+    applyAccountPreferences(next);
+    return next;
+  };
+
+  const loadAccountPreferences = async () => {
+    if (languageSelect instanceof HTMLSelectElement) languageSelect.value = currentAccountPreferences.language;
+    if (themeSelect instanceof HTMLSelectElement) themeSelect.value = currentAccountPreferences.theme;
+    if (emailOrderUpdates instanceof HTMLInputElement) {
+      emailOrderUpdates.checked = currentAccountPreferences.email_order_updates;
+    }
+
+    if (!accountIsAuthenticated) {
+      if (notificationAvailability) {
+        notificationAvailability.textContent = "Notifikasi transaksi memerlukan akun yang sudah masuk.";
+      }
+      return;
+    }
+
+    const result = await authenticatedRequestApi("/api/account-data/preferences");
+    if (!result.preferences || typeof result.preferences !== "object") {
+      throw new Error("Preferensi akun tidak valid.");
+    }
+    emailNotificationsConfigured = result.emailNotificationsConfigured === true;
+    applyAccountPreferences(result.preferences);
+    if (languageSelect instanceof HTMLSelectElement) languageSelect.value = currentAccountPreferences.language;
+    if (themeSelect instanceof HTMLSelectElement) themeSelect.value = currentAccountPreferences.theme;
+    if (emailOrderUpdates instanceof HTMLInputElement) {
+      emailOrderUpdates.checked = currentAccountPreferences.email_order_updates;
+    }
+    if (notificationAvailability) {
+      notificationAvailability.textContent = emailNotificationsConfigured
+        ? "Email transaksi aktif setelah alamat pengirim Resend diverifikasi."
+        : "Pilihan akan tersimpan. Pengiriman email aktif setelah RESEND_API_KEY dan RESEND_FROM_EMAIL dikonfigurasi di Vercel.";
+    }
+  };
+
+  const renderLedger = (container, entries, kind) => {
+    if (!(container instanceof HTMLElement)) return;
+    container.replaceChildren();
+    if (!Array.isArray(entries) || entries.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "account-ledger-empty";
+      empty.textContent = kind === "points" ? "Belum ada riwayat poin." : "Belum ada transaksi saldo demo.";
+      container.append(empty);
+      return;
+    }
+
+    entries.forEach((entry) => {
+      const row = document.createElement("article");
+      row.className = "account-ledger-entry";
+      const details = document.createElement("div");
+      const description = document.createElement("strong");
+      description.textContent = typeof entry.description === "string" ? entry.description : "Transaksi akun";
+      const created = document.createElement("small");
+      const date = new Date(entry.created_at);
+      created.textContent = Number.isNaN(date.getTime())
+        ? ""
+        : new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(date);
+      details.append(description, created);
+
+      const amount = document.createElement("strong");
+      if (kind === "points") {
+        const points = Number(entry.points_delta);
+        amount.textContent = `${points > 0 ? "+" : ""}${points} poin`;
+        amount.classList.toggle("is-negative", points < 0);
+      } else {
+        const value = Number(entry.amount);
+        const isCredit = entry.entry_type === "credit";
+        amount.textContent = `${isCredit ? "+" : "−"}${formatAccountPrice(value)}`;
+        amount.classList.toggle("is-negative", !isCredit);
+      }
+      row.append(details, amount);
+      container.append(row);
+    });
+  };
+
+  const loadDemoWallet = async () => {
+    if (!accountIsAuthenticated) {
+      if (walletFeedback) walletFeedback.textContent = "Masuk ke akun untuk menggunakan saldo demo KuroPay.";
+      if (walletEnvironment) walletEnvironment.textContent = "Saldo demo hanya tersedia untuk akun yang masuk.";
+      return;
+    }
+
+    if (walletFeedback) walletFeedback.textContent = "Memuat saldo demo...";
+    try {
+      const result = await authenticatedRequestApi("/api/account-data/wallet");
+      if (walletBalance) walletBalance.textContent = formatAccountPrice(result.wallet?.balance);
+      if (walletEnvironment) {
+        walletEnvironment.textContent = result.enabled === true
+          ? "Mode sandbox aktif · simulasi saja, bukan uang sungguhan"
+          : "Mode produksi aktif · fitur saldo demo dinonaktifkan";
+      }
+      if (walletTopupButton instanceof HTMLButtonElement) {
+        walletTopupButton.disabled = result.enabled !== true;
+      }
+      if (pointsBalance) {
+        pointsBalance.textContent = new Intl.NumberFormat("id-ID").format(Number(result.rewards?.balance) || 0);
+      }
+      renderLedger(walletLedger, result.wallet?.ledger, "wallet");
+      renderLedger(pointsLedger, result.rewards?.ledger, "points");
+      if (walletFeedback) walletFeedback.textContent = "";
+    } catch (error) {
+      console.error("Unable to load KuroPay demo balance:", error);
+      if (walletFeedback) {
+        walletFeedback.textContent = error instanceof Error ? error.message : "Saldo demo tidak dapat dimuat.";
+      }
+    }
+  };
 
   const renderAccountCart = async () => {
     if (!(accountCartItems instanceof HTMLElement)) return;
@@ -1994,6 +2449,35 @@ if (accountPage) {
     }
 
     if (accountIsAuthenticated) {
+      void authenticatedRequestApi("/api/account-data/profile").then((result) => {
+        const profile = result.profile;
+        if (!profile || typeof profile.name !== "string" || typeof profile.email !== "string") {
+          throw new Error("Data profil akun tidak valid.");
+        }
+        if (profileName) profileName.value = profile.name;
+        if (profileEmail instanceof HTMLInputElement) profileEmail.value = profile.email;
+        if (profilePhone instanceof HTMLInputElement) profilePhone.value = profile.phone || "";
+        if (accountSidebarName) accountSidebarName.textContent = profile.name || "Pengguna Kurostore";
+        if (accountSidebarEmail) accountSidebarEmail.textContent = profile.email || "Email belum tersedia";
+        sessionStorage.setItem("kurostore-user-name", profile.name);
+        sessionStorage.setItem("kurostore-user-email", profile.email);
+        sessionStorage.setItem("kurostore-user-phone", profile.phone || "");
+      }).catch((error) => {
+        console.error("Unable to load account profile:", error);
+        if (profileFeedback) {
+          profileFeedback.textContent = error instanceof Error ? error.message : "Profil akun tidak dapat dimuat.";
+        }
+      });
+
+      void loadAccountPreferences().catch((error) => {
+        console.error("Unable to load account preferences:", error);
+        if (notificationAvailability) {
+          notificationAvailability.textContent = error instanceof Error
+            ? error.message
+            : "Preferensi akun tidak dapat dimuat.";
+        }
+      });
+
       void authenticatedRequestApi("/api/account-data/address").then((result) => {
         const savedAddress = result.address;
         const addressName = accountPage.querySelector("#address-name");
@@ -2051,7 +2535,7 @@ if (accountPage) {
     });
   }
 
-  profileForm?.addEventListener("submit", (event) => {
+  profileForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     if (!profileName || !profileEmail || !profilePhone || !profileFeedback) {
@@ -2068,25 +2552,49 @@ if (accountPage) {
       return;
     }
 
-    sessionStorage.setItem("kurostore-user-name", name);
-    if (email) {
-      sessionStorage.setItem("kurostore-user-email", email);
-    } else {
-      sessionStorage.removeItem("kurostore-user-email");
-    }
-    if (phone) {
-      sessionStorage.setItem("kurostore-user-phone", phone);
-    } else {
-      sessionStorage.removeItem("kurostore-user-phone");
-    }
+    const saveButton = profileForm.querySelector('button[type="submit"]');
+    if (saveButton instanceof HTMLButtonElement) saveButton.disabled = true;
+    try {
+      if (accountIsAuthenticated) {
+        await authenticatedRequestApi("/api/account-data/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, phone }),
+        });
+      } else {
+        sessionStorage.setItem("kurostore-user-name", name);
+        if (phone) {
+          sessionStorage.setItem("kurostore-user-phone", phone);
+        } else {
+          sessionStorage.removeItem("kurostore-user-phone");
+        }
+      }
 
-    if (accountSidebarName) {
-      accountSidebarName.textContent = name;
+      sessionStorage.setItem("kurostore-user-name", name);
+      if (email) {
+        sessionStorage.setItem("kurostore-user-email", email);
+      } else {
+        sessionStorage.removeItem("kurostore-user-email");
+      }
+      if (phone) {
+        sessionStorage.setItem("kurostore-user-phone", phone);
+      } else {
+        sessionStorage.removeItem("kurostore-user-phone");
+      }
+
+      if (accountSidebarName) accountSidebarName.textContent = name;
+      if (accountSidebarEmail) {
+        accountSidebarEmail.textContent = email || (accountIsAuthenticated ? "Email belum tersedia" : "Sesi tamu lokal");
+      }
+      profileFeedback.textContent = accountIsAuthenticated
+        ? "Profil berhasil disimpan ke akunmu."
+        : "Profil tersimpan di sesi browser ini.";
+    } catch (error) {
+      console.error("Unable to save account profile:", error);
+      profileFeedback.textContent = error instanceof Error ? error.message : "Profil tidak dapat disimpan.";
+    } finally {
+      if (saveButton instanceof HTMLButtonElement) saveButton.disabled = false;
     }
-    if (accountSidebarEmail) {
-      accountSidebarEmail.textContent = email || (accountIsAuthenticated ? "Email belum tersedia" : "Sesi tamu lokal");
-    }
-    profileFeedback.textContent = "Perubahan berhasil disimpan di sesi browser ini.";
   });
 
   addressForm?.addEventListener("submit", (event) => {
@@ -2126,6 +2634,184 @@ if (accountPage) {
       console.error("Unable to save shipping address:", error);
       addressFeedback.textContent = error instanceof Error ? error.message : "Alamat tidak dapat disimpan.";
     });
+  });
+
+  paymentForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(paymentForm instanceof HTMLFormElement) || !(paymentFeedback instanceof HTMLElement)) return;
+    const formData = new FormData(paymentForm);
+    const method = String(formData.get("preferred_payment_method") || "all");
+    try {
+      await saveAccountPreferences({ preferred_payment_method: method });
+      paymentFeedback.textContent = "Metode pembayaran utama berhasil disimpan.";
+    } catch (error) {
+      console.error("Unable to save preferred payment method:", error);
+      paymentFeedback.textContent = error instanceof Error ? error.message : "Metode pembayaran tidak dapat disimpan.";
+    }
+  });
+
+  passwordForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(passwordForm instanceof HTMLFormElement) || !(passwordFeedback instanceof HTMLElement)) return;
+    if (!accountIsAuthenticated) {
+      passwordFeedback.textContent = "Masuk ke akun terlebih dahulu untuk mengubah password.";
+      return;
+    }
+
+    const formData = new FormData(passwordForm);
+    const currentPassword = String(formData.get("current_password") || "");
+    const newPassword = String(formData.get("new_password") || "");
+    const confirmPassword = String(formData.get("confirm_password") || "");
+    if (newPassword !== confirmPassword) {
+      passwordFeedback.textContent = "Konfirmasi password baru tidak cocok.";
+      return;
+    }
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      passwordFeedback.textContent = "Password baru harus memiliki 8–128 karakter.";
+      return;
+    }
+
+    const button = passwordForm.querySelector('button[type="submit"]');
+    if (button instanceof HTMLButtonElement) button.disabled = true;
+    try {
+      await authenticatedRequestApi("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      });
+      passwordForm.reset();
+      passwordFeedback.textContent = "Password berhasil diperbarui.";
+    } catch (error) {
+      console.error("Unable to change account password:", error);
+      passwordFeedback.textContent = error instanceof Error ? error.message : "Password tidak dapat diperbarui.";
+    } finally {
+      if (button instanceof HTMLButtonElement) button.disabled = false;
+    }
+  });
+
+  notificationForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(emailOrderUpdates instanceof HTMLInputElement)
+      || !(notificationFeedback instanceof HTMLElement)) return;
+    try {
+      await saveAccountPreferences({ email_order_updates: emailOrderUpdates.checked });
+      notificationFeedback.textContent = emailOrderUpdates.checked && !emailNotificationsConfigured
+        ? "Preferensi tersimpan. Email belum terkirim sampai Resend dikonfigurasi di Vercel."
+        : "Preferensi notifikasi berhasil disimpan.";
+    } catch (error) {
+      console.error("Unable to save email notification preference:", error);
+      notificationFeedback.textContent = error instanceof Error ? error.message : "Preferensi notifikasi tidak dapat disimpan.";
+    }
+  });
+
+  languageForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(languageSelect instanceof HTMLSelectElement) || !(languageFeedback instanceof HTMLElement)) return;
+    try {
+      await saveAccountPreferences({ language: languageSelect.value });
+      languageFeedback.textContent = "Bahasa Pengaturan & Akun berhasil diperbarui.";
+      if (languageSelect.value === "id") {
+        window.setTimeout(() => window.location.reload(), 250);
+      }
+    } catch (error) {
+      console.error("Unable to save account language:", error);
+      languageFeedback.textContent = error instanceof Error ? error.message : "Bahasa tidak dapat disimpan.";
+    }
+  });
+
+  themeForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(themeSelect instanceof HTMLSelectElement) || !(themeFeedback instanceof HTMLElement)) return;
+    try {
+      await saveAccountPreferences({ theme: themeSelect.value });
+      themeFeedback.textContent = "Tema berhasil diperbarui.";
+    } catch (error) {
+      console.error("Unable to save account theme:", error);
+      themeFeedback.textContent = error instanceof Error ? error.message : "Tema tidak dapat disimpan.";
+    }
+  });
+
+  accountPage.querySelector("#account-export-data")?.addEventListener("click", async () => {
+    if (!(privacyFeedback instanceof HTMLElement)) return;
+    if (!accountIsAuthenticated) {
+      privacyFeedback.textContent = "Masuk ke akun terlebih dahulu untuk mengunduh data.";
+      return;
+    }
+
+    const exportButton = accountPage.querySelector("#account-export-data");
+    if (exportButton instanceof HTMLButtonElement) exportButton.disabled = true;
+    privacyFeedback.textContent = "Menyiapkan data akun...";
+    try {
+      const data = await authenticatedRequestApi("/api/account-data/export");
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `kurostore-data-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+      privacyFeedback.textContent = "Salinan data akun berhasil diunduh.";
+    } catch (error) {
+      console.error("Unable to export account data:", error);
+      privacyFeedback.textContent = error instanceof Error ? error.message : "Data akun tidak dapat diekspor.";
+    } finally {
+      if (exportButton instanceof HTMLButtonElement) exportButton.disabled = false;
+    }
+  });
+
+  walletTopupForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(walletTopupForm instanceof HTMLFormElement) || !(walletFeedback instanceof HTMLElement)) return;
+    if (!accountIsAuthenticated) {
+      walletFeedback.textContent = "Masuk ke akun terlebih dahulu untuk top up demo.";
+      return;
+    }
+
+    const formData = new FormData(walletTopupForm);
+    const amount = Number(formData.get("amount"));
+    if (!Number.isInteger(amount) || amount < 5000 || amount > 1000000) {
+      walletFeedback.textContent = "Nominal top up harus antara Rp5.000 dan Rp1.000.000.";
+      return;
+    }
+
+    if (walletTopupButton instanceof HTMLButtonElement) walletTopupButton.disabled = true;
+    walletFeedback.textContent = "Menyiapkan transaksi sandbox...";
+    try {
+      const payment = await authenticatedRequestApi("/api/account-data/wallet-topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const paymentConfig = await requestApi("/api/payments/config");
+      if (paymentConfig.environment !== "sandbox") {
+        throw new Error("Top up demo hanya boleh menggunakan Midtrans sandbox.");
+      }
+      const snap = await loadMidtransSnap(paymentConfig.clientKey, paymentConfig.environment);
+      walletFeedback.textContent = "Selesaikan simulasi pembayaran di popup Midtrans.";
+      snap.pay(payment.token, {
+        onSuccess: () => {
+          walletFeedback.textContent = "Pembayaran simulasi diterima. Saldo diperbarui setelah notifikasi Midtrans.";
+          window.setTimeout(() => void loadDemoWallet(), 1800);
+          if (walletTopupButton instanceof HTMLButtonElement) walletTopupButton.disabled = false;
+        },
+        onPending: () => {
+          walletFeedback.textContent = "Top up menunggu konfirmasi sandbox.";
+          if (walletTopupButton instanceof HTMLButtonElement) walletTopupButton.disabled = false;
+        },
+        onError: () => {
+          walletFeedback.textContent = "Simulasi top up gagal. Coba lagi.";
+          if (walletTopupButton instanceof HTMLButtonElement) walletTopupButton.disabled = false;
+        },
+        onClose: () => {
+          walletFeedback.textContent = "Popup ditutup. Saldo belum berubah.";
+          if (walletTopupButton instanceof HTMLButtonElement) walletTopupButton.disabled = false;
+        },
+      });
+    } catch (error) {
+      console.error("Unable to start KuroPay sandbox top up:", error);
+      walletFeedback.textContent = error instanceof Error ? error.message : "Top up demo tidak dapat dimulai.";
+      if (walletTopupButton instanceof HTMLButtonElement) walletTopupButton.disabled = false;
+    }
   });
 
   const loadAccountOrders = async () => {
@@ -2284,7 +2970,18 @@ if (accountPage) {
         const totalAmount = document.createElement("strong");
         totalAmount.textContent = formatPrice(order.total);
         total.append(totalLabel, totalAmount);
-        card.append(heading, itemList, total);
+        card.append(heading, itemList);
+        if (Number(order.pointsDiscount) > 0) {
+          const discount = document.createElement("div");
+          discount.className = "account-order-total";
+          const discountLabel = document.createElement("span");
+          discountLabel.textContent = `Diskon ${Number(order.pointsRedeemed) || 0} poin`;
+          const discountAmount = document.createElement("strong");
+          discountAmount.textContent = `−${formatPrice(order.pointsDiscount)}`;
+          discount.append(discountLabel, discountAmount);
+          card.append(discount);
+        }
+        card.append(total);
 
         if (order.paymentStatus === "paid" && order.status !== "completed") {
           const completeButton = document.createElement("button");
@@ -2356,36 +3053,47 @@ if (accountPage) {
     });
   });
 
+  const accountPanelsByKey = {
+    profile: profilePanel,
+    address: addressPanel,
+    payment: paymentPanel,
+    kuropay: walletPanel,
+    password: passwordPanel,
+    notifications: notificationsPanel,
+    privacy: privacyPanel,
+    language: languagePanel,
+    theme: themePanel,
+    orders: ordersPanel,
+    vouchers: vouchersPanel,
+  };
+
   panelButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const isProfile = button.dataset.accountPanel === "profile";
-      const isAddress = button.dataset.accountPanel === "address";
-      const isOrders = button.dataset.accountPanel === "orders";
+      const key = button.dataset.accountPanel;
+      const selectedPanel = key ? accountPanelsByKey[key] : null;
+      if (!(selectedPanel instanceof HTMLElement)) return;
+
       panelButtons.forEach((panelButton) => {
         const isActive = panelButton === button;
         panelButton.classList.toggle("is-active", isActive);
-        if (isActive) {
-          panelButton.setAttribute("aria-current", "page");
-        } else {
-          panelButton.removeAttribute("aria-current");
-        }
+        if (isActive) panelButton.setAttribute("aria-current", "page");
+        else panelButton.removeAttribute("aria-current");
+      });
+      allAccountPanels.forEach((panel) => {
+        panel.hidden = panel !== selectedPanel;
       });
 
-      if (profilePanel && addressPanel && ordersPanel && placeholderPanel) {
-        profilePanel.hidden = !isProfile;
-        addressPanel.hidden = !isAddress;
-        ordersPanel.hidden = !isOrders;
-        placeholderPanel.hidden = isProfile || isAddress || isOrders;
-      }
-
-      if (isOrders) {
-        void loadAccountOrders();
-      } else if (!isProfile && !isAddress && placeholderTitle && placeholderDescription) {
-        placeholderTitle.textContent = button.dataset.panelTitle || "Pengaturan akun";
-        placeholderDescription.textContent = button.dataset.panelDescription || "Pengaturan ini akan tersedia nanti.";
+      if (key === "orders") void loadAccountOrders();
+      if (key === "kuropay" || key === "vouchers") void loadDemoWallet();
+      if (key === "payment" && accountPage.querySelector("#account-payment-method") instanceof HTMLSelectElement) {
+        accountPage.querySelector("#account-payment-method").value = currentAccountPreferences.preferred_payment_method;
       }
     });
   });
+
+  const requestedPanel = new URLSearchParams(window.location.search).get("panel");
+  const requestedPanelButton = panelButtons.find((button) => button.dataset.accountPanel === requestedPanel);
+  if (requestedPanelButton) requestedPanelButton.click();
 
   logoutButton?.addEventListener("click", () => {
     sessionStorage.removeItem("kurostore-authenticated");
