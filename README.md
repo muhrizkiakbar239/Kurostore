@@ -76,7 +76,7 @@ Script membuat atau memperbarui bucket publik `kurostore-assets`, mengunggah gam
 | GET | `/api/admin/overview` | Admin |
 | GET | `/api/admin/system-health` | Admin; memeriksa API, database/auth Supabase, dan status integrasi pembayaran |
 | POST | `/api/admin/bootstrap` | Email admin bootstrap yang terverifikasi dan token bootstrap |
-| GET, POST, PATCH, DELETE | `/api/seller/products` | Seller; DELETE mengarsipkan produk |
+| GET, POST, PATCH, DELETE | `/api/seller/products` | Seller; DELETE mengarsipkan produk; mendukung URL foto HTTPS atau unggahan foto JPEG/PNG/WebP |
 | GET | `/api/payments/config` | Publik; mengembalikan client key dan environment Midtrans |
 | POST | `/api/payments/create` | Pengguna masuk; memvalidasi produk aktif, menyimpan pesanan, dan membuat transaksi Snap |
 | POST | `/api/payments/notification` | Notifikasi Midtrans; memvalidasi signature dan memperbarui status pesanan |
@@ -100,5 +100,7 @@ Dashboard dipisah berdasarkan peran:
 - `public/pages/admin/dashboard.html` adalah dashboard admin untuk melihat ringkasan seller, produk dan kategori aktif, stok menipis, serta pengajuan seller; admin dapat mencari serta menyetujui atau menolak pengajuan. Tautan khusus admin tersedia di menu Pengaturan & Akun.
 - `public/pages/seller/dashboard.html` adalah Seller Center dengan menu Ringkasan, Pesanan, Pengiriman, Produk, Promosi, Keuangan, Analitik, Pelanggan, dan Pengaturan Toko. Pengelolaan dasar produk dan stok sudah aktif; modul lain ditandai “Segera hadir” sampai API dan alur transaksinya tersedia.
 - `public/pages/pengajuan-seller.html` menyediakan form pengajuan dan status pengajuan seller untuk buyer yang masuk.
+
+Seller dapat menambahkan foto produk melalui URL HTTPS atau memilih berkas dari perangkat; foto diunggah ke bucket publik `kurostore-assets` setelah dikompres di browser. Jalankan migrasi `20261119160000_asset_storage.sql` sebelum memakai unggah foto. Foto produk ditampilkan pada katalog, wishlist, dan halaman detail produk.
 
 Pemisahan folder hanya untuk merapikan struktur, bukan kontrol akses. Berkas HTML statis di Vercel dapat dibuka melalui URL langsung, tetapi data dan tindakan dashboard dilindungi API yang memeriksa role admin atau seller. Dashboard admin meninjau pengajuan seller; Seller Center saat ini mengelola produk melalui endpoint seller yang tersedia. Pesanan Kurostore belum dicatat sebagai transaksi sehingga fitur pesanan, pengiriman, promosi, keuangan, analitik, layanan pelanggan, dan pengaturan toko selain katalog belum aktif. Endpoint `/api/auth/me` mengembalikan seluruh akses dalam properti `roles`.

@@ -222,7 +222,7 @@ async function handleWishlist(
 
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, name, description, price, price_is_estimate, stock, category_id, status')
+      .select('id, name, description, image_url, price, price_is_estimate, stock, category_id, status')
       .in('id', productIds);
 
     if (productsError) {

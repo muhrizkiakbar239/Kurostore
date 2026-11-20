@@ -28,8 +28,13 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   const categoryId = queryString(request.query.category_id);
+  const productId = queryString(request.query.product_id);
   if (categoryId && !validUuid(categoryId)) {
     sendJson(response, 400, { error: 'Kategori tidak valid.' });
+    return;
+  }
+  if (productId && !validUuid(productId)) {
+    sendJson(response, 400, { error: 'ID produk tidak valid.' });
     return;
   }
 
@@ -69,10 +74,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const supabase = createAdminClient();
   let query = supabase
     .from('products')
-    .select('id, seller_id, category_id, name, description, price, price_is_estimate, stock, sales_count, created_at', { count: 'exact' })
+    .select('id, seller_id, category_id, name, description, image_url, price, price_is_estimate, stock, sales_count, created_at', { count: 'exact' })
     .eq('status', 'active')
     .range(offset, offset + pageSize - 1);
 
+  if (productId) query = query.eq('id', productId);
   if (categoryId) query = query.eq('category_id', categoryId);
   if (search) query = query.ilike('name', `%${search.replace(/[%_]/g, '\\$&')}%`);
 
@@ -117,13 +123,54 @@ export default async function handler(request: VercelRequest, response: VercelRe
     ratingsByProductId.set(summary.product_id, { average, count });
   }
 
+  const products = (data ?? []).map((product) => ({
+    ...product,
+    rating_average: ratingsByProductId.get(product.id)?.average ?? 0,
+    rating_count: ratingsByProductId.get(product.id)?.count ?? 0,
+  }));
   response.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+
+  if (productId) {
+    const product = products[0];
+    if (!product) {
+      sendJson(response, 404, { error: 'Produk tidak ditemukan.' });
+      return;
+    }
+
+    const [
+      { data: seller, error: sellerError },
+      { data: category, error: categoryError },
+      { data: reviews, error: reviewsError },
+    ] = await Promise.all([
+      supabase.from('seller_profiles').select('store_name').eq('user_id', product.seller_id).maybeSingle(),
+      product.category_id
+        ? supabase.from('categories').select('name').eq('id', product.category_id).maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      supabase.from('product_reviews')
+        .select('rating, comment, created_at')
+        .eq('product_id', product.id)
+        .order('created_at', { ascending: false })
+        .limit(10),
+    ]);
+    if (sellerError || categoryError || reviewsError) {
+      console.error('Unable to fetch product details:', sellerError?.message ?? categoryError?.message ?? reviewsError?.message);
+      sendJson(response, 500, { error: 'Detail produk tidak dapat dimuat saat ini.' });
+      return;
+    }
+
+    sendJson(response, 200, {
+      product: {
+        ...product,
+        seller_name: seller?.store_name ?? 'Seller Kurostore',
+        category_name: category?.name ?? 'Semua kategori',
+      },
+      reviews: reviews ?? [],
+    });
+    return;
+  }
+
   sendJson(response, 200, {
-    products: (data ?? []).map((product) => ({
-      ...product,
-      rating_average: ratingsByProductId.get(product.id)?.average ?? 0,
-      rating_count: ratingsByProductId.get(product.id)?.count ?? 0,
-    })),
+    products,
     pagination: {
       page,
       pageSize,

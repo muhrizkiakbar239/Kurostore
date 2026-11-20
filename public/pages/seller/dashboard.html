@@ -7,8 +7,8 @@
   <meta name="description" content="Kelola produk, pengiriman, promosi, dan kebutuhan toko melalui Seller Center Kurostore.">
   <title>Seller Center | Kurostore</title>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
-  <link rel="stylesheet" href="../../../assets/css/style.css?v=20261120-1">
-  <script src="../../../assets/js/style.js?v=20261120-1" defer></script>
+  <link rel="stylesheet" href="../../../assets/css/style.css?v=20261120-3">
+  <script src="../../../assets/js/style.js?v=20261120-4" defer></script>
 </head>
 <body class="seller-dashboard-page">
   <header class="cart-header">
@@ -303,6 +303,15 @@
         <span>Deskripsi</span>
         <textarea id="seller-product-description" name="description" rows="4" maxlength="5000" placeholder="Jelaskan detail produkmu."></textarea>
       </label>
+      <label class="seller-form-field" for="seller-product-image-url">
+        <span>URL foto produk (opsional)</span>
+        <input id="seller-product-image-url" name="image_url" type="url" maxlength="2000" placeholder="https://...">
+      </label>
+      <label class="seller-form-field" for="seller-product-image-file">
+        <span>Atau unggah foto dari perangkat (maks. 10 MB)</span>
+        <input id="seller-product-image-file" name="image_file" type="file" accept="image/jpeg,image/png,image/webp">
+      </label>
+      <img class="seller-product-image-preview" id="seller-product-image-preview" alt="Pratinjau foto produk" hidden>
       <label class="seller-form-field" for="seller-product-category">
         <span>Kategori</span>
         <select id="seller-product-category" name="category_id">

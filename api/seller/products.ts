@@ -1,6 +1,13 @@
+import { randomUUID } from 'node:crypto';
 import { requireRole } from '../../lib/backend/auth.js';
 import { requestBody, sendJson, validUuid, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
 import { createAdminClient, isSupabaseConfigured } from '../../lib/backend/supabase.js';
+
+type ProductImageUpload = {
+  contentType: 'image/jpeg' | 'image/png' | 'image/webp';
+  extension: 'jpg' | 'png' | 'webp';
+  data: Buffer;
+};
 
 type ProductInput = {
   name?: unknown;
@@ -9,7 +16,62 @@ type ProductInput = {
   price?: unknown;
   stock?: unknown;
   status?: unknown;
+  image_url?: unknown;
 };
+
+function parseProductImageUpload(body: Record<string, unknown>): ProductImageUpload | null | false {
+  if (body.image_base64 === undefined && body.image_content_type === undefined) return null;
+  if (typeof body.image_base64 !== 'string'
+    || body.image_base64.length > 4_000_000
+    || !/^[A-Za-z0-9+/]+={0,2}$/.test(body.image_base64)) return false;
+
+  const data = Buffer.from(body.image_base64, 'base64');
+  if (data.length < 1 || data.length > 3_000_000
+    || data.toString('base64').replace(/=+$/, '') !== body.image_base64.replace(/=+$/, '')) return false;
+
+  if (body.image_content_type === 'image/jpeg'
+    && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
+    return { contentType: 'image/jpeg', extension: 'jpg', data };
+  }
+  if (body.image_content_type === 'image/png'
+    && data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return { contentType: 'image/png', extension: 'png', data };
+  }
+  if (body.image_content_type === 'image/webp'
+    && data.toString('ascii', 0, 4) === 'RIFF'
+    && data.toString('ascii', 8, 12) === 'WEBP') {
+    return { contentType: 'image/webp', extension: 'webp', data };
+  }
+  return false;
+}
+
+async function uploadProductImage(
+  supabase: ReturnType<typeof createAdminClient>,
+  sellerId: string,
+  image: ProductImageUpload,
+): Promise<{ path: string; publicUrl: string } | null> {
+  const path = `products/${sellerId}/${randomUUID()}.${image.extension}`;
+  const { error } = await supabase.storage.from('kurostore-assets').upload(path, image.data, {
+    contentType: image.contentType,
+    cacheControl: '31536000',
+    upsert: false,
+  });
+  if (error) {
+    console.error('Unable to upload seller product image:', error.message);
+    return null;
+  }
+
+  const { data } = supabase.storage.from('kurostore-assets').getPublicUrl(path);
+  return { path, publicUrl: data.publicUrl };
+}
+
+async function removeUploadedProductImage(
+  supabase: ReturnType<typeof createAdminClient>,
+  path: string,
+): Promise<void> {
+  const { error } = await supabase.storage.from('kurostore-assets').remove([path]);
+  if (error) console.error('Unable to clean up unused product image:', error.message);
+}
 
 function validateProductInput(input: ProductInput, partial: boolean): Record<string, unknown> | null {
   const result: Record<string, unknown> = {};
@@ -39,6 +101,20 @@ function validateProductInput(input: ProductInput, partial: boolean): Record<str
     if (!['draft', 'active', 'archived'].includes(String(input.status))) return null;
     result.status = input.status;
   }
+  if (input.image_url !== undefined) {
+    if (input.image_url === null || input.image_url === '') {
+      result.image_url = null;
+    } else {
+      if (typeof input.image_url !== 'string' || input.image_url.length > 2000) return null;
+      try {
+        const imageUrl = new URL(input.image_url);
+        if (imageUrl.protocol !== 'https:' || !imageUrl.hostname) return null;
+        result.image_url = imageUrl.toString();
+      } catch {
+        return null;
+      }
+    }
+  }
 
   return Object.keys(result).length > 0 ? result : null;
 }
@@ -62,7 +138,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   if (request.method === 'GET') {
     const { data, error } = await supabase
       .from('products')
-      .select('id, category_id, name, description, price, stock, status, sales_count, created_at')
+      .select('id, category_id, name, description, image_url, price, stock, status, sales_count, created_at')
       .eq('seller_id', seller.user.id)
       .order('created_at', { ascending: false })
       .limit(100);
@@ -108,14 +184,30 @@ export default async function handler(request: VercelRequest, response: VercelRe
       }
     }
 
+    const imageInput = parseProductImageUpload(body);
+    if (imageInput === false) {
+      sendJson(response, 400, { error: 'Foto produk harus berupa JPEG, PNG, atau WebP dan maksimal 3 MB setelah kompresi.' });
+      return;
+    }
+    const uploadedImage = imageInput ? await uploadProductImage(supabase, seller.user.id, imageInput) : null;
+    if (imageInput && !uploadedImage) {
+      sendJson(response, 502, { error: 'Foto produk tidak dapat diunggah. Periksa konfigurasi Supabase Storage.' });
+      return;
+    }
+
     const { data, error } = await supabase
       .from('products')
-      .insert({ ...product, seller_id: seller.user.id })
-      .select('id, category_id, name, description, price, stock, status, created_at')
+      .insert({
+        ...product,
+        ...(uploadedImage ? { image_url: uploadedImage.publicUrl } : {}),
+        seller_id: seller.user.id,
+      })
+      .select('id, category_id, name, description, image_url, price, stock, status, created_at')
       .single();
 
     if (error || !data) {
       console.error('Unable to create seller product:', error?.message ?? 'No product returned.');
+      if (uploadedImage) await removeUploadedProductImage(supabase, uploadedImage.path);
       sendJson(response, 500, { error: 'Produk tidak dapat disimpan.' });
       return;
     }
@@ -157,6 +249,12 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
+  const imageInput = parseProductImageUpload(body);
+  if (imageInput === false) {
+    sendJson(response, 400, { error: 'Foto produk harus berupa JPEG, PNG, atau WebP dan maksimal 3 MB setelah kompresi.' });
+    return;
+  }
+
   if (product.category_id) {
     const { data: category, error: categoryError } = await supabase
       .from('categories')
@@ -175,20 +273,28 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }
   }
 
+  const uploadedImage = imageInput ? await uploadProductImage(supabase, seller.user.id, imageInput) : null;
+  if (imageInput && !uploadedImage) {
+    sendJson(response, 502, { error: 'Foto produk tidak dapat diunggah. Periksa konfigurasi Supabase Storage.' });
+    return;
+  }
+
   const { data, error } = await supabase
     .from('products')
-    .update(product)
+    .update({ ...product, ...(uploadedImage ? { image_url: uploadedImage.publicUrl } : {}) })
     .eq('id', productId)
     .eq('seller_id', seller.user.id)
-    .select('id, category_id, name, description, price, stock, status')
+    .select('id, category_id, name, description, image_url, price, stock, status')
     .maybeSingle();
 
   if (error) {
     console.error('Unable to update seller product:', error.message);
+    if (uploadedImage) await removeUploadedProductImage(supabase, uploadedImage.path);
     sendJson(response, 500, { error: 'Produk tidak dapat diperbarui.' });
     return;
   }
   if (!data) {
+    if (uploadedImage) await removeUploadedProductImage(supabase, uploadedImage.path);
     sendJson(response, 404, { error: 'Produk tidak ditemukan.' });
     return;
   }

@@ -4,30 +4,103 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f3f6">
-  <meta name="description" content="Detail produk pilihan dari seller Kurostore. Segera hadir.">
+  <meta name="description" content="Lihat detail, harga, stok, dan ulasan produk di Kurostore.">
   <title>Detail Produk | Kurostore</title>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261120-1">
-  <script src="../../assets/js/style.js?v=20261120-1" defer></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261120-4">
+  <script src="../../assets/js/style.js?v=20261120-5" defer></script>
 </head>
-<body class="products-page launch-page launch-detail-page">
+<body class="products-page product-detail-page">
   <header class="cart-header">
-    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda"><img src="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/kurostore-cart-logo.png" alt="Kurostore" width="650" height="217"></a>
+    <a class="cart-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+      <img src="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/kurostore-cart-logo.png" alt="Kurostore" width="650" height="217">
+    </a>
     <a class="cart-header-link" href="../index.html#all-products-page">Jelajahi katalog <span aria-hidden="true">→</span></a>
   </header>
-  <main class="products-shell launch-shell">
-    <nav class="products-breadcrumb" aria-label="Breadcrumb"><a href="../index.html">Beranda</a><span aria-hidden="true">/</span><span aria-current="page">Detail produk</span></nav>
-    <section class="launch-detail-card" aria-labelledby="launch-title">
-      <div class="launch-detail-art" aria-hidden="true"><span class="launch-detail-orbit"></span><span class="launch-detail-glyph">K</span><span class="launch-detail-spark launch-detail-spark-one">✦</span><span class="launch-detail-spark launch-detail-spark-two">✳</span></div>
-      <div class="launch-detail-copy">
-        <span class="launch-tag"><i></i> SEGERA HADIR</span>
-        <span class="launch-kicker">RUANG UNTUK TEMUAN BARU</span>
-        <h1 id="launch-title">Satu detail kecil.<br><em>Banyak cerita.</em></h1>
-        <p>Etalase detail produk Kurostore sedang kami siapkan. Begitu produk tersedia, kamu bisa melihat informasi, harga, dan stoknya di sini.</p>
-        <a class="launch-button" href="../index.html#all-products-page">Kembali ke katalog <span aria-hidden="true">↗</span></a>
+
+  <main class="products-shell product-detail-shell" id="product-detail-page">
+    <nav class="products-breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">Beranda</a>
+      <span aria-hidden="true">/</span>
+      <a href="../index.html#all-products-page">Semua produk</a>
+      <span aria-hidden="true">/</span>
+      <span id="product-detail-breadcrumb" aria-current="page">Detail produk</span>
+    </nav>
+
+    <p class="product-detail-feedback" id="product-detail-feedback" role="status" aria-live="polite">Memuat detail produk…</p>
+    <section class="product-detail-content" id="product-detail-content" aria-labelledby="product-detail-title" hidden>
+      <div class="product-detail-overview">
+        <div class="product-detail-gallery">
+          <div class="product-detail-image product-art-controller" id="product-detail-image" aria-label="Foto produk">
+            <span class="product-art-orb" aria-hidden="true"></span>
+            <svg viewBox="0 0 120 96" aria-hidden="true"><path d="M27 33c3-8 9-12 17-12h32c8 0 14 4 17 12l8 24c3 9-3 15-10 12l-13-9H42l-13 9c-7 3-13-3-10-12l8-24Z"></path><path d="M40 43v14m-7-7h14m28-4h.01M84 52h.01"></path></svg>
+          </div>
+          <p class="product-detail-image-note">Foto produk</p>
+        </div>
+
+        <section class="product-detail-summary">
+          <span class="product-detail-category" id="product-detail-category"></span>
+          <h1 id="product-detail-title"></h1>
+          <div class="product-detail-rating">
+            <span id="product-detail-rating-value"></span>
+            <span aria-hidden="true">·</span>
+            <span id="product-detail-rating-count"></span>
+          </div>
+          <div class="product-detail-price-box">
+            <strong id="product-detail-price"></strong>
+            <small class="price-estimate-badge" id="product-detail-estimate">Estimasi harga pasar</small>
+          </div>
+          <div class="product-detail-stock">
+            <span>Stok</span>
+            <strong id="product-detail-stock"></strong>
+          </div>
+          <div class="product-detail-quantity">
+            <label for="product-detail-quantity">Jumlah</label>
+            <div class="product-quantity-control">
+              <button type="button" id="product-quantity-decrease" aria-label="Kurangi jumlah">−</button>
+              <input id="product-detail-quantity" type="number" min="1" value="1" inputmode="numeric">
+              <button type="button" id="product-quantity-increase" aria-label="Tambah jumlah">+</button>
+            </div>
+          </div>
+          <div class="product-detail-actions">
+            <button class="product-detail-cart-button" id="product-detail-add-cart" type="button">Masukkan ke keranjang</button>
+            <button class="product-detail-wishlist-button" id="product-detail-wishlist" type="button" aria-pressed="false">Simpan ke wishlist</button>
+          </div>
+          <p class="product-detail-action-feedback" id="product-detail-action-feedback" role="status" aria-live="polite"></p>
+          <div class="product-detail-seller">
+            <span class="product-detail-seller-mark" aria-hidden="true">K</span>
+            <div><small>Disediakan oleh</small><strong id="product-detail-seller"></strong></div>
+          </div>
+        </section>
       </div>
+
+      <section class="product-detail-section" aria-labelledby="product-description-heading">
+        <h2 id="product-description-heading">Deskripsi produk</h2>
+        <p id="product-detail-description"></p>
+      </section>
+
+      <section class="product-detail-section" aria-labelledby="product-information-heading">
+        <h2 id="product-information-heading">Informasi produk</h2>
+        <dl class="product-detail-information">
+          <div><dt>Kategori</dt><dd id="product-detail-information-category"></dd></div>
+          <div><dt>Kondisi</dt><dd>Baru</dd></div>
+          <div><dt>Stok tersedia</dt><dd id="product-detail-information-stock"></dd></div>
+        </dl>
+      </section>
+
+      <section class="product-detail-section" aria-labelledby="product-reviews-heading">
+        <div class="product-detail-reviews-heading">
+          <h2 id="product-reviews-heading">Penilaian produk</h2>
+          <strong id="product-detail-reviews-summary"></strong>
+        </div>
+        <div class="product-detail-reviews" id="product-detail-reviews"></div>
+      </section>
     </section>
-    <footer class="products-footer"><span class="products-footer-mark" aria-hidden="true">K</span><p>Produk pilihan sedang disiapkan untukmu.</p></footer>
+
+    <footer class="products-footer">
+      <span class="products-footer-mark" aria-hidden="true">K</span>
+      <p>Belanja nyaman, pilihan tepat bersama Kurostore.</p>
+    </footer>
   </main>
 </body>
 </html>

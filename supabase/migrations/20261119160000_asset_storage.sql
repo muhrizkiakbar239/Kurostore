@@ -30,6 +30,7 @@ create table if not exists public.asset_files (
   unique (bucket, object_path)
 );
 
+drop trigger if exists asset_files_set_updated_at on public.asset_files;
 create trigger asset_files_set_updated_at before update on public.asset_files
   for each row execute function public.set_updated_at();
 
