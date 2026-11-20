@@ -4,8 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#ffffff">
+  <meta name="referrer" content="no-referrer">
   <meta name="description" content="Kurostore, belanja lebih mudah.">
   <title>Kurostore | Belanja Lebih Mudah</title>
+  <script>
+    (() => {
+      const query = new URLSearchParams(window.location.search);
+      const fragment = new URLSearchParams(window.location.hash.slice(1));
+      if (query.get("type") !== "invite" && fragment.get("type") !== "invite") return;
+
+      const invitation = {
+        accessToken: query.get("access_token") || fragment.get("access_token") || "",
+      };
+      let stored = false;
+      try {
+        sessionStorage.setItem("kurostore-pending-invite", JSON.stringify(invitation));
+        stored = true;
+      } catch {
+        stored = false;
+      }
+
+      window.history.replaceState(null, "", window.location.pathname);
+      window.location.replace(`/pages/accept-invite.html${stored ? "" : "?state=unavailable"}`);
+    })();
+  </script>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
   <link rel="stylesheet" href="assets/css/style.css?v=20261120-4">
   <script src="assets/js/style.js?v=20261120-5" defer></script>

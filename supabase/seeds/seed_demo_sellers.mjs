@@ -113,6 +113,7 @@ for (let index = 0; index < demoSellerStores.length; index += 1) {
 
   if (!user) {
     const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
+      redirectTo: 'https://www.kurostore.biz.id/pages/accept-invite.html',
       data: {
         full_name: fullName,
         kurostore_demo_seller_seed: demoSellerSeedMarker,

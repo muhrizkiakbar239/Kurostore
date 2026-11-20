@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f3f6">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Terima undangan seller Kurostore dan buat kata sandi.">
+  <title>Terima Undangan | Kurostore</title>
+  <script>
+    (() => {
+      const query = new URLSearchParams(window.location.search);
+      const fragment = new URLSearchParams(window.location.hash.slice(1));
+      if (query.get("type") !== "invite" && fragment.get("type") !== "invite") return;
+
+      const invitation = {
+        accessToken: query.get("access_token") || fragment.get("access_token") || "",
+      };
+      let stored = false;
+      try {
+        sessionStorage.setItem("kurostore-pending-invite", JSON.stringify(invitation));
+        stored = true;
+      } catch {
+        stored = false;
+      }
+
+      window.history.replaceState(null, "", window.location.pathname);
+      if (!stored) window.location.replace(`${window.location.pathname}?state=unavailable`);
+    })();
+  </script>
+  <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261120-4">
+  <script src="../../assets/js/accept-invite.js?v=20261120-1" defer></script>
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <a class="auth-back-link" href="../index.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 12H5m6 6-6-6 6-6"></path>
+      </svg>
+      Kembali ke beranda
+    </a>
+
+    <section class="auth-card" aria-labelledby="invite-title">
+      <a class="auth-brand" href="../index.html" aria-label="Kurostore, kembali ke beranda">
+        <img src="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/kurostore-cart-logo.png" alt="Kurostore" width="650" height="217">
+      </a>
+
+      <div class="auth-heading">
+        <span class="auth-heading-kicker">UNDANGAN SELLER KUROSTORE</span>
+        <h1 id="invite-title">Aktifkan akun seller</h1>
+        <p>Buat kata sandi untuk menyelesaikan penerimaan undangan.</p>
+      </div>
+
+      <form class="auth-form" id="accept-invite-form">
+        <div class="auth-field">
+          <label for="invite-password">Kata sandi baru</label>
+          <input
+            id="invite-password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            maxlength="128"
+            required
+          >
+        </div>
+        <div class="auth-field">
+          <label for="invite-password-confirm">Konfirmasi kata sandi</label>
+          <input
+            id="invite-password-confirm"
+            name="password-confirm"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            maxlength="128"
+            required
+          >
+        </div>
+        <button class="auth-submit" type="submit">
+          Aktifkan akun
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14m-6-6 6 6-6 6"></path>
+          </svg>
+        </button>
+        <p class="auth-feedback" id="accept-invite-feedback" role="status" aria-live="polite"></p>
+      </form>
+
+      <p class="auth-feedback" id="accept-invite-success" role="status" aria-live="polite" hidden>
+        Akun seller berhasil diaktifkan. <a href="login.html">Masuk ke Kurostore</a>.
+      </p>
+      <p class="auth-feedback" id="accept-invite-unavailable" role="status" aria-live="polite" hidden>
+        Tautan undangan tidak valid atau sudah kedaluwarsa. Minta admin mengirim undangan baru.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

@@ -38,6 +38,8 @@ Seed akun dan katalog dapat dijalankan ulang tanpa menggandakan akun atau produk
 
 Jika Supabase menolak undangan karena batas email, konfigurasi SMTP khusus di Supabase Auth atau tunggu batasnya pulih, lalu jalankan seed seller lagi. Akun yang sudah berhasil dibuat akan digunakan kembali dan tidak diundang ulang.
 
+Undangan seller diarahkan ke `/pages/accept-invite.html` untuk membuat kata sandi. Pastikan URL tersebut diizinkan di Supabase Auth Redirect URLs dan deploy kode frontend/API ke Vercel sebelum mengirim undangan baru. Setelah domain atau URL undangan berubah, undangan tertunda perlu dikirim ulang dari Supabase Auth.
+
 Terapkan semua file SQL di `supabase/migrations` secara berurutan berdasarkan timestamp. Untuk alamat checkout, penanda harga estimasi, dan rating, pastikan migrasi `20261119000000_account_saved_data.sql` dan `20261119140000_catalog_estimates_and_ratings.sql` sudah dijalankan.
 
 Untuk memindahkan aset [public/images](public/images) ke Supabase Storage:
