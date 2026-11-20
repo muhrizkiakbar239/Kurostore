@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { demoSellerStores } from './demo_seller_stores.mjs';
 
 try {
   process.loadEnvFile('.env.local');
@@ -546,6 +547,26 @@ const legacyProductIds = new Map([
   ['baju-wanita:0', '00000000-0000-4000-8000-000000000005'],
 ]);
 
+const descriptionChecklists = new Map([
+  ['elektronik', 'jenis port dan koneksi, kompatibilitas perangkat, kebutuhan daya, isi paket, serta garansi jika memang tercantum pada produk'],
+  ['makanan-dan-minuman', 'berat bersih, komposisi, informasi alergen, kondisi segel, tanggal kedaluwarsa, dan cara penyimpanan pada kemasan'],
+  ['tas-dan-aksesori', 'ukuran atau dimensi, bahan, kapasitas, jumlah kompartemen, pilihan warna, dan kelengkapan barang'],
+  ['kesehatan-dan-kecantikan', 'komposisi, petunjuk pemakaian, kecocokan dengan kebutuhan kulit atau rambut, kondisi kemasan, dan tanggal kedaluwarsa'],
+  ['baju-pria', 'panduan ukuran, ukuran badan yang sesuai, bahan, warna, model potongan, dan cara perawatan pakaian'],
+  ['baju-wanita', 'panduan ukuran, ukuran badan yang sesuai, bahan, warna, model potongan, dan cara perawatan pakaian'],
+  ['sepatu-pria', 'panduan ukuran dalam sentimeter, panjang kaki, bahan, bentuk sol, dan kecocokan untuk aktivitas yang dimaksud'],
+  ['sepatu-wanita', 'panduan ukuran dalam sentimeter, panjang kaki, bahan, bentuk sol, dan kecocokan untuk aktivitas yang dimaksud'],
+  ['hobi-dan-koleksi', 'ukuran, bahan, kondisi barang, kelengkapan, model atau seri, serta batas usia jika relevan'],
+  ['merchandise', 'varian model, ukuran, bahan, kelengkapan, kondisi barang, dan informasi lisensi hanya jika dinyatakan oleh seller'],
+  ['rumah-dan-gaya-hidup', 'dimensi, bahan, kebutuhan perakitan atau daya, cara perawatan, dan kelengkapan yang diterima'],
+]);
+
+function completeProductDescription(categorySlug, description) {
+  const checklist = descriptionChecklists.get(categorySlug);
+  if (!checklist) throw new Error(`Missing product description checklist for category ${categorySlug}.`);
+  return `${description} Sebelum memesan, periksa juga ${checklist} pada detail produk. Jika informasi yang dibutuhkan belum dicantumkan, tanyakan kepada seller terlebih dahulu.`;
+}
+
 function stableUuid(value) {
   const bytes = createHash('sha256').update(value).digest().subarray(0, 16);
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
@@ -569,14 +590,16 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const { data: seller, error: sellerError } = await supabase
+const { data: sellers, error: sellersError } = await supabase
   .from('seller_profiles')
-  .select('user_id')
-  .eq('store_slug', 'kurostore-demo')
-  .maybeSingle();
+  .select('user_id, store_slug')
+  .in('store_slug', demoSellerStores.map(({ storeSlug }) => storeSlug));
 
-if (sellerError) throw new Error(`Unable to verify demo store: ${sellerError.message}`);
-if (!seller) throw new Error('The kurostore-demo seller profile does not exist.');
+if (sellersError) throw new Error(`Unable to verify demo seller stores: ${sellersError.message}`);
+const sellerIdsBySlug = new Map((sellers ?? []).map(({ user_id, store_slug }) => [store_slug, user_id]));
+if (sellerIdsBySlug.size !== demoSellerStores.length) {
+  throw new Error(`Expected ${demoSellerStores.length} demo seller stores. Run seed_demo_sellers.mjs first.`);
+}
 
 const { data: categoryRows, error: categoryError } = await supabase
   .from('categories')
@@ -598,10 +621,10 @@ const products = categories.flatMap((category, categoryIndex) =>
     const stock = digitalProduct ? 0 : 8 + ((categoryIndex * 13 + productIndex * 5) % 37);
     return {
       id: legacyProductIds.get(key) ?? stableUuid(`kurostore-demo:${key}`),
-      seller_id: seller.user_id,
+      seller_id: sellerIdsBySlug.get(demoSellerStores[productIndex].storeSlug),
       category_id: categoryIds.get(category.slug),
       name,
-      description: category.productDescriptions[productIndex],
+      description: completeProductDescription(category.slug, category.productDescriptions[productIndex]),
       price,
       price_is_estimate: true,
       stock,
@@ -639,24 +662,38 @@ if (process.argv.includes('--descriptions-only')) {
 const productIds = products.map(({ id }) => id);
 const { data: savedProducts, error: verificationError } = await supabase
   .from('products')
-  .select('category_id, description')
+  .select('seller_id, category_id, description')
   .in('id', productIds);
 
 if (verificationError) throw new Error(`Unable to verify saved catalog: ${verificationError.message}`);
 
 const counts = new Map();
+const sellerCounts = new Map();
+const sellerCategoryCounts = new Map();
 for (const product of savedProducts ?? []) {
   counts.set(product.category_id, (counts.get(product.category_id) ?? 0) + 1);
+  sellerCounts.set(product.seller_id, (sellerCounts.get(product.seller_id) ?? 0) + 1);
+  const key = `${product.seller_id}:${product.category_id}`;
+  sellerCategoryCounts.set(key, (sellerCategoryCounts.get(key) ?? 0) + 1);
 }
 
 if (savedProducts?.length !== 220 || categories.some(({ slug }) =>
-  counts.get(categoryIds.get(slug)) !== expectedProductCount(slug))) {
+  (counts.get(categoryIds.get(slug)) ?? 0) !== expectedProductCount(slug))) {
   throw new Error('Catalog verification failed: expected 20 demo products in each supported category and none for vouchers.');
 }
 
+if (demoSellerStores.some(({ storeSlug }) => {
+  const sellerId = sellerIdsBySlug.get(storeSlug);
+  return (sellerCounts.get(sellerId) ?? 0) !== 11
+    || categories.some(({ slug }) =>
+      (sellerCategoryCounts.get(`${sellerId}:${categoryIds.get(slug)}`) ?? 0) !== expectedProductCount(slug) / 20);
+})) {
+  throw new Error('Seller allocation verification failed: each seller must have one product in every supported category (11 total).');
+}
+
 if (savedProducts.some(({ description }) =>
-  typeof description !== 'string' || description.length < 20 || /produk contoh|data contoh/i.test(description))) {
+  typeof description !== 'string' || description.length < 100 || /produk contoh|data contoh/i.test(description))) {
   throw new Error('Catalog verification failed: a product description is empty or still generic.');
 }
 
-console.log(`${process.argv.includes('--descriptions-only') ? 'Updated descriptions for' : 'Saved and verified'} ${savedProducts.length} products across ${categories.length} categories.`);
+console.log(`${process.argv.includes('--descriptions-only') ? 'Updated descriptions for' : 'Saved and verified'} ${savedProducts.length} products across ${categories.length} categories and ${demoSellerStores.length} sellers.`);

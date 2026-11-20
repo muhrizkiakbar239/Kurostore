@@ -24,12 +24,19 @@ Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` d
 
 ## Katalog seed dan harga
 
-Setelah migrasi selesai dan toko `kurostore-demo` tersedia, isi katalog dengan 20 produk untuk setiap kategori yang memiliki produk demo. Kategori Voucher dan Produk Digital sengaja dibiarkan tanpa produk sampai layanan digital tersedia:
+Setelah semua migrasi selesai, siapkan `.env.local` dengan `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`. Verifikasi project ref sebelum menulis ke Production.
 
-1. Pastikan `.env.local` berisi `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`.
-2. Jalankan `node supabase\seeds\seed_demo_catalog.mjs`.
+Seed seller berikut membuat 20 akun seller melalui undangan Supabase Auth dan toko demo yang terpisah. Untuk alias Gmail, semua undangan masuk ke inbox yang sama dan setiap akun harus menyelesaikan undangan untuk mengatur kata sandinya:
 
-Seed dapat dijalankan ulang tanpa menggandakan produk. Gunakan `node supabase\seeds\seed_demo_catalog.mjs --descriptions-only` untuk memperbarui hanya keterangan produk tanpa mengubah harga atau stok. Harga katalog ditandai sebagai estimasi pasar, bukan harga resmi yang telah diverifikasi.
+1. Periksa alamat dan toko tanpa mengubah Supabase: `node supabase\seeds\seed_demo_sellers.mjs --base-email "akun@gmail.com" --expected-project-ref "PROJECT_REF" --dry-run`.
+2. Setelah memastikan email, project ref, dan konfigurasi SMTP Supabase benar, jalankan perintah yang sama dengan mengganti `--dry-run` menjadi `--confirm-production`.
+3. Jalankan `node supabase\seeds\seed_demo_catalog.mjs` untuk mengisi atau memperbarui katalog.
+
+Katalog demo berisi 220 produk dari 11 kategori; kategori Voucher dan Produk Digital sengaja kosong. Produk dibagi rata: setiap seller mendapat 11 produk, satu dari masing-masing kategori yang memiliki produk. Seed memverifikasi jumlah produk serta pembagian tersebut. Deskripsi katalog mencakup kegunaan produk dan daftar rincian yang perlu dipastikan sesuai kategorinya.
+
+Seed akun dan katalog dapat dijalankan ulang tanpa menggandakan akun atau produk. Setelah distribusi seller pertama berhasil, gunakan `node supabase\seeds\seed_demo_catalog.mjs --descriptions-only` untuk memperbarui hanya keterangan produk tanpa mengubah harga, stok, atau seller. Harga katalog ditandai sebagai estimasi pasar, bukan harga resmi yang telah diverifikasi.
+
+Jika Supabase menolak undangan karena batas email, konfigurasi SMTP khusus di Supabase Auth atau tunggu batasnya pulih, lalu jalankan seed seller lagi. Akun yang sudah berhasil dibuat akan digunakan kembali dan tidak diundang ulang.
 
 Terapkan semua file SQL di `supabase/migrations` secara berurutan berdasarkan timestamp. Untuk alamat checkout, penanda harga estimasi, dan rating, pastikan migrasi `20261119000000_account_saved_data.sql` dan `20261119140000_catalog_estimates_and_ratings.sql` sudah dijalankan.
 
