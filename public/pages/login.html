@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f3f6">
   <meta name="description" content="Masuk ke akun Kurostore untuk melanjutkan belanja.">
+  <meta name="google-client-id" content="687222513600-cp9uaf5ouuiqt7sccmpguu262g7e6pd1.apps.googleusercontent.com">
   <title>Masuk | Kurostore</title>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261120-1">
-  <script src="../../assets/js/style.js?v=20261120-15" defer></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261121-1">
+  <script src="../../assets/js/style.js?v=20261121-1" defer></script>
 </head>
 <body class="auth-page">
   <main class="auth-shell">
@@ -27,7 +28,7 @@
       <div class="auth-heading">
         <span class="auth-heading-kicker">SELAMAT DATANG KEMBALI</span>
         <h1 id="login-title">Masuk ke akunmu</h1>
-        <p>Masukkan detail akun untuk melanjutkan belanja.</p>
+        <p>Masuk untuk melanjutkan belanja dan menikmati pengalaman Kurostore.</p>
       </div>
 
       <form class="auth-form" id="login-form">
@@ -87,7 +88,14 @@
         <p class="auth-feedback" id="login-feedback" role="status" aria-live="polite"></p>
       </form>
 
-      <button class="auth-guest-button" id="guest-browse" type="button">Jelajah sebagai tamu</button>
+      <div class="auth-divider" aria-hidden="true"><span>atau masuk dengan Google</span></div>
+      <div class="auth-google" id="google-signin-button">
+        <button class="auth-google-placeholder" type="button" disabled>Masuk dengan Google</button>
+      </div>
+      <p class="auth-google-setup" id="google-login-setup" role="status" aria-live="polite">
+        Login Google belum aktif. OAuth Client ID perlu dikonfigurasi terlebih dahulu.
+      </p>
+      <p class="auth-feedback auth-google-feedback" id="google-login-feedback" role="status" aria-live="polite"></p>
 
       <p class="auth-register-prompt">
         Belum punya akun?

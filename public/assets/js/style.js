@@ -15,7 +15,6 @@ const productDetailPage = document.querySelector("#product-detail-page");
 const accountPage = document.querySelector("#account-page");
 const productsPage = document.querySelector("#products-page");
 const billsCarousel = document.querySelector("#bills-carousel");
-const guestBrowseButton = document.querySelector("#guest-browse");
 const accountIsAuthenticated = sessionStorage.getItem("kurostore-authenticated") === "true";
 const isGuestSession = sessionStorage.getItem("kurostore-guest-session") === "true";
 const canAccessAccount = accountIsAuthenticated || isGuestSession;
@@ -4767,13 +4766,6 @@ if (productsPage) {
   }
 }
 
-if (guestBrowseButton) {
-  guestBrowseButton.addEventListener("click", () => {
-    sessionStorage.setItem("kurostore-guest-session", "true");
-    window.location.href = "../index.html";
-  });
-}
-
 if (!accountIsAuthenticated && isGuestSession) {
   document.querySelectorAll(".account-link").forEach((accountLink) => {
     accountLink.href = "pages/login.html";
@@ -5777,6 +5769,67 @@ document.querySelectorAll(".auth-password-toggle").forEach((toggle) => {
     });
   }
 });
+
+const googleSignInButton = document.querySelector("#google-signin-button");
+const googleSetupMessage = document.querySelector("#google-login-setup");
+const googleFeedback = document.querySelector("#google-login-feedback");
+
+if (googleSignInButton instanceof HTMLElement
+  && googleSetupMessage instanceof HTMLElement
+  && googleFeedback instanceof HTMLElement) {
+  const googleClientId = document.querySelector('meta[name="google-client-id"]')?.getAttribute("content")?.trim();
+
+  if (googleClientId) {
+    const googleScript = document.createElement("script");
+    googleScript.src = "https://accounts.google.com/gsi/client";
+    googleScript.async = true;
+    googleScript.onload = () => {
+      const googleIdentity = window.google?.accounts?.id;
+      if (!googleIdentity) {
+        googleSetupMessage.textContent = "Layanan login Google tidak dapat dimuat. Periksa koneksi lalu muat ulang halaman.";
+        return;
+      }
+
+      googleSetupMessage.hidden = true;
+      googleSignInButton.replaceChildren();
+      googleIdentity.initialize({
+        client_id: googleClientId,
+        callback: async (response) => {
+          if (!response.credential) {
+            googleFeedback.textContent = "Google tidak mengirim kredensial. Coba lagi.";
+            return;
+          }
+
+          googleFeedback.textContent = "Menghubungkan akun Google...";
+          try {
+            const data = await requestApi("/api/auth/google", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ credential: response.credential }),
+            });
+            saveAuthSession(data);
+            window.location.href = authReturnTarget();
+          } catch (error) {
+            googleFeedback.textContent = error instanceof Error
+              ? error.message
+              : "Login Google gagal. Coba lagi.";
+          }
+        },
+      });
+      googleIdentity.renderButton(googleSignInButton, {
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "rectangular",
+        width: Math.min(400, Math.max(120, googleSignInButton.clientWidth)),
+      });
+    };
+    googleScript.onerror = () => {
+      googleSetupMessage.textContent = "Layanan login Google tidak dapat dimuat. Periksa koneksi lalu muat ulang halaman.";
+    };
+    document.head.append(googleScript);
+  }
+}
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {

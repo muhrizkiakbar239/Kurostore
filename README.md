@@ -61,11 +61,20 @@ Script membuat atau memperbarui bucket publik `kurostore-assets`, mengunggah gam
 - Backend membutuhkan Node.js 22 atau lebih baru.
 - Endpoint admin dan data akun memakai catch-all Serverless Function agar jumlah fungsi tetap sesuai batas Hobby Vercel.
 
+### Login Google
+
+1. Di Google Cloud Console, pilih proyek Kurostore lalu buka **Google Auth Platform**. Konfigurasikan layar persetujuan OAuth dan tambahkan akun penguji bila aplikasinya masih berstatus Testing.
+2. Buat OAuth client dengan tipe **Web application**. Tambahkan origin situs, misalnya `http://localhost:3000` untuk lokal dan domain produksi Kurostore sebagai **Authorized JavaScript origins**. Salin **Client ID** (bukan API key).
+3. Di Supabase Dashboard, buka **Authentication → Sign In / Providers → Google**, aktifkan provider, lalu masukkan OAuth Client ID dan **Client Secret** dari Google Cloud. Simpan perubahan.
+4. Di `public/pages/login.html`, isi atribut `content` pada `<meta name="google-client-id">` dengan OAuth Client ID. Client ID bersifat publik; jangan menaruh Client Secret di frontend, repository, atau variabel yang diekspos ke browser.
+5. Pastikan `SUPABASE_URL` dan `SUPABASE_ANON_KEY` sudah tersedia di environment API Vercel, lalu deploy ulang. Tombol login menggunakan Google Identity Services untuk memperoleh ID token dan mengirimkannya ke endpoint backend `/api/auth/google`.
+
 ## Endpoint yang tersedia
 
 | Method | Path | Akses |
 |---|---|---|
 | POST | `/api/auth/login` | Publik |
+| POST | `/api/auth/google` | Publik; menukar ID token Google menjadi sesi Supabase |
 | POST | `/api/auth/register` | Publik |
 | POST | `/api/auth/refresh` | Pengguna masuk; memperbarui sesi dengan refresh token |
 | GET | `/api/auth/me` | Pengguna masuk |

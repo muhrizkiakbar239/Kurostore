@@ -1,5 +1,6 @@
 import { sendJson, type VercelRequest, type VercelResponse } from '../../lib/backend/http.js';
 import login from '../../lib/backend/auth/login.js';
+import google from '../../lib/backend/auth/google.js';
 import me from '../../lib/backend/auth/me.js';
 import refresh from '../../lib/backend/auth/refresh.js';
 import register from '../../lib/backend/auth/register.js';
@@ -8,6 +9,7 @@ import acceptInvite from '../../lib/backend/auth/accept-invite.js';
 
 const handlers: Record<string, (request: VercelRequest, response: VercelResponse) => Promise<void>> = {
   login,
+  google,
   me,
   refresh,
   register,
