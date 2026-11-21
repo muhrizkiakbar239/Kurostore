@@ -16033,3 +16033,240 @@ html[data-theme="dark"] .account-points-card {
   border-color: #62573b;
   background: linear-gradient(135deg, #393326, #2f2a22);
 }
+
+html[data-theme="dark"] .account-page {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(91 70 105 / 18%), transparent 42%),
+    #17141b;
+}
+
+html[data-theme="dark"] .account-heading {
+  border-color: #39323f;
+  background:
+    radial-gradient(ellipse at 92% 10%, rgb(151 119 171 / 15%), transparent 34%),
+    linear-gradient(112deg, #211d27 4%, #29232f 100%);
+  box-shadow: 0 8px 26px rgb(0 0 0 / 18%);
+}
+
+html[data-theme="dark"] .account-heading::after {
+  border-color: rgb(198 171 215 / 15%);
+  background: rgb(198 171 215 / 5%);
+}
+
+html[data-theme="dark"] .account-sidebar {
+  border-color: #39323f;
+  background: linear-gradient(180deg, #211d27, #1d1a22);
+}
+
+html[data-theme="dark"] .account-sidebar-avatar,
+html[data-theme="dark"] .account-cart-empty-icon {
+  color: #e3d2ee;
+  background: linear-gradient(145deg, #3a3042, #302a37);
+}
+
+html[data-theme="dark"] .account-nav-group-title {
+  color: #b6aebb;
+}
+
+html[data-theme="dark"] .account-nav-group-spaced {
+  border-color: #39323f;
+}
+
+html[data-theme="dark"] .account-nav-badge {
+  color: #d1c7d8;
+  background: #35303b;
+}
+
+html[data-theme="dark"] .account-product-review,
+html[data-theme="dark"] .account-product-review-form,
+html[data-theme="dark"] .price-estimate-badge {
+  border-color: #4a4234;
+  color: #e8dcc0;
+  background: #302b22;
+}
+
+html[data-theme="dark"] .account-product-review p {
+  color: #c4bba9;
+}
+
+html[data-theme="dark"] .account-product-review-form label {
+  color: #e4dbe8;
+}
+
+html[data-theme="dark"] .account-product-review-form select,
+html[data-theme="dark"] .account-product-review-form textarea {
+  border-color: #453b4c;
+  color: #eee9f1;
+  background: #29242f;
+}
+
+html[data-theme="dark"] :is(
+  .search-form,
+  .hero-carousel,
+  .home-shortcuts,
+  .home-shortcut-icon,
+  .home-shortcut-clock,
+  .home-category-card,
+  .flash-sale,
+  .site-footer-payment-list li,
+  .carousel-arrow,
+  .hero-image,
+  .auth-card,
+  .auth-field input,
+  .auth-checkbox,
+  .bills-page-intro,
+  .bills-service-card,
+  .bills-purchase-workspace,
+  .bills-workspace-close,
+  .bills-game-option,
+  .bills-order-form input,
+  .bills-order-form select,
+  .bills-product-option,
+  .account-order-card,
+  .account-card,
+  .account-profile-field input,
+  .account-profile-field textarea,
+  .cart-locked,
+  .cart-empty,
+  .feature-coming-notice,
+  .feature-preview-card,
+  .products-hero-button,
+  .products-category,
+  .products-search,
+  .products-sort,
+  .product-card,
+  .wishlist-remove,
+  .seller-application-card,
+  .seller-application-form textarea,
+  .seller-refresh-button,
+  .seller-access-card,
+  .seller-metric-card,
+  .seller-products-panel,
+  .seller-product-search,
+  .seller-product-dialog,
+  .seller-dialog-close,
+  .seller-form-field input,
+  .seller-form-field textarea,
+  .seller-form-field select,
+  .seller-center-sidebar,
+  .seller-quick-section,
+  .seller-roadmap-note,
+  .seller-quick-card,
+  .seller-feature-card,
+  .admin-refresh-button,
+  .admin-application-card,
+  .admin-access-card,
+  .admin-applications-empty,
+  .admin-rejection-form textarea,
+  .admin-metric-card,
+  .admin-overview-card,
+  .admin-application-search input,
+  .admin-system-health,
+  .admin-applications-panel,
+  .cart-items-panel,
+  .cart-summary,
+  .checkout-secure-note,
+  .checkout-progress li > span,
+  .checkout-card,
+  .checkout-field-wide textarea,
+  .checkout-payment-option,
+  .checkout-result,
+  .cart-recommendation-card,
+  .all-products-toolbar,
+  .all-products-category-clear,
+  .all-products-load-more,
+  .new-arrivals-bottom,
+  .collab-teaser,
+  .pay-steps,
+  .home-section-link,
+  .launch-tag,
+  .launch-detail-card,
+  .product-photo,
+  .product-detail-overview,
+  .product-detail-image.has-product-image,
+  .product-quantity-control,
+  .product-detail-wishlist-button,
+  .product-detail-section,
+  .account-ledger-entry
+) {
+  border-color: #39323f;
+  color: #eee9f1;
+  background-color: #211d27;
+}
+
+html[data-theme="dark"] .account-settings-link,
+html[data-theme="dark"] .auth-brand,
+html[data-theme="dark"] .auth-mobile-brand {
+  background-color: transparent;
+}
+
+html[data-theme="dark"] :is(
+  .brand-logo,
+  .cart-brand img,
+  .auth-brand img,
+  .auth-mobile-brand img,
+  .hero-image
+) {
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: screen;
+}
+
+html[data-theme="dark"] .account-profile-field input:focus,
+html[data-theme="dark"] .account-profile-field textarea:focus,
+html[data-theme="dark"] .auth-field input:focus {
+  background-color: #302a37;
+}
+
+html[data-theme="dark"] .seller-dashboard-heading {
+  border-color: #39323f;
+  background: linear-gradient(120deg, #211d27 5%, #29232f 100%);
+}
+
+html[data-theme="dark"] .feature-art-icon,
+html[data-theme="dark"] .products-art-card-front {
+  border-color: #4a4052;
+  color: #e3d2ee;
+  background: linear-gradient(145deg, #3a3042, #302a37);
+}
+
+html[data-theme="dark"] .product-skeleton-art,
+html[data-theme="dark"] .product-skeleton-line {
+  background: linear-gradient(105deg, #2a2530 8%, #39323f 20%, #2a2530 34%);
+}
+
+html[data-theme="dark"] :is(
+  .home-categories-toggle,
+  .products-hero-button,
+  .wishlist-remove,
+  .bills-workspace-close,
+  .all-products-category-clear,
+  .all-products-load-more,
+  .product-detail-wishlist-button
+) {
+  color: #e3d2ee;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #a79eae;
+}
+
+html.theme-transition,
+html.theme-transition body,
+html.theme-transition body *,
+html.theme-transition body *::before,
+html.theme-transition body *::after {
+  transition-property: color, background-color, border-color, box-shadow, fill, stroke !important;
+  transition-duration: 260ms !important;
+  transition-timing-function: ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transition,
+  html.theme-transition body,
+  html.theme-transition body *,
+  html.theme-transition body *::before,
+  html.theme-transition body *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

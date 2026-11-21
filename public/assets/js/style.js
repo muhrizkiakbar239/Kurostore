@@ -2763,6 +2763,7 @@ window.applyAccountSettingsLanguage = (language) => {
 };
 
 const accountPreferenceStorageKey = "kurostore-account-preferences";
+let themeTransitionTimer = 0;
 let currentAccountPreferences = {
   preferred_payment_method: "all",
   email_order_updates: false,
@@ -2785,10 +2786,24 @@ const applyAccountPreferences = (preferences) => {
   currentAccountPreferences = next;
   document.documentElement.lang = next.language;
   document.documentElement.dataset.theme = next.theme;
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  if (themeColorMeta instanceof HTMLMetaElement) {
+    themeColorMeta.content = next.theme === "dark" ? "#17141b" : "#f5f3f6";
+  }
   localStorage.setItem(accountPreferenceStorageKey, JSON.stringify(next));
   if (typeof window.applyAccountSettingsLanguage === "function") {
     window.applyAccountSettingsLanguage(next.language);
   }
+};
+
+const applyThemeWithTransition = (theme) => {
+  const root = document.documentElement;
+  root.classList.add("theme-transition");
+  applyAccountPreferences({ theme });
+  window.clearTimeout(themeTransitionTimer);
+  themeTransitionTimer = window.setTimeout(() => {
+    root.classList.remove("theme-transition");
+  }, 320);
 };
 
 try {
@@ -4855,6 +4870,7 @@ if (accountPage) {
   let emailNotificationsConfigured = false;
   const logoutButton = accountPage.querySelector("#account-logout");
   const logoutLabel = accountPage.querySelector("#account-logout-label");
+  let themeSaveVersion = 0;
 
   const formatAccountPrice = (amount) => new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -5369,13 +5385,46 @@ if (accountPage) {
   themeForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!(themeSelect instanceof HTMLSelectElement) || !(themeFeedback instanceof HTMLElement)) return;
+    const selectedTheme = themeSelect.value;
+    applyThemeWithTransition(selectedTheme);
+    const saveVersion = ++themeSaveVersion;
+    themeFeedback.textContent = accountIsAuthenticated
+      ? "Tema langsung diterapkan. Menyinkronkan ke akun..."
+      : "Tema berhasil disimpan di perangkat ini.";
+
+    if (!accountIsAuthenticated) return;
+
     try {
-      await saveAccountPreferences({ theme: themeSelect.value });
-      themeFeedback.textContent = "Tema berhasil diperbarui.";
+      const result = await authenticatedRequestApi("/api/account-data/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentAccountPreferences),
+      });
+      if (!result.preferences || typeof result.preferences !== "object") {
+        throw new Error("Preferensi akun tidak dikembalikan server.");
+      }
+      if (result.preferences.theme !== selectedTheme) {
+        throw new Error("Server belum mengonfirmasi perubahan tema.");
+      }
+      if (saveVersion !== themeSaveVersion
+        || themeSelect.value !== selectedTheme
+        || currentAccountPreferences.theme !== selectedTheme) return;
+      emailNotificationsConfigured = result.emailNotificationsConfigured === true;
+      themeFeedback.textContent = "Tema berhasil disimpan.";
     } catch (error) {
       console.error("Unable to save account theme:", error);
-      themeFeedback.textContent = error instanceof Error ? error.message : "Tema tidak dapat disimpan.";
+      if (saveVersion === themeSaveVersion
+        && themeSelect.value === selectedTheme
+        && currentAccountPreferences.theme === selectedTheme) {
+        themeFeedback.textContent = "Tema sudah diterapkan di perangkat ini, tetapi belum tersimpan ke akun.";
+      }
     }
+  });
+
+  themeSelect?.addEventListener("change", () => {
+    if (!(themeSelect instanceof HTMLSelectElement)) return;
+    applyThemeWithTransition(themeSelect.value);
+    if (themeFeedback instanceof HTMLElement) themeFeedback.textContent = "";
   });
 
   accountPage.querySelector("#account-export-data")?.addEventListener("click", async () => {
