@@ -8,10 +8,10 @@
   <meta name="google-client-id" content="687222513600-cp9uaf5ouuiqt7sccmpguu262g7e6pd1.apps.googleusercontent.com">
   <title>Masuk | Kurostore</title>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261121-11">
-  <script src="../../assets/js/style.js?v=20261121-7" defer></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261121-13">
+  <script src="../../assets/js/style.js?v=20261121-8" defer></script>
 </head>
-<body class="auth-page login-liquid-page">
+<body class="auth-page liquid-auth-page">
   <main class="auth-shell">
     <a class="auth-back-link" href="../index.html">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -33,13 +33,13 @@
 
       <form class="auth-form" id="login-form">
         <div class="auth-field">
-          <label for="login-email">Email</label>
+          <label for="login-identifier">Email atau nomor telepon</label>
           <input
-            id="login-email"
-            name="email"
-            type="email"
-            placeholder="nama@email.com"
-            autocomplete="email"
+            id="login-identifier"
+            name="identifier"
+            type="text"
+            placeholder="Masukan email atau nomor telepon"
+            autocomplete="username"
             required
           >
         </div>
@@ -47,7 +47,7 @@
         <div class="auth-field">
           <div class="auth-label-row">
             <label for="login-password">Kata sandi</label>
-            <a class="auth-forgot-link" href="#lupa-kata-sandi">Lupa kata sandi?</a>
+            <a class="auth-forgot-link" id="forgot-password-link" href="#password-reset-form">Lupa kata sandi?</a>
           </div>
           <div class="auth-password-wrap">
             <input
@@ -88,16 +88,58 @@
         <p class="auth-feedback" id="login-feedback" role="status" aria-live="polite"></p>
       </form>
 
-      <div class="auth-divider" aria-hidden="true"><span>atau masuk dengan Google</span></div>
-      <div class="auth-google" id="google-signin-button">
-        <button class="auth-google-placeholder" type="button" disabled>Masuk dengan Google</button>
-      </div>
-      <p class="auth-google-setup" id="google-login-setup" role="status" aria-live="polite">
-        Login Google belum aktif. OAuth Client ID perlu dikonfigurasi terlebih dahulu.
-      </p>
-      <p class="auth-feedback auth-google-feedback" id="google-login-feedback" role="status" aria-live="polite"></p>
+      <form class="auth-form" id="password-reset-form" hidden>
+        <div class="auth-field">
+          <label for="reset-identifier">Email atau nomor telepon</label>
+          <input
+            id="reset-identifier"
+            name="identifier"
+            type="text"
+            placeholder="nama@email.com atau 08xxxxxxxxxx"
+            autocomplete="username"
+            required
+          >
+        </div>
+        <div class="auth-field" id="reset-code-field" hidden>
+          <label for="reset-code">Kode OTP</label>
+          <div class="auth-otp-input-row">
+            <input id="reset-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,10}" maxlength="10">
+            <button class="auth-otp-verify-button" id="reset-verify-code" type="button" disabled>Verifikasi</button>
+            <span class="auth-otp-success" id="reset-otp-check" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 4 4L19 6"></path>
+              </svg>
+              Kode benar
+            </span>
+          </div>
+          <p class="auth-otp-status" id="reset-otp-status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="auth-field" id="reset-password-field" hidden>
+          <label for="reset-password">Kata sandi baru</label>
+          <input id="reset-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+        </div>
+        <div class="auth-field" id="reset-password-confirm-field" hidden>
+          <label for="reset-password-confirm">Konfirmasi kata sandi baru</label>
+          <input id="reset-password-confirm" name="password-confirm" type="password" autocomplete="new-password" minlength="8" maxlength="128">
+        </div>
+        <button class="auth-submit" id="reset-submit" type="submit">Kirim kode OTP</button>
+        <button class="auth-secondary-button" id="reset-resend" type="button" hidden>Kirim ulang kode OTP</button>
+        <button class="auth-secondary-button" id="reset-cancel" type="button">Kembali ke login</button>
+        <p class="auth-feedback" id="reset-feedback" role="status" aria-live="polite"></p>
+      </form>
 
-      <p class="auth-register-prompt">
+      <div id="login-google-options">
+        <div class="auth-divider" aria-hidden="true"><span>atau masuk dengan Google</span></div>
+        <div class="auth-google" id="google-signin-button">
+          <button class="auth-google-placeholder" type="button" disabled>Masuk dengan Google</button>
+        </div>
+        <p class="auth-google-setup" id="google-login-setup" role="status" aria-live="polite">
+          Login Google belum aktif. OAuth Client ID perlu dikonfigurasi terlebih dahulu.
+        </p>
+        <p class="auth-feedback auth-google-feedback" id="google-login-feedback" role="status" aria-live="polite"></p>
+      </div>
+
+      <p class="auth-register-prompt" id="login-register-prompt">
         Belum punya akun?
         <a href="register.html">Daftar sekarang</a>
       </p>

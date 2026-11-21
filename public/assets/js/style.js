@@ -5770,9 +5770,10 @@ document.querySelectorAll(".auth-password-toggle").forEach((toggle) => {
   }
 });
 
-const googleSignInButton = document.querySelector("#google-signin-button");
-const googleSetupMessage = document.querySelector("#google-login-setup");
-const googleFeedback = document.querySelector("#google-login-feedback");
+const googleSignInButton = document.querySelector("#google-signin-button, #google-register-button");
+const googleSetupMessage = document.querySelector("#google-login-setup, #google-register-setup");
+const googleFeedback = document.querySelector("#google-login-feedback, #google-register-feedback");
+const googleButtonText = googleSignInButton?.id === "google-register-button" ? "signup_with" : "continue_with";
 
 if (googleSignInButton instanceof HTMLElement
   && googleSetupMessage instanceof HTMLElement
@@ -5812,14 +5813,14 @@ if (googleSignInButton instanceof HTMLElement
           } catch (error) {
             googleFeedback.textContent = error instanceof Error
               ? error.message
-              : "Login Google gagal. Coba lagi.";
+              : "Autentikasi Google gagal. Coba lagi.";
           }
         },
       });
       googleIdentity.renderButton(googleSignInButton, {
         theme: "outline",
         size: "large",
-        text: "continue_with",
+        text: googleButtonText,
         shape: "rectangular",
         width: Math.min(400, Math.max(120, googleSignInButton.clientWidth)),
       });
@@ -5831,7 +5832,7 @@ if (googleSignInButton instanceof HTMLElement
   }
 }
 
-if (loginForm) {
+if (loginForm instanceof HTMLFormElement) {
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const feedback = loginForm.querySelector("#login-feedback");
@@ -5849,7 +5850,7 @@ if (loginForm) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.get("email"),
+          identifier: formData.get("identifier"),
           password: formData.get("password"),
         }),
       });
@@ -5863,7 +5864,322 @@ if (loginForm) {
   });
 }
 
-if (registerForm) {
+const passwordResetForm = document.querySelector("#password-reset-form");
+const forgotPasswordLink = document.querySelector("#forgot-password-link");
+const loginGoogleOptions = document.querySelector("#login-google-options");
+const loginRegisterPrompt = document.querySelector("#login-register-prompt");
+
+if (loginForm instanceof HTMLFormElement
+  && passwordResetForm instanceof HTMLFormElement
+  && forgotPasswordLink instanceof HTMLAnchorElement) {
+  const resetIdentifier = passwordResetForm.querySelector("#reset-identifier");
+  const resetCode = passwordResetForm.querySelector("#reset-code");
+  const resetPassword = passwordResetForm.querySelector("#reset-password");
+  const resetPasswordConfirm = passwordResetForm.querySelector("#reset-password-confirm");
+  const resetCodeField = passwordResetForm.querySelector("#reset-code-field");
+  const resetPasswordField = passwordResetForm.querySelector("#reset-password-field");
+  const resetPasswordConfirmField = passwordResetForm.querySelector("#reset-password-confirm-field");
+  const resetCodeVerify = passwordResetForm.querySelector("#reset-verify-code");
+  const resetOtpCheck = passwordResetForm.querySelector("#reset-otp-check");
+  const resetOtpStatus = passwordResetForm.querySelector("#reset-otp-status");
+  const resetSubmit = passwordResetForm.querySelector("#reset-submit");
+  const resetResend = passwordResetForm.querySelector("#reset-resend");
+  const resetCancel = passwordResetForm.querySelector("#reset-cancel");
+  const resetFeedback = passwordResetForm.querySelector("#reset-feedback");
+  const loginFeedback = loginForm.querySelector("#login-feedback");
+  const loginTitle = document.querySelector("#login-title");
+  const loginDescription = loginTitle?.parentElement?.querySelector("p");
+  const originalTitle = loginTitle?.textContent ?? "";
+  const originalDescription = loginDescription?.textContent ?? "";
+  let resetStage = "send";
+  let recoveryTicket = "";
+  let recoveryVerificationPromise = null;
+
+  const clearRecoveryVerification = () => {
+    recoveryTicket = "";
+    if (resetOtpCheck instanceof HTMLElement) resetOtpCheck.hidden = true;
+    if (resetOtpStatus instanceof HTMLElement) {
+      resetOtpStatus.textContent = "";
+      resetOtpStatus.classList.remove("is-error", "is-success");
+    }
+    if (resetSubmit instanceof HTMLButtonElement) {
+      resetSubmit.disabled = resetStage === "verify";
+      if (resetStage === "verify") resetSubmit.textContent = "Ubah kata sandi";
+    }
+  };
+
+  const verifyResetCode = async () => {
+    if (recoveryTicket) return true;
+    if (recoveryVerificationPromise) return recoveryVerificationPromise;
+    if (!(resetIdentifier instanceof HTMLInputElement)
+      || !(resetCode instanceof HTMLInputElement)
+      || !(resetCodeVerify instanceof HTMLButtonElement)
+      || !(resetOtpCheck instanceof HTMLElement)
+      || !(resetOtpStatus instanceof HTMLElement)
+      || !(resetSubmit instanceof HTMLButtonElement)) {
+      return false;
+    }
+
+    const identifier = resetIdentifier.value.trim();
+    const code = resetCode.value.trim();
+    if (!/^\d{4,10}$/.test(code)) {
+      resetOtpStatus.textContent = "Masukkan kode OTP lengkap terlebih dahulu.";
+      resetOtpStatus.classList.add("is-error");
+      return false;
+    }
+
+    resetCodeVerify.disabled = true;
+    if (resetResend instanceof HTMLButtonElement) resetResend.disabled = true;
+    resetOtpStatus.textContent = "Memeriksa kode OTP...";
+    resetOtpStatus.classList.remove("is-error", "is-success");
+
+    recoveryVerificationPromise = (async () => {
+      try {
+        const data = await requestApi("/api/auth/password-reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "verify-code", identifier, code }),
+        });
+        if (resetIdentifier.value.trim() !== identifier || resetCode.value.trim() !== code) {
+          resetOtpStatus.textContent = "Identitas atau kode berubah. Verifikasi kode terbaru.";
+          resetOtpStatus.classList.add("is-error");
+          return false;
+        }
+        if (typeof data.recovery_ticket !== "string" || !data.recovery_ticket) {
+          throw new Error("Hasil verifikasi tidak lengkap. Coba lagi.");
+        }
+
+        recoveryTicket = data.recovery_ticket;
+        resetOtpCheck.hidden = false;
+        resetCodeVerify.hidden = true;
+        resetOtpStatus.textContent = "Kode OTP benar. Silakan lanjutkan.";
+        resetOtpStatus.classList.add("is-success");
+        resetSubmit.disabled = false;
+        resetSubmit.textContent = "Ubah kata sandi";
+        return true;
+      } catch (error) {
+        resetOtpStatus.textContent = error instanceof Error ? error.message : "Kode OTP tidak dapat diverifikasi.";
+        resetOtpStatus.classList.add("is-error");
+        return false;
+      } finally {
+        recoveryVerificationPromise = null;
+        if (resetCodeVerify instanceof HTMLButtonElement && !recoveryTicket) {
+          resetCodeVerify.hidden = false;
+          resetCodeVerify.disabled = !/^\d{4,10}$/.test(resetCode.value.trim());
+        }
+        if (resetResend instanceof HTMLButtonElement) resetResend.disabled = false;
+      }
+    })();
+
+    return recoveryVerificationPromise;
+  };
+
+  const showLogin = () => {
+    passwordResetForm.hidden = true;
+    passwordResetForm.reset();
+    recoveryTicket = "";
+    recoveryVerificationPromise = null;
+    loginForm.hidden = false;
+    if (loginGoogleOptions instanceof HTMLElement) loginGoogleOptions.hidden = false;
+    if (loginRegisterPrompt instanceof HTMLElement) loginRegisterPrompt.hidden = false;
+    if (loginTitle) loginTitle.textContent = originalTitle;
+    if (loginDescription) loginDescription.textContent = originalDescription;
+    if (resetCodeField instanceof HTMLElement) resetCodeField.hidden = true;
+    if (resetPasswordField instanceof HTMLElement) resetPasswordField.hidden = true;
+    if (resetPasswordConfirmField instanceof HTMLElement) resetPasswordConfirmField.hidden = true;
+    if (resetCode instanceof HTMLInputElement) resetCode.required = false;
+    if (resetPassword instanceof HTMLInputElement) resetPassword.required = false;
+    if (resetPasswordConfirm instanceof HTMLInputElement) resetPasswordConfirm.required = false;
+    if (resetCodeVerify instanceof HTMLButtonElement) {
+      resetCodeVerify.hidden = false;
+      resetCodeVerify.disabled = true;
+    }
+    if (resetOtpCheck instanceof HTMLElement) resetOtpCheck.hidden = true;
+    if (resetOtpStatus instanceof HTMLElement) {
+      resetOtpStatus.textContent = "";
+      resetOtpStatus.classList.remove("is-error", "is-success");
+    }
+    if (resetSubmit instanceof HTMLButtonElement) resetSubmit.textContent = "Kirim kode OTP";
+    if (resetSubmit instanceof HTMLButtonElement) resetSubmit.disabled = false;
+    if (resetResend instanceof HTMLButtonElement) resetResend.hidden = true;
+    if (resetFeedback instanceof HTMLElement) resetFeedback.textContent = "";
+    resetStage = "send";
+  };
+
+  forgotPasswordLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    const loginIdentifier = loginForm.querySelector("#login-identifier");
+    if (resetIdentifier instanceof HTMLInputElement && loginIdentifier instanceof HTMLInputElement) {
+      resetIdentifier.value = loginIdentifier.value.trim();
+    }
+    if (resetFeedback instanceof HTMLElement) resetFeedback.textContent = "";
+    passwordResetForm.hidden = false;
+    loginForm.hidden = true;
+    if (loginGoogleOptions instanceof HTMLElement) loginGoogleOptions.hidden = true;
+    if (loginRegisterPrompt instanceof HTMLElement) loginRegisterPrompt.hidden = true;
+    if (loginTitle) loginTitle.textContent = "Atur ulang kata sandi";
+    if (loginDescription) loginDescription.textContent = "Verifikasi kode OTP melalui email atau SMS untuk membuat kata sandi baru.";
+    resetIdentifier?.focus();
+  });
+
+  resetCancel?.addEventListener("click", showLogin);
+
+  resetCode?.addEventListener("input", () => {
+    if (!(resetCode instanceof HTMLInputElement)) return;
+    const wasVerified = Boolean(recoveryTicket);
+    if (wasVerified) {
+      clearRecoveryVerification();
+      if (resetOtpStatus instanceof HTMLElement) {
+        resetOtpStatus.textContent = "Kode berubah. Minta kode baru sebelum memverifikasi lagi.";
+        resetOtpStatus.classList.add("is-error");
+      }
+    }
+    if (resetCodeVerify instanceof HTMLButtonElement) {
+      resetCodeVerify.hidden = false;
+      resetCodeVerify.disabled = !/^\d{4,10}$/.test(resetCode.value.trim());
+    }
+    if (resetOtpCheck instanceof HTMLElement) resetOtpCheck.hidden = true;
+    if (resetOtpStatus instanceof HTMLElement && !wasVerified) {
+      resetOtpStatus.textContent = "";
+      resetOtpStatus.classList.remove("is-error", "is-success");
+    }
+  });
+
+  resetCode?.addEventListener("change", () => {
+    if (resetStage === "verify") void verifyResetCode();
+  });
+
+  resetCodeVerify?.addEventListener("click", () => {
+    void verifyResetCode();
+  });
+
+  resetIdentifier?.addEventListener("input", () => {
+    if (resetStage !== "verify") return;
+    clearRecoveryVerification();
+    if (resetCode instanceof HTMLInputElement) resetCode.value = "";
+    if (resetCodeVerify instanceof HTMLButtonElement) resetCodeVerify.disabled = true;
+    if (resetOtpStatus instanceof HTMLElement) {
+      resetOtpStatus.textContent = "Identitas berubah. Minta kode OTP baru.";
+      resetOtpStatus.classList.add("is-error");
+    }
+  });
+
+  passwordResetForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(resetIdentifier instanceof HTMLInputElement)
+      || !(resetCode instanceof HTMLInputElement)
+      || !(resetPassword instanceof HTMLInputElement)
+      || !(resetPasswordConfirm instanceof HTMLInputElement)
+      || !(resetCodeField instanceof HTMLElement)
+      || !(resetPasswordField instanceof HTMLElement)
+      || !(resetPasswordConfirmField instanceof HTMLElement)
+      || !(resetSubmit instanceof HTMLButtonElement)
+      || !(resetFeedback instanceof HTMLElement)) {
+      return;
+    }
+
+    resetFeedback.textContent = "";
+    resetSubmit.disabled = true;
+    try {
+      if (resetStage === "send") {
+        const data = await requestApi("/api/auth/password-reset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "send", identifier: resetIdentifier.value }),
+        });
+        resetStage = "verify";
+        resetCodeField.hidden = false;
+        resetPasswordField.hidden = false;
+        resetPasswordConfirmField.hidden = false;
+        resetCode.required = true;
+        resetPassword.required = true;
+        resetPasswordConfirm.required = true;
+        resetSubmit.textContent = "Ubah kata sandi";
+        resetSubmit.disabled = true;
+        if (resetCodeVerify instanceof HTMLButtonElement) resetCodeVerify.disabled = true;
+        if (resetOtpCheck instanceof HTMLElement) resetOtpCheck.hidden = true;
+        if (resetOtpStatus instanceof HTMLElement) {
+          resetOtpStatus.textContent = "";
+          resetOtpStatus.classList.remove("is-error", "is-success");
+        }
+        if (resetResend instanceof HTMLButtonElement) resetResend.hidden = false;
+        resetFeedback.textContent = data.message;
+        resetCode.focus();
+        return;
+      }
+
+      if (!recoveryTicket) {
+        resetFeedback.textContent = "Verifikasi kode OTP terlebih dahulu.";
+        await verifyResetCode();
+        if (!recoveryTicket) return;
+      }
+
+      if (resetPassword.value !== resetPasswordConfirm.value) {
+        resetFeedback.textContent = "Konfirmasi kata sandi belum sama.";
+        resetPasswordConfirm.focus();
+        return;
+      }
+
+      const data = await requestApi("/api/auth/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "change-password",
+          recovery_ticket: recoveryTicket,
+          password: resetPassword.value,
+        }),
+      });
+      recoveryTicket = "";
+      showLogin();
+      if (loginFeedback instanceof HTMLElement) loginFeedback.textContent = data.message;
+    } catch (error) {
+      resetFeedback.textContent = error instanceof Error ? error.message : "Pemulihan kata sandi gagal. Coba lagi.";
+    } finally {
+      resetSubmit.disabled = resetStage === "verify" && !recoveryTicket;
+    }
+  });
+
+  resetResend?.addEventListener("click", async () => {
+    if (!(resetIdentifier instanceof HTMLInputElement)
+      || !(resetFeedback instanceof HTMLElement)
+      || !(resetResend instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    resetFeedback.textContent = "";
+    resetResend.disabled = true;
+    try {
+      const data = await requestApi("/api/auth/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "send", identifier: resetIdentifier.value }),
+      });
+      recoveryTicket = "";
+      if (resetCode instanceof HTMLInputElement) resetCode.value = "";
+      if (resetOtpCheck instanceof HTMLElement) resetOtpCheck.hidden = true;
+      if (resetCodeVerify instanceof HTMLButtonElement) {
+        resetCodeVerify.hidden = false;
+        resetCodeVerify.disabled = true;
+      }
+      if (resetOtpStatus instanceof HTMLElement) {
+        resetOtpStatus.textContent = "";
+        resetOtpStatus.classList.remove("is-error", "is-success");
+      }
+      if (resetSubmit instanceof HTMLButtonElement) resetSubmit.disabled = true;
+      resetFeedback.textContent = data.message;
+    } catch (error) {
+      resetFeedback.textContent = error instanceof Error ? error.message : "Kode OTP tidak dapat dikirim ulang.";
+    } finally {
+      resetResend.disabled = false;
+    }
+  });
+}
+
+if (registerForm instanceof HTMLFormElement) {
+  const registerOtpForm = document.querySelector("#register-verify-form");
+  const googleRegisterOptions = document.querySelector("#register-google-options");
+  const pendingSignup = { email: "", phone: "", session: null, user: null, stage: "email" };
+
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const password = registerForm.querySelector("#register-password");
@@ -5894,23 +6210,167 @@ if (registerForm) {
         body: JSON.stringify({
           name: formData.get("name"),
           email: formData.get("email"),
+          phone: formData.get("phone"),
           password: password.value,
         }),
       });
 
-      if (data.authenticated) {
-        saveAuthSession(data);
-        window.location.href = authReturnTarget();
-        return;
+      if (!data.verificationRequired || !(registerOtpForm instanceof HTMLFormElement)) {
+        throw new Error("Alur verifikasi OTP tidak tersedia. Coba muat ulang halaman.");
       }
 
-      feedback.textContent = data.message;
+      pendingSignup.email = data.email;
+      pendingSignup.phone = data.phone || "";
+      pendingSignup.session = null;
+      pendingSignup.user = null;
+      pendingSignup.stage = "email";
+      registerForm.hidden = true;
+      registerOtpForm.hidden = false;
+      if (googleRegisterOptions instanceof HTMLElement) googleRegisterOptions.hidden = true;
+      const otpMessage = registerOtpForm.querySelector("#register-otp-message");
+      const otpFeedback = registerOtpForm.querySelector("#register-otp-feedback");
+      const otpCode = registerOtpForm.querySelector("#register-otp-code");
+      const otpSubmit = registerOtpForm.querySelector("#register-otp-submit");
+      const phoneSkip = registerOtpForm.querySelector("#register-phone-skip");
+      if (otpMessage instanceof HTMLElement) otpMessage.textContent = `Masukkan kode OTP yang dikirim ke ${pendingSignup.email}.`;
+      if (otpFeedback instanceof HTMLElement) otpFeedback.textContent = "";
+      if (otpCode instanceof HTMLInputElement) {
+        otpCode.value = "";
+        otpCode.focus();
+      }
+      if (otpSubmit instanceof HTMLButtonElement) otpSubmit.textContent = "Verifikasi email";
+      if (phoneSkip instanceof HTMLButtonElement) phoneSkip.hidden = true;
     } catch (error) {
       feedback.textContent = error instanceof Error ? error.message : "Pendaftaran tidak berhasil. Coba lagi.";
     } finally {
       submitButton.disabled = false;
     }
   });
+
+  if (registerOtpForm instanceof HTMLFormElement) {
+    const otpCode = registerOtpForm.querySelector("#register-otp-code");
+    const otpMessage = registerOtpForm.querySelector("#register-otp-message");
+    const otpFeedback = registerOtpForm.querySelector("#register-otp-feedback");
+    const otpSubmit = registerOtpForm.querySelector("#register-otp-submit");
+    const resendButton = registerOtpForm.querySelector("#register-otp-resend");
+    const phoneSkip = registerOtpForm.querySelector("#register-phone-skip");
+
+    const finishSignup = (data) => {
+      saveAuthSession(data);
+      window.location.href = authReturnTarget();
+    };
+
+    const sendPhoneCode = async () => {
+      if (!pendingSignup.phone || !pendingSignup.session?.access_token || !pendingSignup.session?.refresh_token) {
+        throw new Error("Sesi verifikasi tidak tersedia. Silakan masuk dengan email terlebih dahulu.");
+      }
+      const data = await requestApi("/api/auth/phone-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${pendingSignup.session.access_token}`,
+        },
+        body: JSON.stringify({
+          action: "send",
+          phone: pendingSignup.phone,
+          refresh_token: pendingSignup.session.refresh_token,
+        }),
+      });
+      pendingSignup.session = data.session || pendingSignup.session;
+    };
+
+    registerOtpForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(otpCode instanceof HTMLInputElement)
+        || !(otpFeedback instanceof HTMLElement)
+        || !(otpSubmit instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      otpFeedback.textContent = "";
+      otpSubmit.disabled = true;
+      try {
+        if (pendingSignup.stage === "email") {
+          const data = await requestApi("/api/auth/verify-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingSignup.email, code: otpCode.value }),
+          });
+          pendingSignup.session = data.session;
+          pendingSignup.user = data.user;
+
+          if (pendingSignup.phone) {
+            pendingSignup.stage = "phone";
+            if (otpMessage instanceof HTMLElement) {
+              otpMessage.textContent = `Email terverifikasi. Masukkan kode SMS yang dikirim ke ${pendingSignup.phone} untuk mengaktifkan login dengan nomor telepon.`;
+            }
+            if (otpSubmit instanceof HTMLButtonElement) otpSubmit.textContent = "Verifikasi nomor telepon";
+            if (phoneSkip instanceof HTMLButtonElement) phoneSkip.hidden = false;
+            otpCode.value = "";
+            try {
+              await sendPhoneCode();
+            } catch (error) {
+              otpFeedback.textContent = error instanceof Error
+                ? error.message
+                : "SMS tidak dapat dikirim. Coba lagi atau lanjutkan dengan email.";
+            }
+            return;
+          }
+
+          finishSignup(data);
+          return;
+        }
+
+        const data = await requestApi("/api/auth/phone-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${pendingSignup.session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: "verify",
+            phone: pendingSignup.phone,
+            code: otpCode.value,
+            refresh_token: pendingSignup.session.refresh_token,
+          }),
+        });
+        finishSignup(data);
+      } catch (error) {
+        otpFeedback.textContent = error instanceof Error ? error.message : "Verifikasi OTP gagal. Coba lagi.";
+      } finally {
+        otpSubmit.disabled = false;
+      }
+    });
+
+    resendButton?.addEventListener("click", async () => {
+      if (!(otpFeedback instanceof HTMLElement) || !(resendButton instanceof HTMLButtonElement)) return;
+      otpFeedback.textContent = "";
+      resendButton.disabled = true;
+      try {
+        if (pendingSignup.stage === "email") {
+          const data = await requestApi("/api/auth/resend-signup-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: pendingSignup.email }),
+          });
+          otpFeedback.textContent = data.message;
+        } else {
+          await sendPhoneCode();
+          otpFeedback.textContent = "Kode SMS baru telah dikirim.";
+        }
+      } catch (error) {
+        otpFeedback.textContent = error instanceof Error ? error.message : "Kode OTP tidak dapat dikirim ulang.";
+      } finally {
+        resendButton.disabled = false;
+      }
+    });
+
+    phoneSkip?.addEventListener("click", () => {
+      if (pendingSignup.user && pendingSignup.session) {
+        finishSignup({ session: pendingSignup.session, user: pendingSignup.user });
+      }
+    });
+  }
 }
 
 if (sellerApplicationPage) {

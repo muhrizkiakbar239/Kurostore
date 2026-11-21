@@ -9,11 +9,6 @@
   font-family: "Segoe UI", Arial, Helvetica, sans-serif;
 }
 
-.login-liquid-page .auth-heading h1 {
-  margin-top: 9px;
-  font-size: 30px;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -25,10 +20,6 @@ body {
   background: #ffffff;
   font-size: 14px;
   line-height: 1.55;
-}
-
-.login-liquid-page .auth-register-prompt {
-  margin-top: 20px;
 }
 
 body.storefront-page,
@@ -3185,12 +3176,6 @@ input {
   box-shadow: 0 0 0 3px rgb(146 116 165 / 13%);
 }
 
-.login-liquid-page .auth-field input:focus {
-  border-color: #9878b0;
-  background: rgb(255 255 255 / 76%);
-  box-shadow: 0 0 0 4px rgb(146 116 165 / 16%);
-}
-
 .auth-label-row {
   display: flex;
   align-items: center;
@@ -3232,10 +3217,6 @@ input {
   background: transparent;
   cursor: pointer;
   transform: translateY(-50%);
-}
-
-.login-liquid-page .auth-password-toggle {
-  border-radius: 7px;
 }
 
 .auth-password-toggle:hover {
@@ -3463,7 +3444,7 @@ input {
     #f5f3f6;
 }
 
-.login-liquid-page {
+.liquid-auth-page {
   position: relative;
   isolation: isolate;
   background:
@@ -3474,7 +3455,7 @@ input {
   background-attachment: fixed;
 }
 
-.login-liquid-page::before {
+.liquid-auth-page::before {
   position: fixed;
   z-index: 0;
   inset: 0;
@@ -3496,7 +3477,7 @@ input {
   padding: 36px 0;
 }
 
-.login-liquid-page .auth-shell {
+.liquid-auth-page .auth-shell {
   position: relative;
   z-index: 1;
   width: min(100% - 40px, 460px);
@@ -3537,7 +3518,7 @@ input {
     0 18px 55px rgb(45 33 53 / 9%);
 }
 
-.login-liquid-page .auth-card {
+.liquid-auth-page .auth-card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -3552,7 +3533,7 @@ input {
   backdrop-filter: blur(30px) saturate(170%);
 }
 
-.login-liquid-page .auth-card::before {
+.liquid-auth-page .auth-card::before {
   position: absolute;
   z-index: 0;
   inset: 0;
@@ -3565,12 +3546,12 @@ input {
   pointer-events: none;
 }
 
-.login-liquid-page .auth-card > * {
+.liquid-auth-page .auth-card > * {
   position: relative;
   z-index: 1;
 }
 
-.login-liquid-page .auth-card > .auth-brand {
+.liquid-auth-page .auth-card > .auth-brand {
   z-index: auto;
 }
 
@@ -3589,7 +3570,7 @@ input {
   height: auto;
 }
 
-.login-liquid-page .auth-brand {
+.liquid-auth-page .auth-brand {
   width: min(220px, 76%);
   margin-bottom: 25px;
   padding: 8px 12px;
@@ -3600,7 +3581,7 @@ input {
   backdrop-filter: blur(14px) saturate(150%);
 }
 
-.login-liquid-page .auth-brand img {
+.liquid-auth-page .auth-brand img {
   border-radius: 13px;
   mix-blend-mode: multiply;
   opacity: 0.94;
@@ -3611,7 +3592,7 @@ input {
   text-align: center;
 }
 
-.login-liquid-page .auth-heading {
+.liquid-auth-page .auth-heading {
   margin-bottom: 21px;
 }
 
@@ -3630,6 +3611,11 @@ input {
   letter-spacing: -0.045em;
 }
 
+.liquid-auth-page .auth-heading h1 {
+  margin-top: 9px;
+  font-size: 30px;
+}
+
 .auth-heading p {
   margin: 0;
   color: #77717d;
@@ -3642,7 +3628,7 @@ input {
   gap: 18px;
 }
 
-.login-liquid-page .auth-form {
+.liquid-auth-page .auth-form {
   gap: 16px;
 }
 
@@ -3671,7 +3657,7 @@ input {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.login-liquid-page .auth-field input {
+.liquid-auth-page .auth-field input {
   height: 49px;
   padding: 0 14px;
   border-color: rgb(255 255 255 / 76%);
@@ -3687,6 +3673,11 @@ input {
 }
 
 .auth-field input:focus {
+  border-color: #9274a5;
+  box-shadow: 0 0 0 3px rgb(146 116 165 / 13%);
+}
+
+.liquid-auth-page .auth-field input:focus {
   border-color: #9878b0;
   background: rgb(255 255 255 / 76%);
   box-shadow: 0 0 0 4px rgb(146 116 165 / 16%);
@@ -3723,11 +3714,15 @@ input {
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 7px;
+  border-radius: 4px;
   color: #827a88;
   background: transparent;
   cursor: pointer;
   transform: translateY(-50%);
+}
+
+.liquid-auth-page .auth-password-toggle {
+  border-radius: 7px;
 }
 
 .auth-password-toggle:hover {
@@ -3830,7 +3825,7 @@ input {
   background: #4c3b58;
 }
 
-.login-liquid-page .auth-submit {
+.liquid-auth-page .auth-submit {
   min-height: 49px;
   border: 1px solid rgb(255 255 255 / 40%);
   border-radius: 12px;
@@ -3840,13 +3835,13 @@ input {
   transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-.login-liquid-page .auth-submit:hover {
+.liquid-auth-page .auth-submit:hover {
   transform: translateY(-2px);
   background: linear-gradient(115deg, rgb(73 52 88 / 92%), rgb(112 82 134 / 84%));
   box-shadow: 0 12px 24px rgb(57 41 71 / 24%);
 }
 
-.login-liquid-page .auth-submit:active {
+.liquid-auth-page .auth-submit:active {
   transform: translateY(0) scale(0.99);
 }
 
@@ -3870,6 +3865,111 @@ input {
 
 .auth-feedback:not(:empty) {
   min-height: 18px;
+}
+
+.liquid-auth-page [hidden] {
+  display: none !important;
+}
+
+.auth-secondary-button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid rgb(255 255 255 / 78%);
+  border-radius: 11px;
+  color: #665c70;
+  background: rgb(255 255 255 / 42%);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.auth-secondary-button:hover {
+  border-color: rgb(180 157 196 / 70%);
+  background: rgb(255 255 255 / 70%);
+}
+
+.auth-secondary-button:focus-visible {
+  outline: 3px solid #b69ac8;
+  outline-offset: 3px;
+}
+
+.auth-otp-message {
+  margin: 0;
+  color: #6f6578;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.auth-otp-input-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.auth-otp-input-row > input {
+  min-width: 0;
+  flex: 1;
+}
+
+.auth-otp-verify-button {
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid rgb(255 255 255 / 78%);
+  border-radius: 11px;
+  color: #665c70;
+  background: rgb(255 255 255 / 42%);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-otp-verify-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.auth-otp-success {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  color: #19864b;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.auth-otp-success svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
+.auth-otp-status {
+  min-height: 0;
+  margin: 0;
+  color: #715780;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.auth-otp-status.is-error {
+  color: #b5424b;
+}
+
+.auth-otp-status.is-success {
+  color: #19864b;
+}
+
+.liquid-auth-page .auth-field small {
+  color: #827a88;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .auth-google {
@@ -3940,6 +4040,10 @@ input {
   text-align: center;
 }
 
+.liquid-auth-page .auth-register-prompt {
+  margin-top: 20px;
+}
+
 .auth-register-prompt a {
   margin-left: 3px;
   color: #806394;
@@ -3954,7 +4058,7 @@ input {
   text-align: center;
 }
 
-.login-liquid-page .auth-terms {
+.liquid-auth-page .auth-terms {
   margin-top: 22px;
 }
 
@@ -3964,7 +4068,7 @@ input {
     padding: 22px 0;
   }
 
-  .login-liquid-page .auth-shell {
+  .liquid-auth-page .auth-shell {
     width: min(100% - 28px, 400px);
   }
 
@@ -3990,24 +4094,24 @@ input {
     font-size: 26px;
   }
 
-  .login-liquid-page .auth-card {
+  .liquid-auth-page .auth-card {
     padding: 32px 23px 28px;
     border-radius: 24px;
   }
 
-  .login-liquid-page .auth-brand {
+  .liquid-auth-page .auth-brand {
     width: min(220px, 82%);
   }
 
-  .login-liquid-page .auth-heading {
+  .liquid-auth-page .auth-heading {
     margin-bottom: 19px;
   }
 
-  .login-liquid-page .auth-heading h1 {
+  .liquid-auth-page .auth-heading h1 {
     font-size: 26px;
   }
 
-  .login-liquid-page .auth-divider { margin: 19px 0; }
+  .liquid-auth-page .auth-divider { margin: 19px 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

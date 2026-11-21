@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f3f6">
   <meta name="description" content="Buat akun Kurostore dan mulai belanja dengan mudah.">
+  <meta name="google-client-id" content="687222513600-cp9uaf5ouuiqt7sccmpguu262g7e6pd1.apps.googleusercontent.com">
   <title>Daftar | Kurostore</title>
   <link rel="icon" type="image/png" href="https://mmtnqldmacxxoactieae.supabase.co/storage/v1/object/public/kurostore-assets/favicon.png">
-  <link rel="stylesheet" href="../../assets/css/style.css?v=20261120-1">
-  <script src="../../assets/js/style.js?v=20261120-15" defer></script>
+  <link rel="stylesheet" href="../../assets/css/style.css?v=20261121-13">
+  <script src="../../assets/js/style.js?v=20261121-8" defer></script>
 </head>
-<body class="auth-page">
+<body class="auth-page liquid-auth-page">
   <main class="auth-shell">
     <a class="auth-back-link" href="../index.html">
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -53,6 +54,18 @@
             autocomplete="email"
             required
           >
+        </div>
+
+        <div class="auth-field">
+          <label for="register-phone">Nomor telepon <span>(opsional)</span></label>
+          <input
+            id="register-phone"
+            name="phone"
+            type="tel"
+            placeholder="08xxxxxxxxxx"
+            autocomplete="tel"
+          >
+          <small>Nomor yang dicantumkan akan diverifikasi lewat SMS sebelum bisa dipakai untuk login.</small>
         </div>
 
         <div class="auth-field">
@@ -117,6 +130,29 @@
         </button>
         <p class="auth-feedback" id="register-feedback" role="status" aria-live="polite"></p>
       </form>
+
+      <form class="auth-form" id="register-verify-form" hidden>
+        <p class="auth-otp-message" id="register-otp-message">Masukkan kode OTP yang dikirim ke email.</p>
+        <div class="auth-field">
+          <label for="register-otp-code">Kode OTP</label>
+          <input id="register-otp-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,10}" maxlength="10" required>
+        </div>
+        <button class="auth-submit" id="register-otp-submit" type="submit">Verifikasi email</button>
+        <button class="auth-secondary-button" id="register-otp-resend" type="button">Kirim ulang kode</button>
+        <button class="auth-secondary-button" id="register-phone-skip" type="button" hidden>Lewati verifikasi telepon</button>
+        <p class="auth-feedback" id="register-otp-feedback" role="status" aria-live="polite"></p>
+      </form>
+
+      <div id="register-google-options">
+        <div class="auth-divider" aria-hidden="true"><span>atau daftar dengan Google</span></div>
+        <div class="auth-google" id="google-register-button">
+          <button class="auth-google-placeholder" type="button" disabled>Daftar dengan Google</button>
+        </div>
+        <p class="auth-google-setup" id="google-register-setup" role="status" aria-live="polite">
+          Google belum aktif. OAuth Client ID perlu dikonfigurasi terlebih dahulu.
+        </p>
+        <p class="auth-feedback auth-google-feedback" id="google-register-feedback" role="status" aria-live="polite"></p>
+      </div>
 
       <p class="auth-register-prompt">
         Sudah punya akun?

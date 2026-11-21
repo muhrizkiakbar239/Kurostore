@@ -6,6 +6,10 @@ import refresh from '../../lib/backend/auth/refresh.js';
 import register from '../../lib/backend/auth/register.js';
 import changePassword from '../../lib/backend/auth/change-password.js';
 import acceptInvite from '../../lib/backend/auth/accept-invite.js';
+import verifyOtp from '../../lib/backend/auth/verify-otp.js';
+import resendSignupOtp from '../../lib/backend/auth/resend-signup-otp.js';
+import passwordReset from '../../lib/backend/auth/password-reset.js';
+import phoneOtp from '../../lib/backend/auth/phone-otp.js';
 
 const handlers: Record<string, (request: VercelRequest, response: VercelResponse) => Promise<void>> = {
   login,
@@ -13,6 +17,10 @@ const handlers: Record<string, (request: VercelRequest, response: VercelResponse
   me,
   refresh,
   register,
+  'verify-otp': verifyOtp,
+  'resend-signup-otp': resendSignupOtp,
+  'password-reset': passwordReset,
+  'phone-otp': phoneOtp,
   'change-password': changePassword,
   'accept-invite': acceptInvite,
 };

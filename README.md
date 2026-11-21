@@ -66,16 +66,28 @@ Script membuat atau memperbarui bucket publik `kurostore-assets`, mengunggah gam
 1. Di Google Cloud Console, pilih proyek Kurostore lalu buka **Google Auth Platform**. Konfigurasikan layar persetujuan OAuth dan tambahkan akun penguji bila aplikasinya masih berstatus Testing.
 2. Buat OAuth client dengan tipe **Web application**. Tambahkan origin situs, misalnya `http://localhost:3000` untuk lokal dan domain produksi Kurostore sebagai **Authorized JavaScript origins**. Salin **Client ID** (bukan API key).
 3. Di Supabase Dashboard, buka **Authentication → Sign In / Providers → Google**, aktifkan provider, lalu masukkan OAuth Client ID dan **Client Secret** dari Google Cloud. Simpan perubahan.
-4. Di `public/pages/login.html`, isi atribut `content` pada `<meta name="google-client-id">` dengan OAuth Client ID. Client ID bersifat publik; jangan menaruh Client Secret di frontend, repository, atau variabel yang diekspos ke browser.
+4. Di `public/pages/login.html` dan `public/pages/register.html`, isi atribut `content` pada `<meta name="google-client-id">` dengan OAuth Client ID. Client ID bersifat publik; jangan menaruh Client Secret di frontend, repository, atau variabel yang diekspos ke browser.
 5. Pastikan `SUPABASE_URL` dan `SUPABASE_ANON_KEY` sudah tersedia di environment API Vercel, lalu deploy ulang. Tombol login menggunakan Google Identity Services untuk memperoleh ID token dan mengirimkannya ke endpoint backend `/api/auth/google`.
+
+### OTP pendaftaran, telepon, dan pemulihan kata sandi
+
+1. Di Supabase Dashboard, aktifkan konfirmasi email pada **Authentication → Sign In / Providers → Email**. Pendaftaran email/password akan menunggu kode OTP email sebelum akun aktif.
+2. Pada template email **Confirm signup** dan **Reset Password**, tampilkan kode `{{ .Token }}` (bukan hanya tautan `{{ .ConfirmationURL }}`), agar kode dapat dimasukkan di halaman Kurostore. Gunakan SMTP khusus untuk pengiriman produksi; batas email bawaan Supabase ditujukan untuk pengujian.
+3. Nomor telepon saat daftar bersifat opsional. Jika diisi, pengguna memverifikasi email terlebih dahulu lalu menerima OTP SMS untuk mengaktifkan login dengan nomor telepon. Nomor Indonesia berformat `08...` dinormalisasi ke E.164 (`+62...`). Jika belum ingin memakai SMS, pengguna dapat melewati verifikasi nomor dan tetap masuk memakai email.
+4. Untuk mengaktifkan OTP SMS, aktifkan autentikasi telepon dan konfigurasi provider SMS beserta kredensialnya di **Authentication → Sign In / Providers → Phone**. Kredensial provider hanya disimpan di Supabase Dashboard, jangan di frontend atau repository. Pemulihan kata sandi menggunakan OTP email atau SMS sesuai identitas yang dimasukkan. Pastikan `SUPABASE_SERVICE_ROLE_KEY` tersedia hanya di environment server Vercel untuk menyelesaikan perubahan kata sandi setelah OTP diverifikasi.
+5. Pendaftaran Google tidak meminta OTP kedua karena Google OAuth menjadi verifikasi email. OTP tidak diminta saat login biasa.
 
 ## Endpoint yang tersedia
 
 | Method | Path | Akses |
 |---|---|---|
-| POST | `/api/auth/login` | Publik |
+| POST | `/api/auth/login` | Publik; email atau nomor telepon terverifikasi |
 | POST | `/api/auth/google` | Publik; menukar ID token Google menjadi sesi Supabase |
-| POST | `/api/auth/register` | Publik |
+| POST | `/api/auth/register` | Publik; memulai pendaftaran dan mengirim OTP email |
+| POST | `/api/auth/verify-otp` | Publik; memverifikasi OTP pendaftaran |
+| POST | `/api/auth/resend-signup-otp` | Publik; mengirim ulang OTP pendaftaran |
+| POST | `/api/auth/phone-otp` | Pengguna masuk; mengirim/memverifikasi OTP telepon |
+| POST | `/api/auth/password-reset` | Publik; mengirim OTP, memverifikasinya, atau mengubah kata sandi dengan bukti verifikasi singkat |
 | POST | `/api/auth/refresh` | Pengguna masuk; memperbarui sesi dengan refresh token |
 | GET | `/api/auth/me` | Pengguna masuk |
 | GET | `/api/categories` | Publik; cache CDN 5 menit |

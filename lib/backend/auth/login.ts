@@ -1,5 +1,6 @@
 import { requestBody, sendJson, type VercelRequest, type VercelResponse } from '../http.js';
 import { createAdminClient, createAuthClient, isSupabaseAuthConfigured, isSupabaseConfigured } from '../supabase.js';
+import { parseAuthIdentity } from './identity.js';
 
 export default async function handler(request: VercelRequest, response: VercelResponse): Promise<void> {
   if (request.method !== 'POST') {
@@ -14,17 +15,34 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   const body = requestBody(request);
-  const email = typeof body?.email === 'string' ? body.email.trim() : '';
+  const identifier = typeof body?.identifier === 'string'
+    ? body.identifier.trim()
+    : typeof body?.email === 'string'
+      ? body.email.trim()
+      : '';
   const password = typeof body?.password === 'string' ? body.password : '';
+  const identity = parseAuthIdentity(identifier);
 
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length === 0 || password.length > 128) {
-    sendJson(response, 400, { error: 'Email atau kata sandi tidak valid.' });
+  if (!identity || identifier.length > 254 || password.length === 0 || password.length > 128) {
+    sendJson(response, 400, { error: 'Email/nomor telepon atau kata sandi tidak valid.' });
     return;
   }
 
-  const { data, error } = await createAuthClient().auth.signInWithPassword({ email, password });
+  const credentials = identity.type === 'phone'
+    ? { phone: identity.phone, password }
+    : { email: identity.email, password };
+  const { data, error } = await createAuthClient().auth.signInWithPassword(credentials);
   if (error || !data.session) {
-    sendJson(response, 401, { error: 'Email atau kata sandi salah, atau email belum diverifikasi.' });
+    if (error?.status === 429) {
+      sendJson(response, 429, { error: 'Terlalu banyak percobaan masuk. Coba lagi nanti.' });
+      return;
+    }
+    if (error && (error.status ?? 503) >= 500) {
+      console.error('Unable to sign in:', error.message);
+      sendJson(response, 503, { error: 'Layanan masuk sedang tidak tersedia. Coba lagi nanti.' });
+      return;
+    }
+    sendJson(response, 401, { error: 'Email/nomor telepon atau kata sandi salah, atau akun belum diverifikasi.' });
     return;
   }
 
