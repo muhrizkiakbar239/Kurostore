@@ -22,7 +22,7 @@ Backend untuk Supabase dan Vercel. Form masuk, daftar, dan pengajuan seller terh
 
 Jangan pernah menaruh `SUPABASE_SERVICE_ROLE_KEY` atau `ADMIN_BOOTSTRAP_TOKEN` di berkas frontend atau repositori.
 
-## Katalog seed dan harga
+## Akun seller demo
 
 Setelah semua migrasi selesai, siapkan `.env.local` dengan `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY`. Verifikasi project ref sebelum menulis ke Production.
 
@@ -30,11 +30,8 @@ Seed seller berikut membuat 20 akun seller melalui undangan Supabase Auth dan to
 
 1. Periksa alamat dan toko tanpa mengubah Supabase: `node supabase\seeds\seed_demo_sellers.mjs --base-email "akun@gmail.com" --expected-project-ref "PROJECT_REF" --dry-run`.
 2. Setelah memastikan email, project ref, dan konfigurasi SMTP Supabase benar, jalankan perintah yang sama dengan mengganti `--dry-run` menjadi `--confirm-production`.
-3. Jalankan `node supabase\seeds\seed_demo_catalog.mjs` untuk mengisi atau memperbarui katalog.
 
-Katalog demo berisi 220 produk dari 11 kategori; kategori Voucher dan Produk Digital sengaja kosong. Produk dibagi rata: setiap seller mendapat 11 produk, satu dari masing-masing kategori yang memiliki produk. Seed memverifikasi jumlah produk serta pembagian tersebut. Deskripsi katalog mencakup kegunaan produk dan daftar rincian yang perlu dipastikan sesuai kategorinya.
-
-Seed akun dan katalog dapat dijalankan ulang tanpa menggandakan akun atau produk. Setelah distribusi seller pertama berhasil, gunakan `node supabase\seeds\seed_demo_catalog.mjs --descriptions-only` untuk memperbarui hanya keterangan produk tanpa mengubah harga, stok, atau seller. Harga katalog ditandai sebagai estimasi pasar, bukan harga resmi yang telah diverifikasi.
+Seed akun seller dapat dijalankan ulang tanpa menggandakan akun. Produk baru ditambahkan melalui pengelolaan produk seller.
 
 Jika Supabase menolak undangan karena batas email, konfigurasi SMTP khusus di Supabase Auth atau tunggu batasnya pulih, lalu jalankan seed seller lagi. Akun yang sudah berhasil dibuat akan digunakan kembali dan tidak diundang ulang.
 
