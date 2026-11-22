@@ -4437,7 +4437,7 @@ if (homeProductGrids.some(({ grid }) => grid instanceof HTMLElement)) {
     price.textContent = formatHomeProductPrice(product.price);
     const stock = document.createElement("span");
     stock.className = "home-featured-product-stock";
-    stock.textContent = `Stok ${product.stock}`;
+    stock.textContent = product.stock > 0 ? `Stok ${product.stock}` : "Stok habis";
     bottom.append(price, stock);
     const estimate = document.createElement("small");
     estimate.className = "price-estimate-badge";
@@ -4545,8 +4545,7 @@ if (homeProductGrids.some(({ grid }) => grid instanceof HTMLElement)) {
         && typeof product.category_id === "string"
         && Number.isFinite(Number(product.price))
         && Number(product.price) > 0
-        && Number.isInteger(product.stock)
-        && product.stock > 0)
+        && Number.isInteger(product.stock))
         .map((product) => ({ ...product, price: Number(product.price) }));
 
       const selectedByCategory = new Map();
