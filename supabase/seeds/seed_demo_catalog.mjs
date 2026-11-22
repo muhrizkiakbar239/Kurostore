@@ -625,6 +625,7 @@ const products = categories.flatMap((category, categoryIndex) =>
       category_id: categoryIds.get(category.slug),
       name,
       description: completeProductDescription(category.slug, category.productDescriptions[productIndex]),
+      image_url: `https://loremflickr.com/640/640/${encodeURIComponent(name.replace(/[^a-zA-Z0-9 ]/g, ''))}?lock=${categoryIndex * 20 + productIndex + 1000}`,
       price,
       price_is_estimate: true,
       stock,
