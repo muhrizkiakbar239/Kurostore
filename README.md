@@ -1,4 +1,4 @@
-# Kurostore backend
+ # Kurostore backend
 
 Backend untuk Supabase dan Vercel. Form masuk, daftar, dan pengajuan seller terhubung ke API backend.
 
