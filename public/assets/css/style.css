@@ -7489,6 +7489,14 @@ input {
   font-weight: 700;
 }
 
+.product-stock-badge {
+  border-color: rgb(255 255 255 / 85%);
+  color: #ffffff;
+  background: #b42318;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 18%);
+  pointer-events: none;
+}
+
 .product-art-orb {
   position: absolute;
   z-index: -1;

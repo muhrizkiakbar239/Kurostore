@@ -40,7 +40,7 @@ const createProductSkeletons = (count) => Array.from({ length: count }, () => {
   return card;
 });
 
-const appendProductImage = (container, imageUrl, alt) => {
+const appendProductImage = (container, imageUrl, alt, stock) => {
   if (typeof imageUrl !== "string" || !imageUrl.trim()) return null;
 
   let url;
@@ -64,6 +64,12 @@ const appendProductImage = (container, imageUrl, alt) => {
     container.classList.remove("has-product-image");
   }, { once: true });
   container.append(image);
+  if (typeof stock === "number" && Number.isFinite(stock) && stock <= 0) {
+    const badge = document.createElement("span");
+    badge.className = "product-card-badge product-stock-badge";
+    badge.textContent = "Stok habis";
+    container.append(badge);
+  }
   return image;
 };
 
@@ -3750,7 +3756,7 @@ if (allProductsPage) {
       artworkLink.className = "product-art-link";
       artworkLink.href = productDetailHref(product.id);
       artworkLink.setAttribute("aria-label", `Lihat detail ${product.name}`);
-      appendProductImage(artworkLink, product.image_url, product.name);
+      appendProductImage(artworkLink, product.image_url, product.name, product.stock);
       const fallbackArt = artwork.querySelector("svg");
       if (fallbackArt) {
         fallbackArt.setAttribute("aria-hidden", "true");
@@ -4240,7 +4246,7 @@ if (productDetailPage) {
       const informationStock = productDetailPage.querySelector("#product-detail-information-stock");
       if (informationCategory) informationCategory.textContent = categoryName;
       if (informationStock) informationStock.textContent = String(productStock);
-      if (image instanceof HTMLElement) appendProductImage(image, product.image_url, `Foto ${productName}`);
+      if (image instanceof HTMLElement) appendProductImage(image, product.image_url, `Foto ${productName}`, productStock);
       if (quantityInput instanceof HTMLInputElement) {
         quantityInput.max = String(Math.max(1, productStock));
         quantityInput.value = "1";
@@ -4401,7 +4407,7 @@ if (homeProductGrids.some(({ grid }) => grid instanceof HTMLElement)) {
     artworkLink.className = "product-art-link";
     artworkLink.href = productDetailHref(product.id);
     artworkLink.setAttribute("aria-label", `Lihat detail ${product.name}`);
-    appendProductImage(artworkLink, product.image_url, product.name);
+    appendProductImage(artworkLink, product.image_url, product.name, product.stock);
     const fallbackArt = artwork.querySelector("svg");
     if (fallbackArt) {
       fallbackArt.setAttribute("aria-hidden", "true");
@@ -4656,7 +4662,7 @@ if (productsPage) {
         artworkLink.className = "product-art-link";
         artworkLink.href = productDetailHref(item.id, true);
         artworkLink.setAttribute("aria-label", `Lihat detail ${item.name}`);
-        appendProductImage(artworkLink, item.image_url, item.name);
+        appendProductImage(artworkLink, item.image_url, item.name, item.stock);
         const fallbackArt = artwork.querySelector("svg");
         if (fallbackArt) artworkLink.append(fallbackArt);
         artwork.append(artworkLink);
